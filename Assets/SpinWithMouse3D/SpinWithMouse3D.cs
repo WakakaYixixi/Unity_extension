@@ -22,6 +22,9 @@ public class SpinWithMouse3D : MonoBehaviour {
 	private Transform m_trans;
 	private float m_rotateToAngleDamp;
 
+	[Tooltip("是否发送鼠标事件 OnSpinWithMouseDown,OnSpinWithMouseMove,OnSpinWithMouseRelease,OnSpinWithMouseRotate .")]
+	public bool isSendMouseEvent = false;
+
 	[Tooltip("旋转轴.")]
 	public RotationAxis rotationAxis = RotationAxis.DirZ;
 
@@ -42,7 +45,8 @@ public class SpinWithMouse3D : MonoBehaviour {
 	void OnMouseDown(){
 		StopAllCoroutines ();
 		m_screenPos = Camera.main.WorldToScreenPoint (Input.mousePosition);
-		gameObject.SendMessage("OnSpinWithMouseDown",SendMessageOptions.DontRequireReceiver);
+		if(isSendMouseEvent)
+			gameObject.SendMessage("OnSpinWithMouseDown",SendMessageOptions.DontRequireReceiver);
 	}
 	void OnMouseDrag(){
 		Vector3 currentScreen = Camera.main.WorldToScreenPoint (Input.mousePosition);
@@ -64,10 +68,12 @@ public class SpinWithMouse3D : MonoBehaviour {
 				Rotate ( m_screenPos.y - currentScreen.y);
 		}
 		m_screenPos = currentScreen;
-		gameObject.SendMessage("OnSpinWithMouseMove",SendMessageOptions.DontRequireReceiver);
+		if(isSendMouseEvent)
+			gameObject.SendMessage("OnSpinWithMouseMove",SendMessageOptions.DontRequireReceiver);
 	}
 	void OnMouseUp(){
-		gameObject.SendMessage("OnSpinWithMouseRelease",SendMessageOptions.DontRequireReceiver);
+		if(isSendMouseEvent)
+			gameObject.SendMessage("OnSpinWithMouseRelease",SendMessageOptions.DontRequireReceiver);
 	}
 	#endregion
 
@@ -92,7 +98,8 @@ public class SpinWithMouse3D : MonoBehaviour {
 				m_trans.rotation = Quaternion.Euler(0f, change, 0f ) * m_trans.rotation;
 			}
 		}
-		gameObject.SendMessage("OnSpinWithMouseRotate",SendMessageOptions.DontRequireReceiver);
+		if(isSendMouseEvent)
+			gameObject.SendMessage("OnSpinWithMouseRotate",SendMessageOptions.DontRequireReceiver);
 	}
 
 	/// <summary>
