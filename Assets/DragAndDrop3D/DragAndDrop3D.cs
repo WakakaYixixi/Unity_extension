@@ -29,6 +29,9 @@ public class DragAndDrop3D : MonoBehaviour {
 	[Tooltip("是否发送鼠标事件，OnDragAndDropDown,OnDragAndDropMove,OnDragAndDropRelease.")]
 	public bool isSendMouseEvent = false;
 
+    [Tooltip("Drag时是否禁用此对象的collider组件.")]
+    public bool isDragDisableCollider = false;
+
 	[Tooltip("是否使用射线检测.如果是，则设置rayCastMasks中的参数.")]
 	public bool isUseRaycast = false ;
 
@@ -102,12 +105,14 @@ public class DragAndDrop3D : MonoBehaviour {
 			OnMouseDownHandler();
 		}
 	}
-	void OnMouseDrag(){
+    void OnMouseDrag()
+    {
 		if (!isUseRaycast&&Input.touchCount < 2) {
 			OnMouseDragHandler ();
 		}
 	}
-	void OnMouseUp(){
+    void OnMouseUp()
+    {
 		if (!isUseRaycast&&Input.touchCount < 2) {
 			OnMouseUpHandler();
 		}
@@ -115,7 +120,12 @@ public class DragAndDrop3D : MonoBehaviour {
 #endregion
 
 
-	private void OnMouseDownHandler(){
+    private void OnMouseDownHandler()
+    {
+        if (isDragDisableCollider)
+        {
+            if (m_collider) m_collider.enabled = false;
+        }
 		StopAllCoroutines ();
 		m_cachePosition = m_trans.position;
 		m_cacheScale = m_trans.localScale;
@@ -143,6 +153,7 @@ public class DragAndDrop3D : MonoBehaviour {
 	}
 
 	private void OnMouseDragHandler(){
+
 		if (isUseRaycast && mousePickLayer) {
 			RaycastHit hit;
 			if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition),out hit,raycastDistance,1<<mousePickLayer.layer)){
@@ -171,6 +182,11 @@ public class DragAndDrop3D : MonoBehaviour {
 	}
 
 	private void OnMouseUpHandler(){
+        if (isDragDisableCollider)
+        {
+            if (m_collider) m_collider.enabled = true;
+        }
+
 		if (mousePickLayer) {
 			mousePickLayer.SetActive (false);
 		}
@@ -185,8 +201,8 @@ public class DragAndDrop3D : MonoBehaviour {
 		RaycastHit hit;
 		if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition),out hit,raycastDistance,mask)){
 			if(hit.collider.gameObject!=gameObject){ //Exclude myself
-				hit.collider.SendMessage(dropMedthod,SendMessageOptions.DontRequireReceiver);
-				gameObject.SendMessage(dropMedthod,gameObject,SendMessageOptions.DontRequireReceiver);
+				hit.collider.SendMessage(dropMedthod,gameObject,SendMessageOptions.DontRequireReceiver);
+				gameObject.SendMessage(dropMedthod,hit.collider.gameObject,SendMessageOptions.DontRequireReceiver);
 			}else{
 				BackPosition();
 			}
