@@ -2,7 +2,7 @@
 using System.Collections;
 
 /// <summary>
-/// 拖放3D物体，使用两种方式，一种用系统OnMouseDown,OnMouseDrag,OnMouseUp事件，另一种用射线检测。注意：使用的是主相机(mainCamera)
+/// 拖放3D物体，使用两种方式，一种用系统OnMouseDown,OnMouseDrag,OnMouseUp事件，另一种用射线检测。
 /// send Message:OnDragAndDropDown,OnDragAndDropMove,OnDragAndDropRelease
 /// author:zhouzhanglin
 /// 2015/3/12
@@ -22,15 +22,21 @@ public class DragAndDrop3D : MonoBehaviour {
 	private bool m_haveRigidbody;
 	private bool m_defaultIsKinematic;
 	private Transform m_trans;
-	private Collider m_collider;
+	private Collider[] m_colliders=null;
 	private bool m_isDown;
 	private Vector3 m_currentPosition ;
+	
+	[Tooltip("拖动的对象，默认为自己.")]
+	public Transform dragTarget=null;
 
 	[Tooltip("是否发送鼠标事件，OnDragAndDropDown,OnDragAndDropMove,OnDragAndDropRelease.")]
 	public bool isSendMouseEvent = false;
 
     [Tooltip("Drag时是否禁用此对象的collider组件.")]
-    public bool isDragDisableCollider = false;
+	public bool isDragDisableCollider = false;
+	
+	[Tooltip("如果为null，则使用mainCamera.")]
+	public Camera rayCastCamera = null;
 
 	[Tooltip("是否使用射线检测.如果是，则设置rayCastMasks中的参数.")]
 	public bool isUseRaycast = false ;
@@ -71,10 +77,17 @@ public class DragAndDrop3D : MonoBehaviour {
 
 	#region MonoBehaviour内置方法.
 	void Start () {
-		m_trans = transform;
-		m_collider = GetComponent<Collider> ();
+		if (dragTarget) {
+			m_trans = dragTarget;
+		} else {
+			m_trans = transform;
+		}
+		m_colliders = GetComponents<Collider> ();
 		if (mousePickLayer) {
 			mousePickLayer.SetActive(false);
+		}
+		if (!rayCastCamera) {
+			rayCastCamera = Camera.main;
 		}
 	}
 	void Update () {
@@ -124,7 +137,7 @@ public class DragAndDrop3D : MonoBehaviour {
     {
         if (isDragDisableCollider)
         {
-            if (m_collider) m_collider.enabled = false;
+			EnableColliders(false);
         }
 		StopAllCoroutines ();
 		m_cachePosition = m_trans.position;
@@ -140,9 +153,9 @@ public class DragAndDrop3D : MonoBehaviour {
 		} else {
 			m_haveRigidbody = false;
 		}
-		m_screenPosition = Camera.main.WorldToScreenPoint(m_trans.position);
+		m_screenPosition = rayCastCamera.WorldToScreenPoint(m_trans.position);
 		if (!isDragOriginPoint) {
-			m_dragOffset = m_trans.position - Camera.main.ScreenToWorldPoint (new Vector3 (Input.mousePosition.x, Input.mousePosition.y, m_screenPosition.z));
+			m_dragOffset = m_trans.position - rayCastCamera.ScreenToWorldPoint (new Vector3 (Input.mousePosition.x, Input.mousePosition.y, m_screenPosition.z));
 		}
 		if (isUseRaycast && mousePickLayer) {
 			mousePickLayer.SetActive (true);
@@ -156,14 +169,14 @@ public class DragAndDrop3D : MonoBehaviour {
 
 		if (isUseRaycast && mousePickLayer) {
 			RaycastHit hit;
-			if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition),out hit,raycastDistance,1<<mousePickLayer.layer)){
+			if(Physics.Raycast(rayCastCamera.ScreenPointToRay(Input.mousePosition),out hit,raycastDistance,1<<mousePickLayer.layer)){
 				if(hit.collider.gameObject==mousePickLayer){
 					m_currentPosition = hit.point;
 				}
 			}
 		} else {
 			Vector3 curScreenSpace = new Vector3(Input.mousePosition.x, Input.mousePosition.y, m_screenPosition.z);
-			m_currentPosition = Camera.main.ScreenToWorldPoint(curScreenSpace) ;
+			m_currentPosition = rayCastCamera.ScreenToWorldPoint(curScreenSpace) ;
 		}
 
 		if (!isDragOriginPoint) {
@@ -182,11 +195,9 @@ public class DragAndDrop3D : MonoBehaviour {
 	}
 
 	private void OnMouseUpHandler(){
-        if (isDragDisableCollider)
-        {
-            if (m_collider) m_collider.enabled = true;
+        if (isDragDisableCollider){
+			EnableColliders(true);
         }
-
 		if (mousePickLayer) {
 			mousePickLayer.SetActive (false);
 		}
@@ -240,40 +251,52 @@ public class DragAndDrop3D : MonoBehaviour {
 		if (isDropFailBack) {
 			switch(dragBackEffect){
 			case DragBackEffect.TweenPosition:
+				EnableColliders(false);
 				StartCoroutine("BackTween");
 				break;
 			case DragBackEffect.Immediately:
 				m_trans.position = m_cachePosition ;
-				m_collider.enabled = true;
+				EnableColliders(true);
 				break;
 			case DragBackEffect.TweenScale:
+				EnableColliders(false);
 				m_trans.position = m_cachePosition ;
 				m_trans.localScale = Vector3.zero;
 				StartCoroutine("ScaleTween");
 				break;
 			default :
-				m_collider.enabled = true;
+				EnableColliders(true);
 				break;
 			}
 		}
 	}
+
+	private void EnableColliders(bool value){
+		if (m_colliders!=null && m_colliders.Length>0) {
+			for(int i = 0;i<m_colliders.Length;i++){
+				m_colliders[i].enabled = value;
+			}
+		}
+	}
+
 	private IEnumerator BackTween(){
-		m_collider.enabled = false;//Prevent dragging
+		//Prevent dragging
 		while (Vector3.Distance(m_trans.position,m_cachePosition)>0.01f) {
 			m_trans.position = Vector3.Lerp(m_trans.position,m_cachePosition,backEffectSpeed*Time.fixedDeltaTime);
 			yield return new WaitForFixedUpdate();
 		}
 		m_trans.position = m_cachePosition ;
-		m_collider.enabled = true;
+		//Prevent dragging
+		EnableColliders(true);
 	}
 	private IEnumerator ScaleTween(){
-		m_collider.enabled = false;//Prevent dragging
+		//Prevent dragging
 		while (Vector3.Distance(m_trans.localScale,m_cacheScale)>0.01f) {
 			m_trans.localScale = Vector3.Lerp(m_trans.localScale,m_cacheScale,backEffectSpeed*Time.fixedDeltaTime);
 			yield return new WaitForFixedUpdate();
 		}
 		m_trans.localScale = m_cacheScale ;
-		m_collider.enabled = true;
+		//Prevent dragging
+		EnableColliders(true);
 	}
-
 }
