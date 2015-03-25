@@ -20,10 +20,6 @@ public class DragAndDrop3DEditor : Editor {
 		EditorGUILayout.EndHorizontal();
 
 		EditorGUILayout.BeginHorizontal();
-		source.isSendMouseEvent = EditorGUILayout.Toggle(new GUIContent("Is Send Mouse Event", "是否发送鼠标事件，OnDragAndDropDown,OnDragAndDropMove,OnDragAndDropRelease."), source.isSendMouseEvent);
-		EditorGUILayout.EndHorizontal();
-
-		EditorGUILayout.BeginHorizontal();
 		source.isDragDisableCollider = EditorGUILayout.Toggle(new GUIContent("Is Drag Disable Collider", "Drag时是否禁用此对象的collider组件."), source.isDragDisableCollider);
 		EditorGUILayout.EndHorizontal();
 

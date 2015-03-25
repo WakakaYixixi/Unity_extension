@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 /// <summary>
 /// 旋转物体。注意：使用的是主相机(mainCamera)
@@ -21,6 +22,8 @@ public class SpinWithMouse3D : MonoBehaviour {
 	private Vector3 m_screenPos;
 	private Transform m_trans;
 	private float m_rotateToAngleDamp;
+
+	public Action OnMouseDonwAction, OnMouseDragAction, OnMouseUpAction,OnMouseRotateAction;
 
 	[Tooltip("是否发送鼠标事件 OnSpinWithMouseDown,OnSpinWithMouseMove,OnSpinWithMouseRelease,OnSpinWithMouseRotate .")]
 	public bool isSendMouseEvent = false;
@@ -45,8 +48,8 @@ public class SpinWithMouse3D : MonoBehaviour {
 	void OnMouseDown(){
 		StopAllCoroutines ();
 		m_screenPos = Camera.main.WorldToScreenPoint (Input.mousePosition);
-		if(isSendMouseEvent)
-			gameObject.SendMessage("OnSpinWithMouseDown",SendMessageOptions.DontRequireReceiver);
+		if (OnMouseDonwAction != null)
+			OnMouseDonwAction ();
 	}
 	void OnMouseDrag(){
 		Vector3 currentScreen = Camera.main.WorldToScreenPoint (Input.mousePosition);
@@ -68,12 +71,12 @@ public class SpinWithMouse3D : MonoBehaviour {
 				Rotate ( m_screenPos.y - currentScreen.y);
 		}
 		m_screenPos = currentScreen;
-		if(isSendMouseEvent)
-			gameObject.SendMessage("OnSpinWithMouseMove",SendMessageOptions.DontRequireReceiver);
+		if (OnMouseDragAction!=null)
+			OnMouseDragAction ();
 	}
 	void OnMouseUp(){
-		if(isSendMouseEvent)
-			gameObject.SendMessage("OnSpinWithMouseRelease",SendMessageOptions.DontRequireReceiver);
+		if (OnMouseUpAction != null)
+			OnMouseUpAction ();
 	}
 	#endregion
 
@@ -98,8 +101,8 @@ public class SpinWithMouse3D : MonoBehaviour {
 				m_trans.rotation = Quaternion.Euler(0f, change, 0f ) * m_trans.rotation;
 			}
 		}
-		if(isSendMouseEvent)
-			gameObject.SendMessage("OnSpinWithMouseRotate",SendMessageOptions.DontRequireReceiver);
+		if (OnMouseRotateAction != null)
+			OnMouseRotateAction ();
 	}
 
 	/// <summary>

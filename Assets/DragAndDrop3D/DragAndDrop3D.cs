@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 
 /// <summary>
@@ -26,12 +27,13 @@ public class DragAndDrop3D : MonoBehaviour
 	private Collider[] m_colliders = null;
 	private bool m_isDown;
 	private Vector3 m_currentPosition;
+
+	public Action OnMouseDownAction = null ;
+	public Action OnMouseDragAction = null ;
+	public Action OnMouseUpAction = null ;
 	
 	[Tooltip("拖动的对象，默认为自己.")]
 	public Transform dragTarget = null;
-	
-	[Tooltip("是否发送鼠标事件，OnDragAndDropDown,OnDragAndDropMove,OnDragAndDropRelease.")]
-	public bool isSendMouseEvent = false;
 	
 	[Tooltip("Drag时是否禁用此对象的collider组件.")]
 	public bool isDragDisableCollider = false;
@@ -184,9 +186,9 @@ public class DragAndDrop3D : MonoBehaviour
 		{
 			mousePickLayer.SetActive(true);
 		}
-		if (isSendMouseEvent)
+		if (OnMouseDownAction!=null)
 		{
-			gameObject.SendMessage("OnDragAndDropDown", SendMessageOptions.DontRequireReceiver);
+			OnMouseDownAction();
 		}
 	}
 	
@@ -226,9 +228,9 @@ public class DragAndDrop3D : MonoBehaviour
 		{
 			m_trans.position = m_currentPosition;
 		}
-		if (isSendMouseEvent)
+		if (OnMouseDragAction!=null)
 		{
-			gameObject.SendMessage("OnDragAndDropMove", SendMessageOptions.DontRequireReceiver);
+			OnMouseDragAction();
 		}
 	}
 	
@@ -256,7 +258,8 @@ public class DragAndDrop3D : MonoBehaviour
 		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
 		{
 			if (hit.collider.gameObject != gameObject)
-			{ //Exclude myself
+			{ 
+				//Exclude myself
 				hit.collider.SendMessage(dropMedthod, gameObject, SendMessageOptions.DontRequireReceiver);
 				gameObject.SendMessage(dropMedthod, hit.collider.gameObject, SendMessageOptions.DontRequireReceiver);
 			}
@@ -269,9 +272,9 @@ public class DragAndDrop3D : MonoBehaviour
 		{
 			BackPosition();
 		}
-		if (isSendMouseEvent)
+		if (OnMouseUpAction!=null)
 		{
-			gameObject.SendMessage("OnDragAndDropRelease", SendMessageOptions.DontRequireReceiver);
+			OnMouseUpAction();
 		}
 	}
 	
