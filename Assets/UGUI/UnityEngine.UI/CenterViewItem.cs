@@ -7,6 +7,10 @@ namespace UnityEngine.UI
     /// <summary>
     /// 用于CenterView.
     /// </summary>
+	/// 
+	[AddComponentMenu("UI/Center View",1351)]
+	[RequireComponent(typeof(RectTransform))]
+	[RequireComponent(typeof(CenterViewController))]
     public class CenterViewItem : MonoBehaviour,IPointerClickHandler,System.IComparable
     {
         /// <summary>

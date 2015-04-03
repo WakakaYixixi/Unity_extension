@@ -7,7 +7,7 @@ namespace UnityEngine.UI
     /// author:zhouzhanglin
     /// 页码.
     /// </summary>
-    [AddComponentMenu("UI/Page Indicator", 1351)]
+    [AddComponentMenu("UI/Page Indicator", 1352)]
     public class PageIndicator : UIBehaviour
     {
         public Sprite defaultState;
