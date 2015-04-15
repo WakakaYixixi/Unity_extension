@@ -7,6 +7,6 @@
 Joystick控件</br></br>
 
 <b>Native2D工具</b></br>
-屏幕适配，Anchor , 遮罩</br></br>
+屏幕适配，Anchor , 遮罩 , 描边</br></br>
 
 陆续还会加一些其他组件....</br>
