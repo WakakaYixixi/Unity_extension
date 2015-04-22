@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 
 /// <summary>
@@ -11,8 +12,11 @@ public class IconScaleModel: MonoBehaviour {
 	private SceneLoading m_loading;
 	private bool m_isDrawIcon = false;
 	private float m_iconScale=0f;
+	private bool m_startFadeout = false;
 
 	public Texture icon;
+	public bool isAutoFadeOut = true;//防止 fadeout两次
+	public Action onLoadComplete ;
 
 	// Use this for initialization
 	void Start () {
@@ -20,7 +24,7 @@ public class IconScaleModel: MonoBehaviour {
 		m_loading.OnLoadStay = OnLoadStay;
 		m_loading.OnLoadProgress = OnLoadProgress;
 		m_loading.isAutoLoadScene = false;
-		LoadScene (1);
+		LoadScene (1); //用的时候去掉这行
 	}
 
 	public void LoadScene(string name ){
@@ -35,7 +39,7 @@ public class IconScaleModel: MonoBehaviour {
 
 	void OnLoadStay(){
 		m_isDrawIcon = true;
-		StartCoroutine ("ShowIcon");
+		StartCoroutine (ShowIcon());
 	}
 
 	IEnumerator ShowIcon(){
@@ -46,15 +50,31 @@ public class IconScaleModel: MonoBehaviour {
 			yield return null;
 
 		} while(m_iconScale<0.99f);
-
+		m_iconScale = 1f;
 		m_loading.StartLoadScene ();
 	}
 
 	void OnLoadProgress( float pro){
 		if (pro == 1f) {
 			//complete
-			StartCoroutine ("HideIcon");
+			if(isAutoFadeOut){
+				StartCoroutine ( HideIcon() );
+				m_startFadeout = true;
+			}
+			if(onLoadComplete!=null){
+				onLoadComplete();
+			}
 		}
+	}
+
+	public void StartFadeOut()
+	{
+		UnityEngine.UI.Image img = gameObject.GetComponent<UnityEngine.UI.Image>();
+		if(img){
+			Destroy(img);
+		}
+		if(!m_startFadeout)
+			StartCoroutine ( HideIcon() );
 	}
 
 	IEnumerator HideIcon(){
@@ -67,6 +87,11 @@ public class IconScaleModel: MonoBehaviour {
 		} while(m_iconScale>0.01f);
 
 		m_isDrawIcon = false;
+
+		UnityEngine.UI.Image img = gameObject.GetComponent<UnityEngine.UI.Image>();
+		if(img){
+			Destroy(img);
+		}
 		m_loading.StartFadeOut ();
 	}
 

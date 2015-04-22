@@ -20,6 +20,7 @@ public class SceneLoading : MonoBehaviour {
 	void Awake () {
 		m_effect = GetComponent<GUIBaseEffect> ();
 		DontDestroyOnLoad (gameObject);
+		DontDestroyOnLoad (transform.parent.gameObject);
 	}
 	
 	public void StartFadeIn(string sceneName){
@@ -91,7 +92,8 @@ public class SceneLoading : MonoBehaviour {
 				StartLoadScene ();
 			}
 		} else if (m_effectState == EffectState.OUT) {
-			Destroy(gameObject);
+			Destroy (transform.parent.gameObject);
+//			Destroy(gameObject);
 		}
 	}
 }
