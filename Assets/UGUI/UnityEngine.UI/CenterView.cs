@@ -90,6 +90,11 @@ namespace UnityEngine.UI
             {
                 _scaleYRenders();
             }
+
+			LayoutGroup group = transform.GetComponentInChildren<LayoutGroup>();
+			if(group){
+				group.enabled = false;
+			}
             return this;
         }
 
