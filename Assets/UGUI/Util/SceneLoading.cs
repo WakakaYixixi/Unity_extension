@@ -18,6 +18,8 @@ namespace UnityEngine.UI
 		[HideInInspector]
 		public TransitionType transitionOut = TransitionType.FadeOut;
 
+		public Shader circleHole;
+
 		public Action onTransitionInStart,onTransitionInOver,onLoadSceneComplete,onTransitionOutStart,onTransitionOutOver;
 		public Action<float> onLoadProgress;
 		
@@ -38,7 +40,7 @@ namespace UnityEngine.UI
 			DontDestroyOnLoad (transform.parent.gameObject);
 
 			m_img = GetComponent<Image>();
-			m_material = new Material(Shader.Find("UI/Circle Hole"));
+			m_material = new Material(circleHole);
 			m_img.material = m_material;
 		}
 

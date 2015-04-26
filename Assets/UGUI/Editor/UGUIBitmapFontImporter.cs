@@ -26,6 +26,7 @@ public static class UGUIBitmapFontImporter
 	
 	private static void Work (TextAsset import, string exportPath, Texture2D texture)
 	{
+		#if UNITY_4
 		if (!import)
 			throw new UnityException (import.name + "is not a valid font-xml file");
 		
@@ -38,41 +39,39 @@ public static class UGUIBitmapFontImporter
 		XmlNode common = xml.GetElementsByTagName ("common") [0];
 		XmlNodeList chars = xml.GetElementsByTagName ("chars") [0].ChildNodes;
 		
+		CharacterInfo[] charInfos = new CharacterInfo[chars.Count];
+
 		float texW = texture.width;
 		float texH = texture.height;
-		
-		CharacterInfo[] charInfos = new CharacterInfo[chars.Count];
 		Rect r;
-		
 		for (int i=0; i<chars.Count; i++) {
 			XmlNode charNode = chars [i];
 			if (charNode.Attributes != null) {
 		
 				CharacterInfo charInfo = new CharacterInfo ();
+				charInfo.index = (int)ToFloat (charNode, "id");
+				charInfo.width = ToFloat (charNode, "xadvance");
+				charInfo.flipped = false;
 				
-//				charInfo.index = (int)ToFloat (charNode, "id");
-//				charInfo.width = ToFloat (charNode, "xadvance");
-//				charInfo.flipped = false;
-//				
-//				r = new Rect ();
-//				r.x = ((float)ToFloat (charNode, "x")) / texW;
-//				r.y = ((float)ToFloat (charNode, "y")) / texH;
-//				r.width = ((float)ToFloat (charNode, "width")) / texW;
-//				r.height = ((float)ToFloat (charNode, "height")) / texH;
-//				r.y = 1f - r.y - r.height;
-//				charInfo.uv = r;
-//				
-//				
-//				r = new Rect ();
-//				r.x = (float)ToFloat (charNode, "xoffset");
-//				r.y = (float)ToFloat (charNode, "yoffset");
-//				r.width = (float)ToFloat (charNode, "width");
-//				r.height = (float)ToFloat (charNode, "height");
-//				r.y = -r.y;
-//				r.height = -r.height;
-//				charInfo.vert = r;
-//				
-//				charInfos [i] = charInfo;
+				r = new Rect ();
+				r.x = ((float)ToFloat (charNode, "x")) / texW;
+				r.y = ((float)ToFloat (charNode, "y")) / texH;
+				r.width = ((float)ToFloat (charNode, "width")) / texW;
+				r.height = ((float)ToFloat (charNode, "height")) / texH;
+				r.y = 1f - r.y - r.height;
+				charInfo.uv = r;
+				
+				
+				r = new Rect ();
+				r.x = (float)ToFloat (charNode, "xoffset");
+				r.y = (float)ToFloat (charNode, "yoffset");
+				r.width = (float)ToFloat (charNode, "width");
+				r.height = (float)ToFloat (charNode, "height");
+				r.y = -r.y;
+				r.height = -r.height;
+				charInfo.vert = r;
+				
+				charInfos [i] = charInfo;
 			}
 		}
 		
@@ -87,6 +86,7 @@ public static class UGUIBitmapFontImporter
 		font.name = info.Attributes.GetNamedItem ("face").InnerText;
 		font.characterInfo = charInfos;
 		AssetDatabase.CreateAsset (font, exportPath + ".fontsettings");
+		#endif
 	}
 	
 	private static float ToFloat (XmlNode node, string name)
