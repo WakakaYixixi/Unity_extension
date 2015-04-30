@@ -1,4 +1,5 @@
-﻿Shader "UI/Circle Hole" {
+﻿//打洞.
+Shader "ZZL/UI/Circle Hole" {
 	Properties
 	{
 		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}

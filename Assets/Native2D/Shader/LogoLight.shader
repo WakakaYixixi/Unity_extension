@@ -1,4 +1,4 @@
-﻿Shader "Custom/LogoLight" {
+﻿Shader "ZZL/FX/LogoLight" {
     Properties {
         _MainTex ("Texture", 2D) = "white" { }
     }

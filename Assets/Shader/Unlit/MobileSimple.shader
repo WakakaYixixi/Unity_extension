@@ -1,6 +1,5 @@
-﻿Shader "Mobile/Unlit/MobileSimpleColor" {
+﻿Shader "ZZL/Unlit/MobileSimple" {
 	Properties {
-		_Color("Color",Color)=(1,1,1,1)
 		_MainTex ("Main Texture (RGB)", 2D) = "white" {}
 	}
 	SubShader {
@@ -25,7 +24,6 @@
 					half2 texcoord : TEXCOORD0;
 				};
 
-				fixed4 _Color;
 				sampler2D _MainTex;
 				float4 _MainTex_ST;
 				
@@ -39,7 +37,7 @@
 				
 				fixed4 frag (v2f i) : SV_Target
 				{
-					fixed4 col = tex2D(_MainTex, i.texcoord)*_Color;
+					fixed4 col = tex2D(_MainTex, i.texcoord);
 					return col;
 				}
 			

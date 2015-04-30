@@ -1,4 +1,4 @@
-﻿Shader "Mobile/Unlit/MobileSimpleBump" {
+﻿Shader "ZZL/Unlit/MobileSimpleBump" {
 	Properties 
     {
         _MainTex ("Base (RGB)", 2D) = "white" {}

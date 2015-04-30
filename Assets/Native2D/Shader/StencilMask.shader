@@ -1,4 +1,4 @@
-﻿Shader "Sprites/Stencil Mask"
+﻿Shader "ZZL/Native2D/Stencil Mask"
 {
 	Properties
 	{

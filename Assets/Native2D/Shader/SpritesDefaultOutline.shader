@@ -1,4 +1,4 @@
-﻿Shader "Sprites/Default Outline"
+﻿Shader "ZZL/Native2D/Default Outline"
 {
 	Properties
 	{

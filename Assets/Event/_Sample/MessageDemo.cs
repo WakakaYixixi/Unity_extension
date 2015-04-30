@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MessageDemo : MonoBehaviour {
+public class MessageDemo : MessengerBehaviour {
 
 	// Use this for initialization
 	void Start () {
@@ -9,6 +9,9 @@ public class MessageDemo : MonoBehaviour {
 		Messenger.DispatchEvent ("OK",true);
 		Messenger.RemoveListener<bool> ("OK", Callback);
 		Messenger.DispatchEvent ("OK",true);
+
+
+		this.DispatchEvent<int> ("NO",1);
 	}
 	
 	void Callback(bool flag){

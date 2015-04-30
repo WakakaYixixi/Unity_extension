@@ -22,6 +22,7 @@ public class DragAndDrop3D : MonoBehaviour
 	private Vector3 m_dragOffset;
 	private Vector3 m_screenPosition;
 	private bool m_haveRigidbody;
+	private Rigidbody m_rigidBody;
 	private bool m_defaultIsKinematic;
 	private Transform m_trans;
 	private Collider[] m_colliders = null;
@@ -77,7 +78,6 @@ public class DragAndDrop3D : MonoBehaviour
 	[Tooltip("返回原来位置时的速度.对TweenPosition和TweenScale有用.")]
 	public float backEffectSpeed = 10f;
 	
-	
 	#region MonoBehaviour内置方法.
 	void Start()
 	{
@@ -88,6 +88,7 @@ public class DragAndDrop3D : MonoBehaviour
 		else
 		{
 			m_trans = transform;
+			dragTarget = m_trans;
 		}
 		m_colliders = GetComponentsInChildren<Collider>();
 		if (mousePickLayer)
@@ -98,6 +99,7 @@ public class DragAndDrop3D : MonoBehaviour
 		{
 			rayCastCamera = Camera.main;
 		}
+		m_rigidBody = GetComponent<Rigidbody> ();
 	}
 	void Update()
 	{
@@ -166,12 +168,11 @@ public class DragAndDrop3D : MonoBehaviour
 		m_currentPosition = m_cachePosition;
 		m_dragOffset = Vector3.zero;
 		
-		Rigidbody rb = GetComponent<Rigidbody>();
-		if (rb)
+		if (m_rigidBody)
 		{
 			m_haveRigidbody = true;
-			m_defaultIsKinematic = rb.isKinematic;
-			rb.isKinematic = true;
+			m_defaultIsKinematic = m_rigidBody.isKinematic;
+			m_rigidBody.isKinematic = true;
 		}
 		else
 		{
@@ -194,7 +195,6 @@ public class DragAndDrop3D : MonoBehaviour
 	
 	private void OnMouseDragHandler()
 	{
-		
 		if (isUseRaycast && mousePickLayer)
 		{
 			RaycastHit hit;
@@ -222,10 +222,19 @@ public class DragAndDrop3D : MonoBehaviour
 		}
 		if (dragMoveDamp > 0f)
 		{
-			m_trans.position = Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp);
+			if(m_rigidBody){
+				m_rigidBody.MovePosition(Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp));
+			}else{
+				m_trans.position = Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp);
+			}
 		}
 		else
 		{
+			if(m_rigidBody){
+				m_rigidBody.MovePosition(Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp));
+			}else{
+				m_trans.position = Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp);
+			}
 			m_trans.position = m_currentPosition;
 		}
 		if (OnMouseDragAction!=null)

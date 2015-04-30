@@ -1,4 +1,4 @@
-﻿Shader "Sprites/Diffuse Outline"
+﻿Shader "ZZL/Native2D/Diffuse Outline"
 {
 	Properties
 	{
