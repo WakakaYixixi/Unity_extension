@@ -1,4 +1,4 @@
-﻿Shader "ZZL/Unlit/MobileSimple" {
+﻿Shader "ZZL/Unlit/Mobile Simple" {
 	Properties {
 		_MainTex ("Main Texture (RGB)", 2D) = "white" {}
 	}

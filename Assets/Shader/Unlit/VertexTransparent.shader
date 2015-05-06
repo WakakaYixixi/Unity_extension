@@ -1,5 +1,5 @@
 ﻿//只取了顶点的透明度，没有取顶点颜色来计算.
-Shader "ZZL/Unlit/VertexTransparent" {
+Shader "ZZL/Unlit/Vertex Transparent" {
 	Properties {
 		_MainTex ("Base (RGB)", 2D) = "white" {}
 		_Color ("Tint Color",Color) = (1,1,1,1)
