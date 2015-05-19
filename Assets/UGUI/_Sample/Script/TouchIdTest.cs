@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 
@@ -8,8 +8,8 @@ public class TouchIdTest : MonoBehaviour {
     public Text t1, t2;
 	// Use this for initialization
 	void Start () {
-        EventTriggerListener.Get(img1.gameObject).onDown += OnImg1Click;
-        EventTriggerListener.Get(img2.gameObject).onDown += OnImg2Click;
+        EventTriggerListener.Get(img1.gameObject).OnDown += OnImg1Click;
+        EventTriggerListener.Get(img2.gameObject).OnDown += OnImg2Click;
 	}
 
     private void OnImg1Click(GameObject go, UnityEngine.EventSystems.PointerEventData eventData)

@@ -49,7 +49,7 @@ namespace UnityEngine.UI
                     Image img = (new GameObject()).AddComponent<Image>();
                     if (interactive)
                     {
-                        EventTriggerListener.Get(img.gameObject).onClick += OnPageItemClick;
+                        EventTriggerListener.Get(img.gameObject).OnClick += OnPageItemClick;
                     }
                     if (i != m_prevPage)
                     {

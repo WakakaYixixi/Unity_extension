@@ -1,18 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
-public class EventTriggerListener : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerEnterHandler,
-IPointerExitHandler, IPointerUpHandler, ISelectHandler, IUpdateSelectedHandler
+public class EventTriggerListener : MonoBehaviour,IPointerClickHandler, IPointerDownHandler, IPointerEnterHandler,
+IPointerExitHandler, IPointerUpHandler
 {
-    public delegate void VoidDelegate1(GameObject go, PointerEventData eventData);
-    public delegate void VoidDelegate2(GameObject go, BaseEventData eventData);
-    public VoidDelegate1 onClick;
-    public VoidDelegate1 onDown;
-    public VoidDelegate1 onEnter;
-    public VoidDelegate1 onExit;
-    public VoidDelegate1 onUp;
-    public VoidDelegate2 onSelect;
-    public VoidDelegate2 onUpdateSelect;
+	public delegate void VoidDelegate1(GameObject go, PointerEventData eventData);
+	public event VoidDelegate1 OnClick;
+    public event VoidDelegate1 OnDown;
+	public event VoidDelegate1 OnEnter;
+	public event VoidDelegate1 OnExit;
+	public event VoidDelegate1 OnUp;
 
     static public EventTriggerListener Get(GameObject go)
     {
@@ -20,32 +17,25 @@ IPointerExitHandler, IPointerUpHandler, ISelectHandler, IUpdateSelectedHandler
         if (listener == null) listener = go.AddComponent<EventTriggerListener>();
         return listener;
     }
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (onClick != null) onClick(gameObject,eventData);
-    }
+	public void OnPointerClick (PointerEventData eventData)
+	{
+		if (OnClick != null) OnClick(gameObject, eventData);
+	}
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (onDown != null) onDown(gameObject, eventData);
+        if (OnDown != null) OnDown(gameObject, eventData);
     }
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (onEnter != null) onEnter(gameObject, eventData);
+        if (OnEnter != null) OnEnter(gameObject, eventData);
     }
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (onExit != null) onExit(gameObject, eventData);
+        if (OnExit != null) OnExit(gameObject, eventData);
     }
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (onUp != null) onUp(gameObject, eventData);
+        if (OnUp != null) OnUp(gameObject, eventData);
     }
-    public void OnSelect(BaseEventData eventData)
-    {
-        if (onSelect != null) onSelect(gameObject,eventData);
-    }
-    public void OnUpdateSelected(BaseEventData eventData)
-    {
-        if (onUpdateSelect != null) onUpdateSelect(gameObject, eventData);
-    }
+  
 }
