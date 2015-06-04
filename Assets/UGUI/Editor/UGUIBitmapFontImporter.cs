@@ -26,7 +26,6 @@ public static class UGUIBitmapFontImporter
 	
 	private static void Work (TextAsset import, string exportPath, Texture2D texture)
 	{
-		#if UNITY_4
 		if (!import)
 			throw new UnityException (import.name + "is not a valid font-xml file");
 		
@@ -36,7 +35,7 @@ public static class UGUIBitmapFontImporter
 		xml.LoadXml (import.text);
 		
 		XmlNode info = xml.GetElementsByTagName ("info") [0];
-		XmlNode common = xml.GetElementsByTagName ("common") [0];
+//		XmlNode common = xml.GetElementsByTagName ("common") [0];
 		XmlNodeList chars = xml.GetElementsByTagName ("chars") [0].ChildNodes;
 		
 		CharacterInfo[] charInfos = new CharacterInfo[chars.Count];
@@ -86,7 +85,6 @@ public static class UGUIBitmapFontImporter
 		font.name = info.Attributes.GetNamedItem ("face").InnerText;
 		font.characterInfo = charInfos;
 		AssetDatabase.CreateAsset (font, exportPath + ".fontsettings");
-		#endif
 	}
 	
 	private static float ToFloat (XmlNode node, string name)
