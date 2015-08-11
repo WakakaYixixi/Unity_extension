@@ -35,6 +35,9 @@ public class Painter : MonoBehaviour {
 	//是否自动初始化.
 	public bool isAutoInit = false;
 
+	//init show picture
+	public bool initShowPic = false;
+
 	#region private
 	private Texture2D _baseTexture ;
 	private bool _isDown = false;
@@ -52,7 +55,7 @@ public class Painter : MonoBehaviour {
 
 	void Start(){
 		if (isAutoInit) {
-			Init();
+			Init(initShowPic);
 		}
 	}
 
@@ -144,6 +147,10 @@ public class Painter : MonoBehaviour {
 	public void DrawEnd()
 	{
 		_isDown = false;
+		this._baseTexture.LoadRawTextureData(this._pixels);
+		this._baseTexture.Apply(false);
+		_delayApply = 0;
+
 	}
 	
 	/// <summary>
@@ -356,7 +363,11 @@ public class Painter : MonoBehaviour {
 							{
 								int idx = j*_baseTexture.width+i;
 								if(idx>-1 && idx<_sourceColors.Length){
-									_pixels[idx*4+3] = 0;
+									int alphaIdx= idx*4+3;
+									if(_pixels[alphaIdx]>=0xff-penA)
+									{
+										_pixels[alphaIdx] = (byte)(0xff-penA);
+									}
 								}
 								
 							}
@@ -364,15 +375,65 @@ public class Painter : MonoBehaviour {
 					}
 					else
 					{
-						int idx = j*_baseTexture.width+i;
-						if(idx>-1 && idx<_sourceColors.Length){
-							_pixels[idx*4+3] = 0;
+						int penIdx = penJ*brushSize+penI;
+						if(penIdx>-1&&penIdx<_penColors.Length){
+							byte penA =_penColors[penIdx].a;
+							if (penA > 0 )
+							{
+								int idx = j*_baseTexture.width+i;
+								if(idx>-1 && idx<_sourceColors.Length){
+									int alphaIdx= idx*4+3;
+									_pixels[alphaIdx] = 0;
+									
+								}
+								
+							}
 						}
 					}
 				}
 				else
 				{
 					if (penAlphaEnable){
+						
+						int penIdx = penJ*brushSize+penI;
+						if(penIdx>-1&&penIdx<_penColors.Length){
+							byte penA =_penColors[penIdx].a;
+							if (penA > 0)
+							{
+								int idx = j*_baseTexture.width+i;
+								if(idx>-1 && idx<_sourceColors.Length){
+									
+									Color32 c = paintColor;
+									if(paintType== PaintType.Scribble){
+										c = _sourceColors[idx];
+										idx *= 4;
+										_pixels[idx] = c.r;
+										_pixels[idx+1] = c.g;
+										_pixels[idx+2] = c.b;
+										byte resultA = (byte)(0xff-(0xff-_pixels[idx+3])*(0xff-penA)/0xff);
+										if(c.a>resultA){
+											_pixels[idx+3] = resultA;
+										}else{
+											_pixels[idx+3] = c.a;
+										}
+									}
+									else if(paintType== PaintType.DrawLine){
+										idx *= 4;
+										//mix the colors
+										_pixels[idx] = (byte)((0xff-penA)*_pixels[idx]/0xff + penA*c.r/0xff);
+										_pixels[idx+1] = (byte)((0xff-penA)*_pixels[idx+1]/0xff + penA*c.g/0xff);
+										_pixels[idx+2] = (byte)((0xff-penA)*_pixels[idx+2]/0xff + penA*c.b/0xff);
+										_pixels[idx+3] = (byte)(0xff-(0xff-_pixels[idx+3])*(0xff-penA)/0xff);
+									}
+
+								}
+								
+							}
+						}
+						
+					}
+					else
+					{
 						
 						int penIdx = penJ*brushSize+penI;
 						if(penIdx>-1&&penIdx<_penColors.Length){
@@ -394,23 +455,6 @@ public class Painter : MonoBehaviour {
 								}
 								
 							}
-						}
-						
-					}
-					else
-					{
-						
-						int idx = j*_baseTexture.width+i;
-						if(idx>-1 && idx<_sourceColors.Length){
-							Color32 c = paintColor;
-							if(paintType== PaintType.Scribble){
-								c = _sourceColors[idx];
-							}
-							idx *= 4;
-							_pixels[idx] = c.r;
-							_pixels[idx+1] = c.g;
-							_pixels[idx+2] = c.b;
-							_pixels[idx+3] = c.a;
 						}
 					}
 					

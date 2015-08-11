@@ -11,6 +11,10 @@ public class PainterEditor : Editor {
 
 		source.isAutoInit = EditorGUILayout.Toggle (new GUIContent ("Is Auto Init"), source.isAutoInit);
 
+		if(source.isAutoInit){
+			source.initShowPic = EditorGUILayout.Toggle (new GUIContent ("Init Show Source"), source.initShowPic);
+		}
+
 		source.lerpDamp = EditorGUILayout.FloatField(new GUIContent("Brush Lerp"),source.lerpDamp);
 		source.isEraser = EditorGUILayout.Toggle(new GUIContent("Is Eraser"),source.isEraser);
 
