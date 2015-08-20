@@ -364,9 +364,9 @@ public class Painter : MonoBehaviour {
 								int idx = j*_baseTexture.width+i;
 								if(idx>-1 && idx<_sourceColors.Length){
 									int alphaIdx= idx*4+3;
-									if(_pixels[alphaIdx]>0xff-penA)
+									if(_pixels[alphaIdx]>=0xff-penA)
 									{
-                                        _pixels[alphaIdx] = (byte)(0xff - penA);
+										_pixels[alphaIdx] = (byte)(0xff-penA);
 									}
 								}
 								
@@ -420,20 +420,10 @@ public class Painter : MonoBehaviour {
 									else if(paintType== PaintType.DrawLine){
 										idx *= 4;
 										//mix the colors
-                                        if (_pixels[idx + 3] == 0)
-                                        {
-                                            _pixels[idx] = c.r;
-                                            _pixels[idx + 1] = c.g;
-                                            _pixels[idx + 2] = c.b;
-                                            _pixels[idx + 3] = penA;
-                                        }
-                                        else
-                                        {
-										    _pixels[idx] = (byte)((0xff-penA)*_pixels[idx]/0xff + penA*c.r/0xff);
-										    _pixels[idx+1] = (byte)((0xff-penA)*_pixels[idx+1]/0xff + penA*c.g/0xff);
-										    _pixels[idx+2] = (byte)((0xff-penA)*_pixels[idx+2]/0xff + penA*c.b/0xff);
-										    _pixels[idx+3] = (byte)(0xff-(0xff-_pixels[idx+3])*(0xff-penA)/0xff);
-                                        }
+										_pixels[idx] = (byte)((0xff-penA)*_pixels[idx]/0xff + penA*c.r/0xff);
+										_pixels[idx+1] = (byte)((0xff-penA)*_pixels[idx+1]/0xff + penA*c.g/0xff);
+										_pixels[idx+2] = (byte)((0xff-penA)*_pixels[idx+2]/0xff + penA*c.b/0xff);
+										_pixels[idx+3] = (byte)(0xff-(0xff-_pixels[idx+3])*(0xff-penA)/0xff);
 									}
 
 								}
