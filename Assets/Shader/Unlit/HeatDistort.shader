@@ -10,9 +10,9 @@ Shader "ZZL/Unlit/Heat Distort" {
 
 	SubShader {
 		Tags{"RenderType"="Transparent"}
-		ZTest Always Cull Off ZWrite Off
+		
+		ZWrite Off
 		Blend SrcAlpha One
-		Fog { Mode off }
 		
 		Pass {
 					
