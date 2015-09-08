@@ -8,8 +8,7 @@ Shader "ZZL/Unlit/Vertex Transparent" {
 	SubShader {
 		Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
 		ZWrite Off
-		Alphatest Greater 0
-		Blend SrcAlpha OneMinusSrcAlpha 
+		Blend SrcAlpha OneMinusSrcAlpha
 		
 		Pass{
 		
@@ -37,12 +36,12 @@ Shader "ZZL/Unlit/Vertex Transparent" {
 				half2 texcoord  : TEXCOORD0;
 			};
 
-			v2f vert(appdata_t IN)
+			v2f vert(appdata_t v)
 			{
 				v2f OUT;
-				OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
-				OUT.texcoord = TRANSFORM_TEX(IN.texcoord,_MainTex);
-				OUT.vertexAlpha = IN.color.a;
+				OUT.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+				OUT.texcoord = TRANSFORM_TEX(v.texcoord,_MainTex);
+				OUT.vertexAlpha = v.color.a;
 
 				return OUT;
 			}
