@@ -8,24 +8,26 @@ namespace UnityEngine.UI
 	/// UI gradient
 	/// </summary>
 	[AddComponentMenu("UI/Effects/Gradient")]
-	public class Gradient : BaseVertexEffect {
+	public class Gradient : BaseMeshEffect {
 		[SerializeField]
 		private Color32 topColor = Color.white;
 		[SerializeField]
 		private Color32 bottomColor = Color.black;
-		
-		public override void ModifyVertices(List<UIVertex> vertexList) {
+
+		public override void ModifyMesh (Mesh mesh)
+		{
 			if (!IsActive()) {
 				return;
 			}
-			
-			int count = vertexList.Count;
+
+			int count = mesh.vertexCount;
 			if(count>0){
-				float bottomY = vertexList[0].position.y;
-				float topY = vertexList[0].position.y;
+		
+				float bottomY = mesh.vertices[0].y;
+				float topY = mesh.vertices[0].y;
 				
 				for (int i = 1; i < count; i++) {
-					float y = vertexList[i].position.y;
+					float y = mesh.vertices[i].y;
 					if (y > topY) {
 						topY = y;
 					}
@@ -35,12 +37,13 @@ namespace UnityEngine.UI
 				}
 				
 				float uiElementHeight = topY - bottomY;
-				
+
+				Color32[] cs = mesh.colors32;
 				for (int i = 0; i < count; i++) {
-					UIVertex uiVertex = vertexList[i];
-					uiVertex.color = Color32.Lerp(bottomColor, topColor, (uiVertex.position.y - bottomY) / uiElementHeight);
-					vertexList[i] = uiVertex;
+					Vector3 uiVertex = mesh.vertices[i];
+					cs[i] = Color32.Lerp(bottomColor, topColor, (uiVertex.y - bottomY) / uiElementHeight);
 				}
+				mesh.colors32 = cs ;
 			}
 		}
 	}
