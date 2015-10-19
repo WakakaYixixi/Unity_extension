@@ -78,7 +78,10 @@ public class Painter : MonoBehaviour {
 			Destroy(_baseTexture);
 			_baseTexture = null;
 		}
-		_penColors = pen.GetPixels32 ();
+		
+		if (brushType == BrushType.CustomBrush) {
+			_penColors = pen.GetPixels32 ();
+		}
 
 		_baseTexture = new Texture2D(source.width, source.height,TextureFormat.RGBA32,false);
 		_baseTexture.wrapMode = TextureWrapMode.Clamp;
