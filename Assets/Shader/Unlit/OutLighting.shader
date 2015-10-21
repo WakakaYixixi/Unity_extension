@@ -41,7 +41,7 @@
 	            
 	            
 	            float4x4 modelMatrix        = _Object2World;
-                float4x4 modelMatrixInverse = _World2Object;
+				float3x3 modelMatrixInverse = (float3x3)_World2Object;
                 float3 normalDirection = normalize(mul(v.normal, modelMatrixInverse)).xyz;
                 float3 viewDirection = normalize(_WorldSpaceCameraPos - mul(modelMatrix, v.vertex).xyz);
                 float strength = abs(dot(viewDirection, normalDirection));
