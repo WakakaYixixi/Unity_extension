@@ -32,6 +32,11 @@ public class DragAndDrop3D : MonoBehaviour
 	public Action OnMouseDownAction = null ;
 	public Action OnMouseDragAction = null ;
 	public Action OnMouseUpAction = null ;
+
+	[HideInInspector]
+	public int rayCastMasksLength = 0; //use for editor
+	[HideInInspector]
+	public int dropLayerMaskLength=0; //use for editor
 	
 	[Tooltip("拖动的对象，默认为自己.")]
 	public Transform dragTarget = null;

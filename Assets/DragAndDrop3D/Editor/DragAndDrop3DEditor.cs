@@ -4,12 +4,6 @@ using UnityEditor;
 [CustomEditor(typeof(DragAndDrop3D))]
 public class DragAndDrop3DEditor : Editor {
 
-	private int m_rayCastMasksLength=0;
-	private LayerMask[] m_rayCastMasks = new LayerMask[0];
-
-	private int m_dropLayerMaskLength=0;
-	private LayerMask[] m_dropLayerMask = new LayerMask[0];
-
 	public override void OnInspectorGUI(){
 
 		DragAndDrop3D source = (DragAndDrop3D)target;
@@ -26,18 +20,13 @@ public class DragAndDrop3DEditor : Editor {
 		if (source.isUseRaycast) {
 			source.raycastDistance = EditorGUILayout.FloatField(new GUIContent("Raycast Distance", "射线的检测距离，只用于射线检测时."), source.raycastDistance);
 
-			m_rayCastMasksLength = EditorGUILayout.IntField(new GUIContent("Raycast Masks Length", "Drag Object射线检测的Layer"), m_rayCastMasksLength);
+			source.rayCastMasksLength = EditorGUILayout.IntField(new GUIContent("Raycast Masks Length", "Drag Object射线检测的Layer"), source.rayCastMasksLength);
 
-			if(m_rayCastMasksLength!=source.rayCastMasks.Length){
-				source.rayCastMasks = new LayerMask[m_rayCastMasksLength];
-				for(int i = 0 ;i<source.rayCastMasks.Length && i<m_rayCastMasks.Length; i++){
-					source.rayCastMasks[i] = m_rayCastMasks[i];
-				}
-				m_rayCastMasks = new LayerMask[m_rayCastMasksLength];
+			if(source.rayCastMasksLength!=source.rayCastMasks.Length){
+				source.rayCastMasks = new LayerMask[source.rayCastMasksLength];
 			}
-			for(int i = 0; i<m_rayCastMasksLength;i++){
+			for(int i = 0; i<source.rayCastMasksLength;i++){
 				source.rayCastMasks[i] = EditorGUILayout.LayerField(new GUIContent("        Layer "+i, ""), source.rayCastMasks[i]);
-				m_rayCastMasks[i] = source.rayCastMasks[i];
 			}
 		}
 
@@ -51,18 +40,13 @@ public class DragAndDrop3DEditor : Editor {
 		
 		source.mousePickLayer = (GameObject)EditorGUILayout.ObjectField(new GUIContent("Mouse Pick Layer", "移动时在哪个面上移动，如果为null，则在拖动物的Z轴面移动."), source.mousePickLayer,typeof(GameObject),true);
 
-		m_dropLayerMaskLength = EditorGUILayout.IntField(new GUIContent("Drop LayerMask Length", "drop容器所在的层."), m_dropLayerMaskLength);
+		source.dropLayerMaskLength = EditorGUILayout.IntField(new GUIContent("Drop LayerMask Length", "drop容器所在的层."), source.dropLayerMaskLength);
 
-		if(m_dropLayerMaskLength!=source.dropLayerMasks.Length){
-			source.dropLayerMasks = new LayerMask[m_dropLayerMaskLength];
-			for(int i = 0 ;i<source.dropLayerMasks.Length && i<m_dropLayerMask.Length; i++){
-				source.dropLayerMasks[i] = m_dropLayerMask[i];
-			}
-			m_dropLayerMask = new LayerMask[m_dropLayerMaskLength];
+		if(source.dropLayerMaskLength!=source.dropLayerMasks.Length){
+			source.dropLayerMasks = new LayerMask[source.dropLayerMaskLength];
 		}
-		for(int i = 0; i<m_dropLayerMaskLength;i++){
+		for(int i = 0; i<source.dropLayerMaskLength;i++){
 			source.dropLayerMasks[i] = EditorGUILayout.LayerField(new GUIContent("        Layer "+i, ""), source.dropLayerMasks[i]);
-			m_dropLayerMask[i] = source.dropLayerMasks[i];
 		}
 
 		source.dropMedthod = EditorGUILayout.TextField(new GUIContent("Drop Medthod", "drop发生时发送的事件，drop和当前拖动对象都会发送."), source.dropMedthod);
