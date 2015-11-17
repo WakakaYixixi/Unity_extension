@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
+[CanEditMultipleObjects]
 [CustomEditor(typeof(DragAndDrop3D))]
 public class DragAndDrop3DEditor : Editor {
 
@@ -22,7 +23,7 @@ public class DragAndDrop3DEditor : Editor {
 
 			source.rayCastMasksLength = EditorGUILayout.IntField(new GUIContent("Raycast Masks Length", "Drag Object射线检测的Layer"), source.rayCastMasksLength);
 
-			if(source.rayCastMasksLength!=source.rayCastMasks.Length){
+			if( source.rayCastMasksLength>0 && (source.rayCastMasks==null || source.rayCastMasksLength!=source.rayCastMasks.Length)){
 				source.rayCastMasks = new LayerMask[source.rayCastMasksLength];
 			}
 			for(int i = 0; i<source.rayCastMasksLength;i++){
@@ -36,13 +37,15 @@ public class DragAndDrop3DEditor : Editor {
 			source.dragOffset = EditorGUILayout.Vector3Field(new GUIContent("Drag Offset", "拖动时的偏移值."), source.dragOffset);
 		}
 
+		source.dragLayer = EditorGUILayout.LayerField(new GUIContent("Drag Layer", ""), source.dragLayer);
+
 		source.dragMoveDamp = EditorGUILayout.FloatField(new GUIContent("Drag Move Damp", "拖动时的缓动参数."), source.dragMoveDamp);
 		
 		source.mousePickLayer = (GameObject)EditorGUILayout.ObjectField(new GUIContent("Mouse Pick Layer", "移动时在哪个面上移动，如果为null，则在拖动物的Z轴面移动."), source.mousePickLayer,typeof(GameObject),true);
 
 		source.dropLayerMaskLength = EditorGUILayout.IntField(new GUIContent("Drop LayerMask Length", "drop容器所在的层."), source.dropLayerMaskLength);
 
-		if(source.dropLayerMaskLength!=source.dropLayerMasks.Length){
+		if( source.dropLayerMaskLength>0 && (source.dropLayerMasks==null || source.dropLayerMaskLength!=source.dropLayerMasks.Length)){
 			source.dropLayerMasks = new LayerMask[source.dropLayerMaskLength];
 		}
 		for(int i = 0; i<source.dropLayerMaskLength;i++){

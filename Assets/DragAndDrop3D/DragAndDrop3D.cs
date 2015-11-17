@@ -28,6 +28,7 @@ public class DragAndDrop3D : MonoBehaviour
 	private Collider[] m_colliders = null;
 	private bool m_isDown;
 	private Vector3 m_currentPosition;
+	private LayerMask m_currentLayer;
 
 	public Action OnMouseDownAction = null ;
 	public Action OnMouseDragAction = null ;
@@ -82,7 +83,10 @@ public class DragAndDrop3D : MonoBehaviour
 	
 	[Tooltip("返回原来位置时的速度.对TweenPosition和TweenScale有用.")]
 	public float backEffectSpeed = 10f;
-	
+
+	[Tooltip("拖动的时候在哪个层.")]
+	public LayerMask dragLayer;
+
 	#region MonoBehaviour内置方法.
 	void Start()
 	{
@@ -105,6 +109,7 @@ public class DragAndDrop3D : MonoBehaviour
 			rayCastCamera = Camera.main;
 		}
 		m_rigidBody = GetComponent<Rigidbody> ();
+		m_currentLayer = m_trans.gameObject.layer;
 	}
 	void Update()
 	{
@@ -172,6 +177,9 @@ public class DragAndDrop3D : MonoBehaviour
 		m_cacheScale = m_trans.localScale;
 		m_currentPosition = m_cachePosition;
 		m_dragOffset = Vector3.zero;
+		
+		//set layer
+		m_trans.gameObject.layer = dragLayer;
 		
 		if (m_rigidBody)
 		{
@@ -327,6 +335,8 @@ public class DragAndDrop3D : MonoBehaviour
 				break;
 			case DragBackEffect.Immediately:
 				m_trans.position = m_cachePosition;
+				//set layer
+				m_trans.gameObject.layer = m_currentLayer;
 				EnableColliders(true);
 				break;
 			case DragBackEffect.TweenScale:
@@ -364,6 +374,8 @@ public class DragAndDrop3D : MonoBehaviour
 		m_trans.position = m_cachePosition;
 		//Prevent dragging
 		EnableColliders(true);
+		//set layer
+		m_trans.gameObject.layer = m_currentLayer;
 	}
 	private IEnumerator ScaleTween()
 	{
@@ -376,5 +388,7 @@ public class DragAndDrop3D : MonoBehaviour
 		m_trans.localScale = m_cacheScale;
 		//Prevent dragging
 		EnableColliders(true);
+		//set layer
+		m_trans.gameObject.layer = m_currentLayer;
 	}
 }
