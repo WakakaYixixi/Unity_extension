@@ -38,7 +38,7 @@ Shader "ZZL/Env/Tree Swing Simple"
 			};
 
 			sampler2D _MainTex;
-			float4 _MainTex_ST;
+//			float4 _MainTex_ST;
 			half _WaveSpeed;
 			fixed _WaveX;
 			fixed _WaveZ;
@@ -54,7 +54,8 @@ Shader "ZZL/Env/Tree Swing Simple"
 				v.vertex.y -= sin(abs(dx*_HeightChange));
 				
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+//				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				o.uv = v.uv;
 				
 				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
