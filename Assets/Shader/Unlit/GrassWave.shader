@@ -1,4 +1,4 @@
-﻿Shader "ZZL/Unlit/Grass Wave"
+﻿Shader "ZZL/Env/Grass Wave"
 {
 	Properties
 	{
