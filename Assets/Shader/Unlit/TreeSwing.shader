@@ -5,9 +5,9 @@ Shader "ZZL/Env/Tree Swing Simple"
 	{
 		_MainTex ("Texture", 2D) = "white" {}
 		_WaveSpeed("Wave Speed",float)=1
-		_WaveX("Wave X",Range(0,2))=0.1
-		_WaveZ("Wave Z",Range(0,2))=0
-		_HeightChange("eightChange",Range(0,0.05))=0.02
+		_WaveX("Wave X",Range(0,1))=0.1
+		_WaveZ("Wave Z",Range(0,1))=0
+		_HeightChange("Height Change",Range(0,0.05))=0.02
 	}
 	SubShader
 	{
