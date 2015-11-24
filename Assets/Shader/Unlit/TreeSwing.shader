@@ -7,7 +7,7 @@ Shader "ZZL/Env/Tree Swing Simple"
 		_WaveSpeed("Wave Speed",float)=1
 		_WaveX("Wave X",Range(0,1))=0.1
 		_WaveZ("Wave Z",Range(0,1))=0
-		_HeightChange("Height Change",Range(0,0.05))=0.02
+		_HeightChange("Height Change",Range(0,0.05))=0.01
 	}
 	SubShader
 	{
@@ -23,7 +23,7 @@ Shader "ZZL/Env/Tree Swing Simple"
 			#pragma multi_compile_fog
 			
 			#include "UnityCG.cginc"
-
+			
 			struct appdata
 			{
 				float4 vertex : POSITION;
@@ -43,17 +43,17 @@ Shader "ZZL/Env/Tree Swing Simple"
 			fixed _WaveX;
 			fixed _WaveZ;
 			fixed _HeightChange;
-			
+ 
 			v2f vert (appdata v)
 			{
 				v2f o;
 				
-				fixed dx = sin(_Time.y*_WaveSpeed)*v.vertex.y;
-				v.vertex.x += dx*_WaveX;
-				v.vertex.z += dx*_WaveZ;
-				v.vertex.y -= sin(abs(dx*_HeightChange));
+				half pan = sin(_Time.y*_WaveSpeed)*v.vertex.y;
+				v.vertex.x += pan*_WaveX;
+				v.vertex.z += pan*_WaveZ;
+				v.vertex.y -= abs(pan)*_HeightChange;
 				
-				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.vertex = mul(UNITY_MATRIX_MVP,v.vertex);
 //				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				o.uv = v.uv;
 				
