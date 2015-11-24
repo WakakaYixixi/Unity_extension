@@ -43,6 +43,19 @@ Shader "ZZL/Env/Tree Swing Simple"
 			fixed _WaveX;
 			fixed _WaveZ;
 			fixed _HeightChange;
+			
+			
+			float4x4 rotate(float3 r, float4 d) // r=rotations axes
+			{
+				float cx, cy, cz, sx, sy, sz;
+				sincos(r.x, sx, cx);
+				sincos(r.y, sy, cy);
+				sincos(r.z, sz, cz);	
+				return float4x4( cy*cz, -sz, sy, d.x,
+						sz, cx*cz, -sx, d.y,
+						-sy, sx, cx*cy, d.z,
+						0, 0, 0, d.w );		
+			}
  
 			v2f vert (appdata v)
 			{
@@ -52,6 +65,9 @@ Shader "ZZL/Env/Tree Swing Simple"
 				v.vertex.x += pan*_WaveX;
 				v.vertex.z += pan*_WaveZ;
 				v.vertex.y -= abs(pan)*_HeightChange;
+
+				float4x4 rot_mat = rotate(float3(pan*_WaveX,pan*_WaveZ,0),float4(0,0,0,1));
+				v.vertex = mul(rot_mat,v.vertex);
 				
 				o.vertex = mul(UNITY_MATRIX_MVP,v.vertex);
 //				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
