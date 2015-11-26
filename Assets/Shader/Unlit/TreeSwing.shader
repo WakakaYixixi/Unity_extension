@@ -65,7 +65,8 @@ Shader "ZZL/Env/Tree Swing Simple"
 				v.vertex.x += pan*_WaveX;
 				v.vertex.z += pan*_WaveZ;
 				v.vertex.y -= abs(pan)*_HeightChange;
-
+				
+				//rotate object, must disable dynamic batch if multi Object
 				float4x4 rot_mat = rotate(float3(pan*_WaveX,pan*_WaveZ,0),float4(0,0,0,1));
 				v.vertex = mul(rot_mat,v.vertex);
 				
