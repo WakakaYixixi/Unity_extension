@@ -1,4 +1,4 @@
-﻿Shader "ZZL/Unlit/Rim Outline Simple2" {
+﻿Shader "ZZL/Unlit/Rim Outline Simple1" {
 	Properties {
 		_MainTex ("Base (RGB) Gloss (A)", 2D) = "white" {}
 		_RimColor ("Rim Color", Color) = (1,1,1,1)

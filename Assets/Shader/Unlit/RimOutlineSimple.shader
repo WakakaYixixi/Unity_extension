@@ -56,7 +56,7 @@
 				fixed4 frag (v2f IN) : COLOR
 				{
 				    fixed4 col = tex2D(_MainTex,IN.texcoord);
-				    col.rgb =  col.rgb+IN.emssion;
+				    col.rgb += IN.emssion;
 				    return col;
 				}
 			
