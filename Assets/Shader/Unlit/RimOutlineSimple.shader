@@ -1,8 +1,8 @@
-﻿Shader "ZZL/Unlit/RimOutlineSimple" {
+﻿Shader "ZZL/Unlit/Rim Outline Simple" {
 	Properties {
 		_MainTex ("Base (RGB) Gloss (A)", 2D) = "white" {}
-		_RimColor ("Rim Color", Color) = (0.26,0.19,0.16,0.0)
-	    _RimPower ("Rim Power", Range(0.5,8.0)) = 2.0
+		_RimColor ("Rim Color", Color) = (1,1,1,1)
+	    _RimPower ("Rim Power", Range(0.0,100.0)) = 2.0
 	}
 	SubShader {
 	
