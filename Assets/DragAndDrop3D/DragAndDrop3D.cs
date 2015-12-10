@@ -119,7 +119,7 @@ public class DragAndDrop3D : MonoBehaviour
 			{
 				if (!m_isDown)
 				{
-					int mask = GetLayerMask(rayCastMasks);
+					int mask = 1<<GetLayerMask(rayCastMasks);
 					RaycastHit hit;
 					if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
 					{
@@ -275,7 +275,7 @@ public class DragAndDrop3D : MonoBehaviour
 			}
 		}
 		//check drop
-		int mask = GetLayerMask(dropLayerMasks);
+		int mask = 1<<GetLayerMask(dropLayerMasks);
 		RaycastHit hit;
 		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
 		{
