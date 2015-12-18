@@ -30,9 +30,9 @@ public class DragAndDrop3D : MonoBehaviour
 	private Vector3 m_currentPosition;
 	private LayerMask m_currentLayer;
 
-	public Action OnMouseDownAction = null ;
-	public Action OnMouseDragAction = null ;
-	public Action OnMouseUpAction = null ;
+	public Action<DragAndDrop3D> OnMouseDownAction = null ;
+	public Action<DragAndDrop3D> OnMouseDragAction = null ;
+	public Action<DragAndDrop3D> OnMouseUpAction = null ;
 
 	[HideInInspector]
 	public int rayCastMasksLength = 0; //use for editor
@@ -113,6 +113,7 @@ public class DragAndDrop3D : MonoBehaviour
 	}
 	void Update()
 	{
+		if(!this.isActiveAndEnabled) return;
 		if (isUseRaycast && Input.touchCount < 2)
 		{
 			if (Input.GetMouseButtonDown(0))
@@ -144,6 +145,7 @@ public class DragAndDrop3D : MonoBehaviour
 	}
 	void OnMouseDown()
 	{
+		if(!this.isActiveAndEnabled) return;
 		if (!isUseRaycast && Input.touchCount < 2)
 		{
 			OnMouseDownHandler();
@@ -151,6 +153,7 @@ public class DragAndDrop3D : MonoBehaviour
 	}
 	void OnMouseDrag()
 	{
+		if(!this.isActiveAndEnabled) return;
 		if (!isUseRaycast && Input.touchCount < 2)
 		{
 			OnMouseDragHandler();
@@ -158,6 +161,7 @@ public class DragAndDrop3D : MonoBehaviour
 	}
 	void OnMouseUp()
 	{
+		if(!this.isActiveAndEnabled) return;
 		if (!isUseRaycast && Input.touchCount < 2)
 		{
 			OnMouseUpHandler();
@@ -202,7 +206,7 @@ public class DragAndDrop3D : MonoBehaviour
 		}
 		if (OnMouseDownAction!=null)
 		{
-			OnMouseDownAction();
+			OnMouseDownAction(this);
 		}
 	}
 	
@@ -252,7 +256,7 @@ public class DragAndDrop3D : MonoBehaviour
 		}
 		if (OnMouseDragAction!=null)
 		{
-			OnMouseDragAction();
+			OnMouseDragAction(this);
 		}
 	}
 	
@@ -281,6 +285,10 @@ public class DragAndDrop3D : MonoBehaviour
 		{
 			if (hit.collider.gameObject != gameObject)
 			{ 
+				//set layer
+				foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
+					child.gameObject.layer = m_currentLayer;
+				}
 				//Exclude myself
 				hit.collider.SendMessage(dropMedthod, gameObject, SendMessageOptions.DontRequireReceiver);
 				gameObject.SendMessage(dropMedthod, hit.collider.gameObject, SendMessageOptions.DontRequireReceiver);
@@ -296,7 +304,7 @@ public class DragAndDrop3D : MonoBehaviour
 		}
 		if (OnMouseUpAction!=null)
 		{
-			OnMouseUpAction();
+			OnMouseUpAction(this);
 		}
 	}
 	
@@ -336,7 +344,9 @@ public class DragAndDrop3D : MonoBehaviour
 			case DragBackEffect.Immediately:
 				m_trans.position = m_cachePosition;
 				//set layer
-				m_trans.gameObject.layer = m_currentLayer;
+				foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
+					child.gameObject.layer = m_currentLayer;
+				}
 				EnableColliders(true);
 				break;
 			case DragBackEffect.TweenScale:
@@ -375,7 +385,9 @@ public class DragAndDrop3D : MonoBehaviour
 		//Prevent dragging
 		EnableColliders(true);
 		//set layer
-		m_trans.gameObject.layer = m_currentLayer;
+		foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
+			child.gameObject.layer = m_currentLayer;
+		}
 	}
 	private IEnumerator ScaleTween()
 	{
@@ -389,6 +401,8 @@ public class DragAndDrop3D : MonoBehaviour
 		//Prevent dragging
 		EnableColliders(true);
 		//set layer
-		m_trans.gameObject.layer = m_currentLayer;
+		foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
+			child.gameObject.layer = m_currentLayer;
+		}
 	}
 }
