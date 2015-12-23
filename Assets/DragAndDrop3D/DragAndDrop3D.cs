@@ -225,6 +225,7 @@ public class DragAndDrop3D : MonoBehaviour
 		}
 		else
 		{
+			m_screenPosition = rayCastCamera.WorldToScreenPoint(m_trans.position);
 			Vector3 curScreenSpace = new Vector3(Input.mousePosition.x, Input.mousePosition.y, m_screenPosition.z);
 			m_currentPosition = rayCastCamera.ScreenToWorldPoint(curScreenSpace);
 		}
