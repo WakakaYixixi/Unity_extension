@@ -127,6 +127,10 @@ public class DragAndDrop3D : MonoBehaviour
 						if (hit.collider.gameObject == gameObject)
 						{
 							m_isDown = true;
+							m_cachePosition = m_trans.position;
+							m_cacheScale = m_trans.localScale;
+							m_currentPosition = m_cachePosition;
+							m_dragOffset = Vector3.zero;
 							OnMouseDownHandler();
 						}
 					}
@@ -145,6 +149,11 @@ public class DragAndDrop3D : MonoBehaviour
 	}
 	void OnMouseDown()
 	{
+		m_cachePosition = m_trans.position;
+		m_cacheScale = m_trans.localScale;
+		m_currentPosition = m_cachePosition;
+		m_dragOffset = Vector3.zero;
+
 		if(!this.isActiveAndEnabled) return;
 		if (!isUseRaycast && Input.touchCount < 2)
 		{
@@ -177,10 +186,6 @@ public class DragAndDrop3D : MonoBehaviour
 			EnableColliders(false);
 		}
 		StopAllCoroutines();
-		m_cachePosition = m_trans.position;
-		m_cacheScale = m_trans.localScale;
-		m_currentPosition = m_cachePosition;
-		m_dragOffset = Vector3.zero;
 		
 		//set layer
 		m_trans.gameObject.layer = dragLayer;
