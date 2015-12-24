@@ -64,7 +64,7 @@
 
 			struct v2f
 			{
-				half2 uv;
+				half2 uv:TEXCOORD0;
 				float4 pos : SV_POSITION;
 			};
 
@@ -81,7 +81,7 @@
 				return o;
 			}
 			
-			fixed4 frag (v2f i) : SV_Target
+			fixed4 frag (v2f i):SV_Target
 			{
 				fixed4 col = tex2D(_MainTex, i.uv);
 				clip(col.a-_Cutoff);

@@ -10,7 +10,7 @@ Shader "ZZL/Unlit/Heat Distort" {
 
 	SubShader {
 		Tags{"RenderType"="Transparent"}
-		ZTest Always Cull Off ZWrite Off
+		ZTest Always Cull Off
 		Blend SrcAlpha One
 		Fog { Mode off }
 		
@@ -31,22 +31,21 @@ Shader "ZZL/Unlit/Heat Distort" {
 
 			struct v2f {
 				float4 pos : POSITION;
-				float2 uv : TEXCOORD0;
-				float2 offsetUV;
+				half4 uv : TEXCOORD0;
 			};
 
 			v2f vert( appdata_img v )
 			{
 				v2f o;
 				o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
-				o.uv = v.texcoord;
-				o.offsetUV = float2(v.texcoord.x,v.texcoord.y-_Time*_Speed);
+				o.uv.xy = v.texcoord.xy;
+				o.uv.zw = float2(v.texcoord.x,v.texcoord.y-_Time.y*_Speed);
 				return o;
 			}
 
 			float4 frag (v2f i) : COLOR{
-				float4 offsetTex = tex2D(_OffsetTex, i.offsetUV);
-				float2 offsetUV = i.uv + offsetTex.xy/_Range;
+				float4 offsetTex = tex2D(_OffsetTex, i.uv.zw);
+				float2 offsetUV = i.uv.xy + offsetTex.xy/_Range;
 				return tex2D(_MainTex, offsetUV)*_Color;
 			}
 			ENDCG

@@ -29,6 +29,7 @@ public class DragAndDrop3D : MonoBehaviour
 	private bool m_isDown;
 	private Vector3 m_currentPosition;
 	private LayerMask m_currentLayer;
+	private bool m_isTweening=false;
 
 	public Action<DragAndDrop3D> OnMouseDownAction = null ;
 	public Action<DragAndDrop3D> OnMouseDragAction = null ;
@@ -120,7 +121,7 @@ public class DragAndDrop3D : MonoBehaviour
 			{
 				if (!m_isDown)
 				{
-					int mask = 1<<GetLayerMask(rayCastMasks);
+					int mask = GetLayerMask(rayCastMasks);
 					RaycastHit hit;
 					if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
 					{
@@ -149,13 +150,19 @@ public class DragAndDrop3D : MonoBehaviour
 	}
 	void OnMouseDown()
 	{
+		if(isUseRaycast ) return;
+
 		m_cachePosition = m_trans.position;
 		m_cacheScale = m_trans.localScale;
 		m_currentPosition = m_cachePosition;
 		m_dragOffset = Vector3.zero;
+		//set layer
+		foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
+			child.gameObject.layer = dragLayer;
+		}
 
-		if(!this.isActiveAndEnabled) return;
-		if (!isUseRaycast && Input.touchCount < 2)
+		if(!this.isActiveAndEnabled ) return;
+		if (Input.touchCount < 2)
 		{
 			OnMouseDownHandler();
 		}
@@ -181,6 +188,7 @@ public class DragAndDrop3D : MonoBehaviour
 	
 	private void OnMouseDownHandler()
 	{
+		if(m_isTweening) return;
 		if (isDragDisableCollider)
 		{
 			EnableColliders(false);
@@ -188,7 +196,9 @@ public class DragAndDrop3D : MonoBehaviour
 		StopAllCoroutines();
 		
 		//set layer
-		m_trans.gameObject.layer = dragLayer;
+		foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
+			child.gameObject.layer = dragLayer;
+		}
 		
 		if (m_rigidBody)
 		{
@@ -217,6 +227,7 @@ public class DragAndDrop3D : MonoBehaviour
 	
 	private void OnMouseDragHandler()
 	{
+		if(m_isTweening) return;
 		if (isUseRaycast && mousePickLayer)
 		{
 			RaycastHit hit;
@@ -268,6 +279,7 @@ public class DragAndDrop3D : MonoBehaviour
 	
 	private void OnMouseUpHandler()
 	{
+		if(m_isTweening) return;
 		if (isDragDisableCollider)
 		{
 			EnableColliders(true);
@@ -285,7 +297,7 @@ public class DragAndDrop3D : MonoBehaviour
 			}
 		}
 		//check drop
-		int mask = 1<<GetLayerMask(dropLayerMasks);
+		int mask = GetLayerMask(dropLayerMasks);
 		RaycastHit hit;
 		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
 		{
@@ -321,14 +333,20 @@ public class DragAndDrop3D : MonoBehaviour
 	/// <param name="masks">Masks.</param>
 	private int GetLayerMask(LayerMask[] masks)
 	{
-		int mask = Physics.AllLayers;
-		if (masks != null && masks.Length > 0)
+//		int mask = Physics.AllLayers;
+//		if (masks != null && masks.Length > 0)
+//		{
+//			mask = masks[0].value;
+//			for (int i = 1; i < masks.Length; i++)
+//			{
+//				mask = mask | masks[i].value;
+//			}
+//		}
+		if(masks.Length==0) return -1;
+		int mask = 1<<masks[0];
+		for (int i = 1; i < masks.Length; i++)
 		{
-			mask = masks[0].value;
-			for (int i = 1; i < masks.Length; i++)
-			{
-				mask = mask | masks[i].value;
-			}
+			mask = mask|1<<masks[i].value;
 		}
 		return mask;
 	}
@@ -381,6 +399,7 @@ public class DragAndDrop3D : MonoBehaviour
 	
 	private IEnumerator BackTween()
 	{
+		m_isTweening = true;
 		//Prevent dragging
 		while (Vector3.Distance(m_trans.position, m_cachePosition) > 0.01f)
 		{
@@ -394,9 +413,11 @@ public class DragAndDrop3D : MonoBehaviour
 		foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
 			child.gameObject.layer = m_currentLayer;
 		}
+		m_isTweening = false;
 	}
 	private IEnumerator ScaleTween()
 	{
+		m_isTweening = true;
 		//Prevent dragging
 		while (Vector3.Distance(m_trans.localScale, m_cacheScale) > 0.01f)
 		{
@@ -410,5 +431,6 @@ public class DragAndDrop3D : MonoBehaviour
 		foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
 			child.gameObject.layer = m_currentLayer;
 		}
+		m_isTweening = false;
 	}
 }

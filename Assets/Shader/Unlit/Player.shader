@@ -11,7 +11,7 @@
         Pass {
             ZTest Greater
             ZWrite Off
-            Blend One One
+            Blend One OneMinusSrcAlpha
             SetTexture [_MainTex] { 
             	ConstantColor [_NotVisibleColor]
             	Combine texture*constant
