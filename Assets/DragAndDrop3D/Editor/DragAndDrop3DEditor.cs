@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-[CanEditMultipleObjects]
 [CustomEditor(typeof(DragAndDrop3D))]
 public class DragAndDrop3DEditor : Editor {
 
@@ -16,19 +15,16 @@ public class DragAndDrop3DEditor : Editor {
 
 		source.rayCastCamera = (Camera)EditorGUILayout.ObjectField(new GUIContent("Raycast Camera", "如果为null，则使用mainCamera."), source.rayCastCamera,typeof(Camera),true);
 		
-		source.isUseRaycast = EditorGUILayout.Toggle(new GUIContent("Is Use Raycast", "是否使用射线检测.如果是，则设置rayCastMasks中的参数."), source.isUseRaycast);
 
-		if (source.isUseRaycast) {
-			source.raycastDistance = EditorGUILayout.FloatField(new GUIContent("Raycast Distance", "射线的检测距离，只用于射线检测时."), source.raycastDistance);
+		source.raycastDistance = EditorGUILayout.FloatField(new GUIContent("Raycast Distance", "射线的检测距离，只用于射线检测时."), source.raycastDistance);
 
-			source.rayCastMasksLength = EditorGUILayout.IntField(new GUIContent("Raycast Masks Length", "Drag Object射线检测的Layer"), source.rayCastMasksLength);
+		source.rayCastMasksLength = EditorGUILayout.IntField(new GUIContent("Raycast Masks Length", "Drag Object射线检测的Layer"), source.rayCastMasksLength);
 
-			if( source.rayCastMasksLength>0 && (source.rayCastMasks==null || source.rayCastMasksLength!=source.rayCastMasks.Length)){
-				source.rayCastMasks = new LayerMask[source.rayCastMasksLength];
-			}
-			for(int i = 0; i<source.rayCastMasksLength;i++){
-				source.rayCastMasks[i] = EditorGUILayout.LayerField(new GUIContent("        Layer "+i, ""), source.rayCastMasks[i]);
-			}
+		if( source.rayCastMasksLength>0 && (source.rayCastMasks==null || source.rayCastMasksLength!=source.rayCastMasks.Length)){
+			source.rayCastMasks = new LayerMask[source.rayCastMasksLength];
+		}
+		for(int i = 0; i<source.rayCastMasksLength;i++){
+			source.rayCastMasks[i] = EditorGUILayout.LayerField(new GUIContent("        Layer "+i, ""), source.rayCastMasks[i]);
 		}
 
 		source.isDragOriginPoint = EditorGUILayout.Toggle(new GUIContent("Is Drag Origin Point", "在拖动时是否固定在拖动物的原点."), source.isDragOriginPoint);

@@ -22,6 +22,7 @@ public class SpinWithMouse3D : MonoBehaviour {
 	private Vector3 m_screenPos;
 	private Transform m_trans;
 	private float m_rotateToAngleDamp;
+	private bool m_isDown = false;
 
 	public Action OnMouseDonwAction, OnMouseDragAction, OnMouseUpAction,OnMouseRotateAction;
 
@@ -40,43 +41,76 @@ public class SpinWithMouse3D : MonoBehaviour {
 	[Tooltip("拖动时的旋转速度.")]
 	public float dragRotationSpeed = 2f;
 
+	[Tooltip("射线检测距离.")]
+	public float raycastDistance = 100f;
+
+	[Tooltip("射线检测的Layer")]
+	public LayerMask[] rayCastMasks;
+
 	#region MonoBehaviour内置
 	void Awake(){
 		m_trans = transform;
 	}
 
-	void OnMouseDown(){
-		StopAllCoroutines ();
-		m_screenPos = Camera.main.WorldToScreenPoint (Input.mousePosition);
-		if (OnMouseDonwAction != null)
-			OnMouseDonwAction ();
-	}
-	void OnMouseDrag(){
-		Vector3 currentScreen = Camera.main.WorldToScreenPoint (Input.mousePosition);
-		if (dragDir == DragDirection.UpAndDown) {
-			Rotate ( m_screenPos.y - currentScreen.y);
-		} else if (dragDir == DragDirection.LeftAndRight) {
-			Rotate (currentScreen.z - m_screenPos.z);
-		}else if (dragDir == DragDirection.Left) {
-			if(currentScreen.z>m_screenPos.z)
-				Rotate (currentScreen.z - m_screenPos.z);
-		}else if (dragDir == DragDirection.Right) {
-			if(currentScreen.z<m_screenPos.z)
-				Rotate (currentScreen.z - m_screenPos.z);
-		}else if (dragDir == DragDirection.Up) {
-			if(currentScreen.y<m_screenPos.y)
+	void Update(){
+		if(Input.GetMouseButtonDown(0)){
+			if(!m_isDown){
+				int mask = GetLayerMask(rayCastMasks);
+				RaycastHit hit;
+				if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
+				{
+					if (hit.collider.gameObject == gameObject)
+					{
+						m_isDown = true;
+						StopAllCoroutines ();
+						m_screenPos = Camera.main.WorldToScreenPoint (Input.mousePosition);
+						if (OnMouseDonwAction != null)
+							OnMouseDonwAction ();
+					}
+				}
+			}
+		}else if(Input.GetMouseButton(0) && m_isDown){
+			Vector3 currentScreen = Camera.main.WorldToScreenPoint (Input.mousePosition);
+			if (dragDir == DragDirection.UpAndDown) {
 				Rotate ( m_screenPos.y - currentScreen.y);
-		}else if (dragDir == DragDirection.Down) {
-			if(currentScreen.y>m_screenPos.y)
-				Rotate ( m_screenPos.y - currentScreen.y);
+			} else if (dragDir == DragDirection.LeftAndRight) {
+				Rotate (currentScreen.z - m_screenPos.z);
+			}else if (dragDir == DragDirection.Left) {
+				if(currentScreen.z>m_screenPos.z)
+					Rotate (currentScreen.z - m_screenPos.z);
+			}else if (dragDir == DragDirection.Right) {
+				if(currentScreen.z<m_screenPos.z)
+					Rotate (currentScreen.z - m_screenPos.z);
+			}else if (dragDir == DragDirection.Up) {
+				if(currentScreen.y<m_screenPos.y)
+					Rotate ( m_screenPos.y - currentScreen.y);
+			}else if (dragDir == DragDirection.Down) {
+				if(currentScreen.y>m_screenPos.y)
+					Rotate ( m_screenPos.y - currentScreen.y);
+			}
+			m_screenPos = currentScreen;
+			if (OnMouseDragAction!=null)
+				OnMouseDragAction ();
+		}else if(Input.GetMouseButtonUp(0) && m_isDown){
+			m_isDown = false;
+			if (OnMouseUpAction != null)
+				OnMouseUpAction ();
 		}
-		m_screenPos = currentScreen;
-		if (OnMouseDragAction!=null)
-			OnMouseDragAction ();
 	}
-	void OnMouseUp(){
-		if (OnMouseUpAction != null)
-			OnMouseUpAction ();
+	/// <summary>
+	/// 根据LayerMask数组来获取 射线检测的所有层.
+	/// </summary>
+	/// <returns>The layer mask.</returns>
+	/// <param name="masks">Masks.</param>
+	private int GetLayerMask(LayerMask[] masks)
+	{
+		if(masks==null || masks.Length==0) return -1;
+		int mask = 1<<masks[0];
+		for (int i = 1; i < masks.Length; i++)
+		{
+			mask = mask|1<<masks[i].value;
+		}
+		return mask;
 	}
 	#endregion
 

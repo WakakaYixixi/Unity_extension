@@ -49,9 +49,6 @@ public class DragAndDrop3D : MonoBehaviour
 	[Tooltip("如果为null，则使用mainCamera.")]
 	public Camera rayCastCamera = null;
 	
-	[Tooltip("是否使用射线检测.如果是，则设置rayCastMasks中的参数.")]
-	public bool isUseRaycast = false;
-	
 	[Tooltip("射线的检测距离，只用于射线检测时.")]
 	public float raycastDistance = 100f;
 	
@@ -115,7 +112,7 @@ public class DragAndDrop3D : MonoBehaviour
 	void Update()
 	{
 		if(!this.isActiveAndEnabled) return;
-		if (isUseRaycast && Input.touchCount < 2)
+		if (Input.touchCount < 2)
 		{
 			if (Input.GetMouseButtonDown(0))
 			{
@@ -128,10 +125,6 @@ public class DragAndDrop3D : MonoBehaviour
 						if (hit.collider.gameObject == gameObject)
 						{
 							m_isDown = true;
-							m_cachePosition = m_trans.position;
-							m_cacheScale = m_trans.localScale;
-							m_currentPosition = m_cachePosition;
-							m_dragOffset = Vector3.zero;
 							OnMouseDownHandler();
 						}
 					}
@@ -148,47 +141,19 @@ public class DragAndDrop3D : MonoBehaviour
 			}
 		}
 	}
-	void OnMouseDown()
-	{
-		if(isUseRaycast ) return;
 
-		m_cachePosition = m_trans.position;
-		m_cacheScale = m_trans.localScale;
-		m_currentPosition = m_cachePosition;
-		m_dragOffset = Vector3.zero;
-		//set layer
-		foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
-			child.gameObject.layer = dragLayer;
-		}
-
-		if(!this.isActiveAndEnabled ) return;
-		if (Input.touchCount < 2)
-		{
-			OnMouseDownHandler();
-		}
-	}
-	void OnMouseDrag()
-	{
-		if(!this.isActiveAndEnabled) return;
-		if (!isUseRaycast && Input.touchCount < 2)
-		{
-			OnMouseDragHandler();
-		}
-	}
-	void OnMouseUp()
-	{
-		if(!this.isActiveAndEnabled) return;
-		if (!isUseRaycast && Input.touchCount < 2)
-		{
-			OnMouseUpHandler();
-		}
-	}
 	#endregion
 	
 	
 	private void OnMouseDownHandler()
 	{
 		if(m_isTweening) return;
+
+		m_cachePosition = m_trans.position;
+		m_cacheScale = m_trans.localScale;
+		m_currentPosition = m_cachePosition;
+		m_dragOffset = Vector3.zero;
+
 		if (isDragDisableCollider)
 		{
 			EnableColliders(false);
@@ -215,7 +180,7 @@ public class DragAndDrop3D : MonoBehaviour
 		{
 			m_dragOffset = m_trans.position - rayCastCamera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, m_screenPosition.z));
 		}
-		if (isUseRaycast && mousePickLayer)
+		if (mousePickLayer)
 		{
 			mousePickLayer.SetActive(true);
 		}
@@ -228,7 +193,7 @@ public class DragAndDrop3D : MonoBehaviour
 	private void OnMouseDragHandler()
 	{
 		if(m_isTweening) return;
-		if (isUseRaycast && mousePickLayer)
+		if (mousePickLayer)
 		{
 			RaycastHit hit;
 			if (Physics.Raycast(rayCastCamera.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, 1 << mousePickLayer.layer))

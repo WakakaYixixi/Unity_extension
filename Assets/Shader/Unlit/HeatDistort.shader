@@ -17,7 +17,6 @@ Shader "ZZL/Unlit/Heat Distort" {
 		Pass {
 					
 			CGPROGRAM
-			#pragma exclude_renderers d3d11 xbox360
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma fragmentoption ARB_precision_hint_fastest 
@@ -39,7 +38,7 @@ Shader "ZZL/Unlit/Heat Distort" {
 				v2f o;
 				o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 				o.uv.xy = v.texcoord.xy;
-				o.uv.zw = float2(v.texcoord.x,v.texcoord.y-_Time.y*_Speed);
+				o.uv.zw = float2(v.texcoord.x,v.texcoord.y-_Time.x*_Speed);
 				return o;
 			}
 
