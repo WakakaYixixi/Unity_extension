@@ -33,7 +33,8 @@ public class DragAndDrop3D : MonoBehaviour
 
 	public Action<DragAndDrop3D> OnMouseDownAction = null ;
 	public Action<DragAndDrop3D> OnMouseDragAction = null ;
-	public Action<DragAndDrop3D> OnMouseUpAction = null ;
+	public Action<DragAndDrop3D,bool> OnMouseUpAction = null ;
+	public Action<DragAndDrop3D> OnTweenBackAction = null ;
 
 	[HideInInspector]
 	public int rayCastMasksLength = 0; //use for editor
@@ -130,14 +131,14 @@ public class DragAndDrop3D : MonoBehaviour
 					}
 				}
 			}
+			else if (m_isDown && Input.GetMouseButton(0))
+			{
+				OnMouseDragHandler();
+			}
 			else if (m_isDown && Input.GetMouseButtonUp(0))
 			{
 				m_isDown = false;
 				OnMouseUpHandler();
-			}
-			else if (m_isDown)
-			{
-				OnMouseDragHandler();
 			}
 		}
 	}
@@ -264,6 +265,7 @@ public class DragAndDrop3D : MonoBehaviour
 		//check drop
 		int mask = GetLayerMask(dropLayerMasks);
 		RaycastHit hit;
+		bool canDrop = false;
 		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
 		{
 			if (hit.collider.gameObject != gameObject)
@@ -272,6 +274,7 @@ public class DragAndDrop3D : MonoBehaviour
 				foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
 					child.gameObject.layer = m_currentLayer;
 				}
+				canDrop = true;
 				//Exclude myself
 				hit.collider.SendMessage(dropMedthod, gameObject, SendMessageOptions.DontRequireReceiver);
 				gameObject.SendMessage(dropMedthod, hit.collider.gameObject, SendMessageOptions.DontRequireReceiver);
@@ -287,7 +290,7 @@ public class DragAndDrop3D : MonoBehaviour
 		}
 		if (OnMouseUpAction!=null)
 		{
-			OnMouseUpAction(this);
+			OnMouseUpAction(this,canDrop);
 		}
 	}
 	
@@ -298,15 +301,6 @@ public class DragAndDrop3D : MonoBehaviour
 	/// <param name="masks">Masks.</param>
 	private int GetLayerMask(LayerMask[] masks)
 	{
-//		int mask = Physics.AllLayers;
-//		if (masks != null && masks.Length > 0)
-//		{
-//			mask = masks[0].value;
-//			for (int i = 1; i < masks.Length; i++)
-//			{
-//				mask = mask | masks[i].value;
-//			}
-//		}
 		if(masks.Length==0) return -1;
 		int mask = 1<<masks[0];
 		for (int i = 1; i < masks.Length; i++)
@@ -379,6 +373,9 @@ public class DragAndDrop3D : MonoBehaviour
 			child.gameObject.layer = m_currentLayer;
 		}
 		m_isTweening = false;
+		if(OnTweenBackAction!=null){
+			OnTweenBackAction(this);
+		}
 	}
 	private IEnumerator ScaleTween()
 	{
@@ -397,5 +394,8 @@ public class DragAndDrop3D : MonoBehaviour
 			child.gameObject.layer = m_currentLayer;
 		}
 		m_isTweening = false;
+		if(OnTweenBackAction!=null){
+			OnTweenBackAction(this);
+		}
 	}
 }
