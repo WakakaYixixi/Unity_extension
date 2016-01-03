@@ -30,6 +30,7 @@ public class DragAndDrop3D : MonoBehaviour
 	private Vector3 m_currentPosition;
 	private LayerMask m_currentLayer;
 	private bool m_isTweening=false;
+	private Plane m_mousePickPlane = new Plane();
 
 	public Action<DragAndDrop3D> OnMouseDownAction = null ;
 	public Action<DragAndDrop3D> OnMouseDragAction = null ;
@@ -67,6 +68,15 @@ public class DragAndDrop3D : MonoBehaviour
 	
 	[Tooltip("移动时在哪个面上移动，如果为null，则在拖动物的Z轴面移动.")]
 	public GameObject mousePickLayer = null;
+
+	[Tooltip("pick layer是否是Plane，plane是无区域限制.")]
+	public bool pickLayerIsPlane = false;
+
+	[Tooltip("drop的位置是否通过当前鼠标位置计算，如果不是，则通过拖动的物体位置计算.")]
+	public bool dropPosByMouse = true;
+
+	[Tooltip("通过物体对象来获取位置")]
+	public Transform dropRefPos = null;
 	
 	[Tooltip("drop容器所在的层.")]
 	public LayerMask[] dropLayerMasks;
@@ -102,10 +112,18 @@ public class DragAndDrop3D : MonoBehaviour
 		if (mousePickLayer)
 		{
 			mousePickLayer.SetActive(false);
+			if(pickLayerIsPlane){
+				m_mousePickPlane.SetNormalAndPosition(mousePickLayer.transform.position,mousePickLayer.transform.up);
+			}
 		}
 		if (!rayCastCamera)
 		{
 			rayCastCamera = Camera.main;
+		}
+		if(!dropPosByMouse){
+			if(!dropRefPos){
+				dropRefPos = m_trans;
+			}
 		}
 		m_rigidBody = GetComponent<Rigidbody> ();
 		m_currentLayer = m_trans.gameObject.layer;
@@ -194,14 +212,28 @@ public class DragAndDrop3D : MonoBehaviour
 	private void OnMouseDragHandler()
 	{
 		if(m_isTweening) return;
+		bool canDragMove = false;
 		if (mousePickLayer)
 		{
-			RaycastHit hit;
-			if (Physics.Raycast(rayCastCamera.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, 1 << mousePickLayer.layer))
+			Ray  ray = rayCastCamera.ScreenPointToRay(Input.mousePosition);
+			if(pickLayerIsPlane)
 			{
-				if (hit.collider.gameObject == mousePickLayer)
+				float dis ;
+				if(m_mousePickPlane.Raycast(ray,out dis)){
+					m_currentPosition = ray.GetPoint(dis);
+					canDragMove = true;
+				}
+			}
+			else
+			{
+				RaycastHit hit;
+				if (Physics.Raycast(ray, out hit, raycastDistance, 1 << mousePickLayer.layer))
 				{
-					m_currentPosition = hit.point;
+					if (hit.collider.gameObject == mousePickLayer)
+					{
+						m_currentPosition = hit.point;
+						canDragMove = true;
+					}
 				}
 			}
 		}
@@ -210,36 +242,38 @@ public class DragAndDrop3D : MonoBehaviour
 			m_screenPosition = rayCastCamera.WorldToScreenPoint(m_trans.position);
 			Vector3 curScreenSpace = new Vector3(Input.mousePosition.x, Input.mousePosition.y, m_screenPosition.z);
 			m_currentPosition = rayCastCamera.ScreenToWorldPoint(curScreenSpace);
+			canDragMove = true;
 		}
-		
-		if (!isDragOriginPoint)
+		if(canDragMove)
 		{
-			m_currentPosition += m_dragOffset;
-		}
-		else
-		{
-			m_currentPosition += dragOffset;
-		}
-		if (dragMoveDamp > 0f)
-		{
-			if(m_rigidBody){
-				m_rigidBody.MovePosition(Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp));
-			}else{
-				m_trans.position = Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp);
+			if (!isDragOriginPoint)
+			{
+				m_currentPosition += m_dragOffset;
 			}
-		}
-		else
-		{
-			if(m_rigidBody){
-				m_rigidBody.MovePosition(Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp));
-			}else{
-				m_trans.position = Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp);
+			else
+			{
+				m_currentPosition += dragOffset;
 			}
-			m_trans.position = m_currentPosition;
-		}
-		if (OnMouseDragAction!=null)
-		{
-			OnMouseDragAction(this);
+			if (dragMoveDamp > 0f)
+			{
+				if(m_rigidBody){
+					m_rigidBody.MovePosition(Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp));
+				}else{
+					m_trans.position = Vector3.Lerp(m_trans.position, m_currentPosition, dragMoveDamp);
+				}
+			}
+			else
+			{
+				if(m_rigidBody){
+					m_rigidBody.MovePosition(m_currentPosition);
+				}else{
+					m_trans.position = m_currentPosition;
+				}
+			}
+			if (OnMouseDragAction!=null)
+			{
+				OnMouseDragAction(this);
+			}
 		}
 	}
 	
@@ -266,6 +300,11 @@ public class DragAndDrop3D : MonoBehaviour
 		int mask = GetLayerMask(dropLayerMasks);
 		RaycastHit hit;
 		bool canDrop = false;
+		//用鼠标位置还是引用对象的位置作为drop时的位置
+		Vector3 dropPos = Input.mousePosition ;
+		if(!dropPosByMouse && !dropRefPos){
+			dropPos = dropRefPos.position;
+		}
 		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
 		{
 			if (hit.collider.gameObject != gameObject)

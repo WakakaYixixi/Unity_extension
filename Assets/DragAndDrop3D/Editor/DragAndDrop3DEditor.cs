@@ -39,6 +39,16 @@ public class DragAndDrop3DEditor : Editor {
 		
 		source.mousePickLayer = (GameObject)EditorGUILayout.ObjectField(new GUIContent("Mouse Pick Layer", "移动时在哪个面上移动，如果为null，则在拖动物的Z轴面移动."), source.mousePickLayer,typeof(GameObject),true);
 
+		if(source.mousePickLayer){
+			source.pickLayerIsPlane = EditorGUILayout.Toggle(new GUIContent("Pick Layer is Plane","Pick Layer是否是Plane,Plane为无限区域"),source.pickLayerIsPlane);
+		}
+
+		source.dropPosByMouse = EditorGUILayout.Toggle(new GUIContent("Drop Pos By Mouse","Drop时参考位置，true为参考鼠标位置，false为参考引用对象位置"),source.dropPosByMouse);
+
+		if(!source.dropPosByMouse){
+			source.dropRefPos = (Transform)EditorGUILayout.ObjectField(new GUIContent("Drop Ref Pos", "Drop引用位置，为空时是自己."), source.dropRefPos, typeof(Transform),true);
+		}
+
 		source.dropLayerMaskLength = EditorGUILayout.IntField(new GUIContent("Drop LayerMask Length", "drop容器所在的层."), source.dropLayerMaskLength);
 
 		if( source.dropLayerMaskLength>0 && (source.dropLayerMasks==null || source.dropLayerMaskLength!=source.dropLayerMasks.Length)){
