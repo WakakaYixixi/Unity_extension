@@ -305,7 +305,7 @@ public class DragAndDrop3D : MonoBehaviour
 		if(!dropPosByMouse && !dropRefPos){
 			dropPos = dropRefPos.position;
 		}
-		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
+		if (Physics.Raycast(Camera.main.ScreenPointToRay(dropPos), out hit, raycastDistance, mask))
 		{
 			if (hit.collider.gameObject != gameObject)
 			{ 
