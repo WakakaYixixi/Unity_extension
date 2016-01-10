@@ -29,8 +29,7 @@ Shader "ZZL/Water/Water Refract" {
 				struct v2f {
 					float4 pos : SV_POSITION;
 					float4 ref : TEXCOORD0;
-					float2 bumpuv0 : TEXCOORD1;
-					float2 bumpuv1 : TEXCOORD2;
+					float4 bumpuv : TEXCOORD1;
 					float3 viewDir : TEXCOORD3;
 				};
 
@@ -41,8 +40,7 @@ Shader "ZZL/Water/Water Refract" {
 					float4 temp;
 					float4 wpos = mul (_Object2World, v.vertex);
 					temp.xyzw = wpos.xzxz * _WaveScale4 + _WaveOffset;
-					o.bumpuv0 = temp.xy;
-					o.bumpuv1 = temp.wz;
+					o.bumpuv = temp;
 					
 					o.viewDir.xzy = WorldSpaceViewDir(v.vertex);
 					o.ref = ComputeScreenPos(o.pos);
@@ -59,8 +57,8 @@ Shader "ZZL/Water/Water Refract" {
 					i.viewDir = normalize(i.viewDir);
 					
 					// combine two scrolling bumpmaps into one
-					fixed3 bump1 = UnpackNormal(tex2D( _BumpMap, i.bumpuv0 )).rgb;
-					fixed3 bump2 = UnpackNormal(tex2D( _BumpMap, i.bumpuv1 )).rgb;
+					fixed3 bump1 = UnpackNormal(tex2D( _BumpMap, i.bumpuv.xy )).rgb;
+					fixed3 bump2 = UnpackNormal(tex2D( _BumpMap, i.bumpuv.zw )).rgb;
 					fixed3 bump = (bump1 + bump2) * 0.5;
 					
 					float4 uv2 = i.ref; uv2.xy -= bump * _RefrDistort;

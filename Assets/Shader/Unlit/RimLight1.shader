@@ -18,12 +18,12 @@
                 struct appdata {
                     float4 vertex : POSITION;
                     float3 normal : NORMAL;
-                    float2 texcoord : TEXCOORD0;
+                    half2 texcoord : TEXCOORD0;
                 };
                
                 struct v2f {
                     float4 pos : SV_POSITION;
-                    float3 uv : TEXCOORD0;
+                    fixed3 uv : TEXCOORD0;
                 };
                
                 float4 _MainTex_ST;

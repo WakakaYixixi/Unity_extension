@@ -17,7 +17,7 @@
 
 				struct appdata_t {
 					float4 vertex : POSITION;
-					float2 texcoord : TEXCOORD0;
+					half2 texcoord : TEXCOORD0;
 				};
 
 				struct v2f {

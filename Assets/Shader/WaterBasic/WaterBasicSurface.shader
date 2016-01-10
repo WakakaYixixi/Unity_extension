@@ -7,7 +7,7 @@
 		_WaveSpeed("Wave Speed",float) = 0
 	}
 	SubShader {
-		Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
+		Tags {"Queue"="Transparent-100" "IgnoreProjector"="True" "RenderType"="Transparent"}
 		Blend SrcAlpha One
 		LOD 200
 		ZWrite Off Lighting Off Fog { Color (0,0,0,0) }

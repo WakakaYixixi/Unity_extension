@@ -25,32 +25,31 @@ Shader "ZZL/Unlit/Vertex Transparent" {
 			struct appdata_t
 			{
 				float4 vertex   : POSITION;
-				float4 color    : COLOR;
-				float2 texcoord : TEXCOORD0;
+				fixed4 color    : COLOR;
+				half2 texcoord : TEXCOORD0;
 			};
 
 			struct v2f
 			{
 				float4 vertex   : SV_POSITION;
-				fixed vertexAlpha  ;
-				half2 texcoord  : TEXCOORD0;
+				half3 texcoord  : TEXCOORD0;
 			};
 
 			v2f vert(appdata_t v)
 			{
 				v2f OUT;
 				OUT.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-				OUT.texcoord = TRANSFORM_TEX(v.texcoord,_MainTex);
-				OUT.vertexAlpha = v.color.a;
+				OUT.texcoord.xy = TRANSFORM_TEX(v.texcoord,_MainTex);
+				OUT.texcoord.z = v.color.a;
 
 				return OUT;
 			}
 
-			fixed4 frag(v2f IN) : SV_Target
+			fixed4 frag(v2f i):SV_Target
 			{
-				fixed4 c = tex2D(_MainTex, IN.texcoord) ;
+				fixed4 c = tex2D(_MainTex, i.texcoord) ;
 				c.rgb *=(1+_Brightness);
-				c.a = IN.vertexAlpha;
+				c.a = i.texcoord.z;
 				return c*_Color;
 			}
 			

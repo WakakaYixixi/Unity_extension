@@ -21,14 +21,12 @@
 				
 				struct appdata_t {
 					float4 vertex : POSITION;
-					fixed2 texcoord : TEXCOORD0;
-					fixed2 texcoord1 : TEXCOORD1;
+					half2 texcoord : TEXCOORD0;
 				};
 
 				struct v2f {
 					float4 vertex : SV_POSITION;
-					fixed2 texcoord : TEXCOORD0;
-					fixed2 texcoord1 : TEXCOORD1;
+					half4 texcoord : TEXCOORD0;
 				};
 
 				sampler2D _MainTex;
@@ -41,27 +39,21 @@
 				{
 					v2f o;
 					o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-					o.texcoord = TRANSFORM_TEX(v.texcoord, _MainTex);
-					o.texcoord1 = TRANSFORM_TEX(v.texcoord1, _MainTex2);
+					o.texcoord.xy = TRANSFORM_TEX(v.texcoord, _MainTex);
+					o.texcoord.zw = TRANSFORM_TEX(v.texcoord, _MainTex2);
 					return o;
 				}
 				
 				fixed4 frag (v2f i) : COLOR
 				{
-					if(_Mix>0){
-						fixed4 c = tex2D(_MainTex, i.texcoord);
-						fixed4 tex2 = tex2D(_MainTex2, i.texcoord1);
-						fixed alpha = _Mix;
-						#ifndef ISREPLACE_ON
-						alpha *= tex2.a;
-						#endif
-						c.rgb = lerp(c,tex2,alpha);
-						return c;
-					}
-					else
-					{
-						return tex2D(_MainTex, i.texcoord);
-					}
+					fixed4 c = tex2D(_MainTex, i.texcoord.xy);
+					fixed4 tex2 = tex2D(_MainTex2, i.texcoord.zw);
+					fixed alpha = _Mix;
+					#ifndef ISREPLACE_ON
+					alpha *= tex2.a;
+					#endif
+					c.rgb = lerp(c,tex2,alpha);
+					return c;
 				}
 			
 			ENDCG

@@ -25,7 +25,7 @@
 				struct vInput {
                 	float4 vertex : POSITION;
                 	float4 normal : NORMAL;
-					float2 texcoord : TEXCOORD0;
+					half2 texcoord : TEXCOORD0;
 	            };
 
 	            struct v2f {

@@ -18,18 +18,18 @@
                 struct appdata {
                     float4 vertex : POSITION;
                     float3 normal : NORMAL;
-                    float2 texcoord : TEXCOORD0;
+                    half2 texcoord : TEXCOORD0;
                 };
                
                 struct v2f {
                     float4 pos : SV_POSITION;
-                    float2 uv : TEXCOORD0;
-                    float3 color : COLOR;
+                    half2 uv : TEXCOORD0;
+                    fixed3 color : COLOR;
                 };
                
-                uniform float4 _MainTex_ST;
-                uniform float4 _RimColor;
-                uniform fixed _RimWidth;
+                float4 _MainTex_ST;
+                float4 _RimColor;
+                fixed _RimWidth;
                
                 v2f vert (appdata_base v) {
                     v2f o;

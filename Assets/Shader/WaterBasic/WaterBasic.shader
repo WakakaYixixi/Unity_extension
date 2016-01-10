@@ -7,7 +7,7 @@
 		_WaveSpeed("Wave Speed",float) = 0
 	}
 	SubShader {
-		Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
+		Tags {"Queue"="Transparent-100" "IgnoreProjector"="True" "RenderType"="Transparent"}
 		Blend SrcAlpha One
 		LOD 200
 		Cull Off ZWrite Off Lighting Off Fog { Color (0,0,0,0) }
@@ -40,23 +40,20 @@
 			}
 			
 			struct Input {
-				float2 uv_MainTex;
 				float4 pos:SV_POSITION;
-				float4 finaluv;
-				float4 col;
+				float4 finaluv:TEXCOORD0;
+				fixed4 col:COLOR;
 			};
 			
 			Input vert (in appdata_full v)
 			{
 			 	Input o;
 				
-				if(_WaveSpeed>0){
-					//wave setting
-					fixed time1 = _Time*_WaveSpeed; //20 is speed
-			        fixed waveValueA = sin(time1+v.vertex.x*10)*2; //2 is wave height 
-			        v.vertex.y += waveValueA ;
-			        v.normal = normalize(float3(v.normal.x+waveValueA,v.normal.y,v.normal.z));
-		        }
+				//wave setting
+				fixed time1 = _Time*_WaveSpeed; //20 is speed
+		        fixed waveValueA = sin(time1+v.vertex.x*10)*2; //2 is wave height 
+		        v.vertex.y += waveValueA ;
+		        v.normal = normalize(float3(v.normal.x+waveValueA,v.normal.y,v.normal.z));
 		        
 			 	
 				float	time = (v.color.a * 60 + _Time.y) * _ReplaySpeed;
@@ -72,7 +69,7 @@
 				
 				o.pos= mul(UNITY_MATRIX_MVP, v.vertex);
 				o.finaluv	= (v.texcoord.xyxy + tile) * texTileSize.xyxy;
-				o.col	= float4(_Color.xyz * v.color.xyz,ftime);
+				o.col = float4(_Color.xyz * v.color.xyz,ftime);
 				return o;
 			}
 			

@@ -31,13 +31,13 @@
 				struct vInput {
                 	float4 vertex : POSITION;
                 	float4 normal : NORMAL;
-					float2 texcoord : TEXCOORD0;
+					half2 texcoord : TEXCOORD0;
 	            };
 
 	            struct v2f {
 					half2 texcoord : TEXCOORD0;
 	                float4 position : SV_POSITION;
-	                float3 emssion:COLOR;
+	                fixed3 emssion:COLOR;
 	            };
 				
 	            v2f vert(vInput i) {

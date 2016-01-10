@@ -35,7 +35,7 @@
 	            float3 norm   = mul ((float3x3)UNITY_MATRIX_IT_MV, v.normal);  
 	            float2 offset = TransformViewToProjection(norm.xy);
 	            float posZ = o.pos.z;
-	            if(posZ>1) posZ = 1;
+	            posZ = max(posZ,1);
 	            o.pos.xy += offset * posZ * _Outline;
 	            o.color = _OutlineColor;
 	            
