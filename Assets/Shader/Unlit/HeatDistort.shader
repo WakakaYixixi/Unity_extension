@@ -28,7 +28,7 @@ Shader "ZZL/Unlit/Heat Distort" {
 
 			struct v2f {
 				float4 pos : POSITION;
-				half4 uv : TEXCOORD0;
+				float4 uv : TEXCOORD0;
 			};
 
 			v2f vert( appdata_img v )
