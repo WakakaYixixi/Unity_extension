@@ -302,10 +302,10 @@ public class DragAndDrop3D : MonoBehaviour
 		bool canDrop = false;
 		//用鼠标位置还是引用对象的位置作为drop时的位置
 		Vector3 dropPos = Input.mousePosition ;
-		if(!dropPosByMouse && !dropRefPos){
-			dropPos = dropRefPos.position;
+		if(!dropPosByMouse && dropRefPos){
+			dropPos =rayCastCamera.WorldToScreenPoint(dropRefPos.position);
 		}
-		if (Physics.Raycast(Camera.main.ScreenPointToRay(dropPos), out hit, raycastDistance, mask))
+		if (Physics.Raycast(rayCastCamera.ScreenPointToRay(dropPos), out hit, raycastDistance, mask))
 		{
 			if (hit.collider.gameObject != gameObject)
 			{ 
