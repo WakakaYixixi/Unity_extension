@@ -15,4 +15,6 @@ Joystick控件</br></br>
 <b>一些效果</b></br>
 图片混合，Logo光影</br></br>
 
+<b>2d填色(类似魔术棒工具)，图片两点缩放</b></br></br>
+
 一些工具类：浮力，JSON,BesizerUtil , ByteArray，类as3事件</br>
