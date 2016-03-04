@@ -10,7 +10,7 @@ public class MaterialRenderQueue : EditorWindow {
 	static void ChangeMaterialQueue(){
 		MaterialRenderQueue window = (MaterialRenderQueue)EditorWindow.GetWindow (typeof (MaterialRenderQueue));
 		window.titleContent=new GUIContent("Queue Setting");
-		window.Show ();
+		window.ShowUtility ();
 	}
 
 	private Material m_mat;
