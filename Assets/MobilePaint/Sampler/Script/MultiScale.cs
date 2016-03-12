@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
 /// <summary>
-/// 缩放图片，在手机上才能测试
+/// 缩放图片，在手机上才能测试 (有bug)
 /// </summary>
 public class MultiScale: MonoBehaviour,IPointerUpHandler,IPointerDownHandler,IDragHandler {
 

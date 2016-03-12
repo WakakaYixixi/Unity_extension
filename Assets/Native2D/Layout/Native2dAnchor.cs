@@ -15,36 +15,35 @@ public class Native2dAnchor : MonoBehaviour {
 		BOTTOM,
 		LEFT,
 		RIGHT,
-		TOP_LEFT
+		TOP_LEFT,
+		TOP_RIGHT,
+		BOTTOM_LEFT,
+		BOTTOM_RIGHT
 	}
 	
 	public Position position=Position.CENTER;
-	private int m_tick;
+	public bool updateAlways = false;
 	
 	void Start()
 	{
-		#if !UNITY_EDITOR
 		SetPosition();
-		#endif
 	}
 	
-	#if UNITY_EDITOR
-	void Update()
+	void LateUpdate()
 	{
-		m_tick++;
-		if (m_tick % 5 == 0)
-		{
+		if(Application.platform== RuntimePlatform.OSXEditor||Application.platform== RuntimePlatform.WindowsEditor){
+			SetPosition();
+		}else if(updateAlways){
 			SetPosition();
 		}
 	}
-	#endif
 	
 	void SetPosition()
 	{
 		switch (position)
 		{
 		case Position.CENTER:
-			transform.localPosition = Vector3.zero;
+			transform.position = Native2dScreenUtil.GetScreenCenter();
 			break;
 		case Position.TOP:
 			transform.position = Native2dScreenUtil.GetScreenTopCenter();
@@ -57,6 +56,18 @@ public class Native2dAnchor : MonoBehaviour {
 			break;
 		case Position.RIGHT:
 			transform.position = Native2dScreenUtil.GetScreenMiddleRight();
+			break;
+		case Position.TOP_LEFT:
+			transform.position = Native2dScreenUtil.GetScreenTopLeft();
+			break;
+		case Position.TOP_RIGHT:
+			transform.position = Native2dScreenUtil.GetScreenTopRight();
+			break;
+		case Position.BOTTOM_LEFT:
+			transform.position = Native2dScreenUtil.GetScreenBottomLeft();
+			break;
+		case Position.BOTTOM_RIGHT:
+			transform.position = Native2dScreenUtil.GetScreenBottomRight();
 			break;
 		}
 	}

@@ -34,21 +34,21 @@ public class Native2dCamera2DSetting : MonoBehaviour
 	}
 	
 	#if UNITY_EDITOR
-	
 	void LateUpdate()
 	{
-		if (fixType == FixType.FixWidth)
-		{
-			int currentWidth = Screen.width;
-			int currentHeight = Screen.height;
-			Camera cam = GetComponent<Camera>();
-			
-			float standard_aspect = 1.0f * designWidth / designHeight;
-			float device_aspect = 1.0f * currentWidth / currentHeight;
-			
-			cam.orthographicSize = standard_aspect / device_aspect * designHeight * 0.005f;
+		if(Application.platform== RuntimePlatform.OSXEditor||Application.platform== RuntimePlatform.WindowsEditor){
+			if (fixType == FixType.FixWidth)
+			{
+				int currentWidth = Screen.width;
+				int currentHeight = Screen.height;
+				Camera cam = GetComponent<Camera>();
+
+				float standard_aspect = 1.0f * designWidth / designHeight;
+				float device_aspect = 1.0f * currentWidth / currentHeight;
+
+				cam.orthographicSize = standard_aspect / device_aspect * designHeight * 0.005f;
+			}
 		}
 	}
-	
 	#endif
 }

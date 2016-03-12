@@ -25,30 +25,41 @@ public class Native2dScreenUtil
 	public static float GetScreenHeight(){
 		return -Camera.main.ScreenToWorldPoint(new Vector3(0, -Screen.height / 2f, 0)).y;
 	}
-	
+
+	public static Vector2 GetScreenCenter(){
+		return (Vector2)Camera.main.transform.position;
+	}
 	public static Vector2 GetScreenTopLeft(){
-		return new Vector2( -GetScreenWidth()/2,GetScreenHeight()/2);
+		Vector3 camPos = Camera.main.transform.position;
+		return new Vector2((-GetScreenWidth()+camPos.x)/2,(GetScreenHeight()+camPos.y*3f)/2);
 	}
 	public static Vector2 GetScreenTopCenter(){
-		return new Vector2( 0,GetScreenHeight()/2);
+		Vector3 camPos = Camera.main.transform.position;
+		return new Vector2( camPos.x,(GetScreenHeight()+camPos.y*3f)/2);
 	}
 	public static Vector2 GetScreenTopRight(){
-		return new Vector2( GetScreenWidth()/2,GetScreenHeight()/2);
+		Vector3 camPos = Camera.main.transform.position;
+		return new Vector2( (GetScreenWidth()+camPos.x*3)/2,(GetScreenHeight()+camPos.y*3f)/2);
 	}
 	public static Vector2 GetScreenBottomLeft(){
-		return new Vector2( -GetScreenWidth()/2, -GetScreenHeight()/2);
+		Vector3 camPos = Camera.main.transform.position;
+		return new Vector2( (-GetScreenWidth()+camPos.x)/2, (-GetScreenHeight()+camPos.y)/2);
 	}
 	public static Vector2 GetScreenBottomCenter(){
-		return new Vector2( 0,-GetScreenHeight()/2);
+		Vector3 camPos = Camera.main.transform.position;
+		return new Vector2( camPos.x,(-GetScreenHeight()+camPos.y)/2);
 	}
 	public static Vector2 GetScreenBottomRight(){
-		return new Vector2( GetScreenWidth()/2,-GetScreenHeight()/2);
+		Vector3 camPos = Camera.main.transform.position;
+		return new Vector2( (GetScreenWidth()+camPos.x*3)/2,(-GetScreenHeight()+camPos.y)/2);
 	}
 	public static Vector2 GetScreenMiddleLeft(){
-		return new Vector2( -GetScreenWidth()/2,0);
+		Vector3 camPos = Camera.main.transform.position;
+		return new Vector2( (-GetScreenWidth()+camPos.x)/2,camPos.y);
 	}
 	public static Vector2 GetScreenMiddleRight(){
-		return new Vector2( GetScreenWidth()/2,0);
+		Vector3 camPos = Camera.main.transform.position;
+		return new Vector2( (GetScreenWidth()+camPos.x*3)/2,camPos.y);
 	}
 }
 

@@ -8,21 +8,15 @@ using System.Collections;
 [ExecuteInEditMode]
 public class Native2dAdjustBackground : MonoBehaviour
 {
-	private int m_tick = 0;
-	
 	// Use this for initialization
 	void Start () {
-		#if !UNITY_EDITOR
 		SetScale();
-		#endif
 	}
 	
 	#if UNITY_EDITOR
-	void Update()
+	void LateUpdate()
 	{
-		m_tick++;
-		if ( m_tick % 5 == 0)
-		{
+		if(Application.platform== RuntimePlatform.OSXEditor||Application.platform== RuntimePlatform.WindowsEditor){
 			SetScale();
 		}
 	}
