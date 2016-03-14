@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 需要添加3D Collider
+/// </summary>
 public class Painter : MonoBehaviour {
 
 	public enum PaintType
@@ -50,6 +53,7 @@ public class Painter : MonoBehaviour {
 
 	private float _minXPen,_maxXPen;
 	private float _minYPen,_maxYPen;
+	private float _sourceWidth,_sourceHeight;
 	#endregion
 
 
@@ -143,6 +147,39 @@ public class Painter : MonoBehaviour {
 			}
 			_delayApply+=Time.deltaTime;
 			_prevMousePosition = hit.textureCoord;
+		}
+	}
+
+	/// <summary>
+	/// 如果画布是Sprite
+	/// </summary>
+	/// <param name="pos">Position.</param>
+	/// <param name="camera">Camera.</param>
+	public void DrawSpriteGraphics(Vector3 pos, Camera camera = null)
+	{
+		RaycastHit hit;
+		if (camera == null) camera = Camera.main;
+		Ray ray = camera.ScreenPointToRay(pos);
+		if (Physics.Raycast(ray, out hit))
+		{
+			Vector3 localPos= hit.point-transform.position;
+			localPos*=100f;
+			localPos.x += _sourceWidth*0.5f;
+			localPos.y += _sourceHeight*0.5f;
+			Vector2 uv = new Vector2(localPos.x/_sourceWidth,localPos.y/_sourceHeight);
+			if (!_isDown)
+			{
+				_isDown = true;
+				_prevMousePosition = uv;
+			}
+			LerpDraw(uv, _prevMousePosition);
+			if(_delayApply>=_delayDrawTime){
+				_delayApply = 0;
+				this._baseTexture.LoadRawTextureData(this._pixels);
+				_baseTexture.Apply(false);
+			}
+			_delayApply+=Time.deltaTime;
+			_prevMousePosition = uv;
 		}
 	}
 	
