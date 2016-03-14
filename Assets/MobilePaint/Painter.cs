@@ -66,7 +66,7 @@ public class Painter : MonoBehaviour {
 	/// </summary>
 	public void Init(bool isShowPicture=false)
 	{
-		if (brushType == BrushType.CustomBrush) {
+		if (pen && brushType == BrushType.CustomBrush) {
 			brushSize = pen.width;
             _minXPen = 0;
             _maxXPen = source.width - 1;
@@ -79,13 +79,15 @@ public class Painter : MonoBehaviour {
 			_baseTexture = null;
 		}
 		
-		if (brushType == BrushType.CustomBrush) {
+		if (pen && brushType == BrushType.CustomBrush) {
 			_penColors = pen.GetPixels32 ();
 		}
 
 		_baseTexture = new Texture2D(source.width, source.height,TextureFormat.RGBA32,false);
 		_baseTexture.wrapMode = TextureWrapMode.Clamp;
-		GetComponent<Renderer>().material.mainTexture = _baseTexture;
+		Renderer render = GetComponent<Renderer>();
+		render.SetPropertyBlock(null);
+		render.material.mainTexture = _baseTexture;
 		_pixels = new byte[source.width*source.height*4];
 		_sourceColors = source.GetPixels32 ();
 		this.ClearImage (isShowPicture);
