@@ -108,8 +108,7 @@
                 float4 texCol = tex2D(_MainTex,i.uv);
        
                 //传进i.uv等参数，得到亮度值.
-                float tmpBrightness;
-                tmpBrightness =inFlash(75,i.uv,0.25f,3f,2f,0.15,0.7f);
+                float tmpBrightness = inFlash(75,i.uv,0.25,3,2,0.15,0.7);
            
                 //图像区域，判定设置为 颜色的A > 0.5,输出为材质颜色+光亮值.
                 if(texCol.w >0.5)
