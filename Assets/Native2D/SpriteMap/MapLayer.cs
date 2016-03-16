@@ -23,12 +23,10 @@ public class MapLayer : MonoBehaviour {
 	}
 
 	// Use this for initialization
-	IEnumerator Start () {
+	void Start () {
 		m_endPos = transform.localPosition;
 		m_matrix = new Matrix2D();
 		m_initPos = transform.localPosition;
-
-		yield return new WaitForSeconds(1f);
 	}
 	
 	// Update is called once per frame
@@ -83,12 +81,12 @@ public class MapLayer : MonoBehaviour {
 
 		Vector3 resultPos = Vector3.Lerp(transform.localPosition,m_endPos,speed*Time.deltaTime);
 		if (resultPos.x>0) resultPos.x=0;
-		else if(resultPos.x<-size.x*transform.localScale.x+m_viewPort.viewPort.width)
-			resultPos.x = -size.x*transform.localScale.x+m_viewPort.viewPort.width;
+		else if(resultPos.x<-size.x*transform.localScale.x+m_viewPort.viewPort.width/transform.root.localScale.x)
+			resultPos.x = -size.x*transform.localScale.x+m_viewPort.viewPort.width/transform.root.localScale.x;
 		
 		if (resultPos.y>0) resultPos.y=0;
-		else if(resultPos.y<-size.y*transform.localScale.y+m_viewPort.viewPort.height)
-			resultPos.y = -size.y*transform.localScale.y+m_viewPort.viewPort.height;
+		else if(resultPos.y<-size.y*transform.localScale.y+m_viewPort.viewPort.height/transform.root.localScale.y)
+			resultPos.y = -size.y*transform.localScale.y+m_viewPort.viewPort.height/transform.root.localScale.y;
 
 		if(freezeY){
 			resultPos.y = m_initPos.y;
@@ -126,12 +124,15 @@ public class MapLayer : MonoBehaviour {
 	void OnDrawGizmos(){
 		Gizmos.color = Color.green;
 		Gizmos.DrawLine(new Vector3(transform.position.x,transform.position.y,0),
-			new Vector3(transform.position.x,size.y*transform.localScale.y+transform.position.y,0));
-		Gizmos.DrawLine(new Vector3(transform.position.x,size.y*transform.localScale.y+transform.position.y,0),
-			new Vector3(transform.position.x+size.x*transform.localScale.x,size.y*transform.localScale.y+transform.position.y,0));
-		Gizmos.DrawLine(new Vector3(transform.position.x+size.x*transform.localScale.x,size.y*transform.localScale.y+transform.position.y,0),
-			new Vector3(transform.position.x+size.x*transform.localScale.x,transform.position.y,0));
-		Gizmos.DrawLine(new Vector3(transform.position.x+size.x*transform.localScale.x,transform.position.y,0),
+			new Vector3(transform.position.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0));
+		
+		Gizmos.DrawLine(new Vector3(transform.position.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0),
+			new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0));
+		
+		Gizmos.DrawLine(new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0),
+			new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,transform.position.y,0));
+		
+		Gizmos.DrawLine(new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,transform.position.y,0),
 			new Vector3(transform.position.x,transform.position.y,0));
 	}
 
@@ -170,7 +171,7 @@ public class MapLayer : MonoBehaviour {
 	/// <param name="middleY">Middle y.</param>
 	public void MovePointToCenter(Vector2 point , float offsetX= 0f,float offsetY=0f){
 		//viewport 的中点
-		Vector2 viewportCenter = new Vector2(m_viewPort.viewPort.width*0.5f,m_viewPort.viewPort.height*0.5f);
+		Vector2 viewportCenter = new Vector2(m_viewPort.viewPort.width*0.5f/transform.root.localScale.x,m_viewPort.viewPort.height*0.5f/transform.root.localScale.y);
 		point.x = transform.localPosition.x+point.x*transform.localScale.x+offsetX;
 		point.y = transform.localPosition.y+point.y*transform.localScale.y+offsetY;
 		m_endPos.x = transform.localPosition.x+viewportCenter.x-point.x;
