@@ -1,5 +1,7 @@
 Library/
 Temp/
+_Temp/
+obj/
 *.sln
 *.csproj
 *.sln

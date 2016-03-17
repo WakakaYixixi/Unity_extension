@@ -7,25 +7,18 @@ public class IsoObject : MonoBehaviour {
 	private Vector3 m_pos3D;
 	private int m_nodeX = 1;
 	private int m_nodeZ = 1;
-	private List<Vector3> m_spanPosArray;
+	private List<Vector3> m_spanPosArray = new List<Vector3>();
 	private bool m_isRotated = false;
 	private float m_centerOffsetY = 0;
 
-	protected int m_size;
-	protected int m_spanX,m_spanZ;
-
+	[HideInInspector]
 	public bool isSort = false;
 
+	[Header("ISO Setting")]
+	public int spanX;
+	public int spanZ;
+	public int size;
 
-	public int spanX{
-		get { return m_spanX; }
-	}
-	public int spanZ{
-		get { return m_spanZ; }
-	}
-	public int size{
-		get { return m_size; }
-	}
 	public List<Vector3> spanPosArray{
 		get { return m_spanPosArray; }
 	}
@@ -70,14 +63,11 @@ public class IsoObject : MonoBehaviour {
 	}
 	public float depth{
 		//return (this._pos3D.x + this._pos3D.z) * .866 - this._pos3D.y * .707;
-		get { return -centerY; }
+		get { return centerY; }
 	}
 
 
-	public void Init(int size,int spanX,int spanZ){
-		m_size=size;
-		m_spanX=spanX;
-		m_spanZ=spanZ;
+	protected virtual void Start(){
 		m_centerOffsetY = size*spanX/2f;
 	}
 
@@ -95,17 +85,17 @@ public class IsoObject : MonoBehaviour {
 		int t1=0;
 		int t2=0;
 		if(m_isRotated){
-			t1 = m_spanZ;
-			t2 = m_spanX;
+			t1 = spanZ;
+			t2 = spanX;
 		}else{
-			t1 = m_spanX;
-			t2 = m_spanZ;
+			t1 = spanX;
+			t2 = spanZ;
 		}
 		for(int i = 0 ;  i<t1 ; i++)
 		{
 			for(int j = 0 ; j<t2 ; j++)
 			{
-				Vector3 pos = new Vector3( i*m_size+x, y, j*m_size+z );
+				Vector3 pos = new Vector3( i*size+x, y, j*size+z );
 				m_spanPosArray.Add( pos );
 			}
 		}
@@ -115,8 +105,8 @@ public class IsoObject : MonoBehaviour {
 	{
 		m_nodeX = nodeZ;
 		m_nodeZ = nodeZ;
-		m_pos3D.x = nodeX*m_size;
-		m_pos3D.z = nodeZ*m_size;
+		m_pos3D.x = nodeX*size;
+		m_pos3D.z = nodeZ*size;
 		UpdateScreenPos();
 		UpdateSpanPos();
 
@@ -132,15 +122,15 @@ public class IsoObject : MonoBehaviour {
 	public void SetWalkable(bool value,PathGrid grid){
 		UpdateSpanPos();
 		foreach(Vector3 v in m_spanPosArray){
-			grid.SetWalkable( Mathf.FloorToInt(v.x/m_size),Mathf.FloorToInt(v.z/m_size),value);
+			grid.SetWalkable( Mathf.FloorToInt(v.x/size),Mathf.FloorToInt(v.z/size),value);
 		}
 	}
 
 	public bool GetWalkable( PathGrid grid){
 		bool flag = false;
 		foreach(Vector3 v in m_spanPosArray){
-			int nodeX = Mathf.FloorToInt(v.x/m_size);
-			int nodeY = Mathf.FloorToInt(v.z/m_size);
+			int nodeX = Mathf.FloorToInt(v.x/size);
+			int nodeY = Mathf.FloorToInt(v.z/size);
 			if(nodeX<0 || nodeX>grid.gridX-1) return false;
 			if(nodeY<0 || nodeY>grid.gridZ-1) return false;
 			flag = grid.GetNode(nodeX,nodeY).walkable;
@@ -151,7 +141,7 @@ public class IsoObject : MonoBehaviour {
 
 	public bool GetRotatable(PathGrid grid)
 	{
-		if (m_spanX==m_spanZ ) return true;
+		if (spanX==spanZ ) return true;
 
 		SetWalkable(true,grid);
 		m_isRotated = ! m_isRotated;
@@ -172,7 +162,7 @@ public class IsoObject : MonoBehaviour {
 		UpdateSpanPos();
 	}
 
-	protected virtual void OnDestory(){
+	public virtual void Destroy(){
 		m_spanPosArray.Clear();
 		m_spanPosArray = null;
 	}

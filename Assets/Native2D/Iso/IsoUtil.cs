@@ -18,7 +18,7 @@ public class IsoUtil {
 	public static Vector2 IsoToScreen(float px,float py ,float pz){
 		float screenX = px - pz;
 		float screenY = py * Y_CORRECT + (px + pz) * W_H_RATE;
-		return new Vector2(screenX, -screenY);
+		return new Vector2(screenX*0.01f, -screenY*0.01f);
 	}
 
 	/// <summary>
@@ -29,6 +29,8 @@ public class IsoUtil {
 	/// <param name="py">Py.</param>
 	public static Vector2 ScreenToIso(float px,float py )
 	{
+		px*=100f;
+		py*=100f;
 		float zpos=(-py-px*W_H_RATE)/(2*W_H_RATE);
 		float xpos = px+zpos;
 		float ypos = 0;
@@ -42,8 +44,10 @@ public class IsoUtil {
 	/// <param name="size">Size.</param>
 	/// <param name="px">Px.</param>
 	/// <param name="py">Py.</param>
-	public static Vector2 screenToIsoGrid(float size,float px ,float py)
+	public static Vector2 ScreenToIsoGrid(float size,float px ,float py)
 	{
+		px*=100f;
+		py*=100f;
 		float zpos = ( -py-px*W_H_RATE )/(2*W_H_RATE);
 		float xpos = px + zpos;
 

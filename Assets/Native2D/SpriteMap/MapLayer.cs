@@ -10,6 +10,11 @@ public class MapLayer : MonoBehaviour {
 	public float minScale=1f;//最小scale
 	public float maxScale=1f;//最大scale
 
+	[Header("Init Center Position")]
+	public bool center = false;
+	public float centerOffsetX = 0f;
+	public float centeroffsetY = 0f;
+
 	private SpriteMapViewport m_viewPort;
 	private Vector3 m_prevPos ;
 	private Vector3 m_endPos;
@@ -27,6 +32,12 @@ public class MapLayer : MonoBehaviour {
 		m_endPos = transform.localPosition;
 		m_matrix = new Matrix2D();
 		m_initPos = transform.localPosition;
+
+		if(center){
+			MovePointToCenter(size*0.5f,centerOffsetX,centeroffsetY);
+			m_isAutoMoved = false;
+			transform.localPosition = m_endPos;
+		}
 	}
 	
 	// Update is called once per frame
@@ -59,8 +70,7 @@ public class MapLayer : MonoBehaviour {
 			float delta = Vector2.Distance(t1PrevPos,t2PrevPos)/Vector2.Distance(t1.position,t2.position);
 			delta*=delta;
 
-			Vector2 middle = (t1.rawPosition+t2.rawPosition)*0.5f;
-			Vector3 localPos = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(middle));
+			Vector3 localPos = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
 			FixScaleSize(delta,localPos.x,localPos.y);
 		}
 
