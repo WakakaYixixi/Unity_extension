@@ -35,6 +35,9 @@ public class DragAndDropUGUI: MonoBehaviour,IBeginDragHandler,IDragHandler,IEndD
 		if(!dragTarget){
 			dragTarget =  transform as RectTransform;;
 		}
+		if(!triggerPos){
+			triggerPos = transform;
+		}
 	}
 	
 	public void OnBeginDrag(PointerEventData eventData)
