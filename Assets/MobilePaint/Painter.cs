@@ -162,7 +162,9 @@ public class Painter : MonoBehaviour {
 		Ray ray = camera.ScreenPointToRay(pos);
 		if (Physics.Raycast(ray, out hit))
 		{
-			Vector3 localPos= hit.point-transform.position;
+			Vector3 localPos=transform.InverseTransformPoint(hit.point);
+			localPos.x*=transform.localScale.x;
+			localPos.y*=transform.localScale.y;
 			localPos*=100f;
 			localPos.x += _sourceWidth*0.5f;
 			localPos.y += _sourceHeight*0.5f;
