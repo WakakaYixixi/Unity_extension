@@ -10,6 +10,7 @@ public class Painter : MonoBehaviour {
 	{
 		Scribble,//对图片进行涂和擦除.
 		DrawLine,//画线.
+		DrawColorfulLine,//画彩色线
 	}
 
 	public enum BrushType{
@@ -32,6 +33,13 @@ public class Painter : MonoBehaviour {
 
 	//纯色方式.
 	public Color32 paintColor=new Color32(0xff, 0, 0, 0xff);
+
+	//彩色方式
+	public Color32[] paintColorful ;
+	public float colorChangeSpeed = 1f;
+	private int m_colorfulIndex = 1;
+	private float m_colorfulTime = 0f;
+
 	//如果笔刷类型为CustomBrush，则这个值为笔刷的大小.
 	public int brushSize = 16;
 
@@ -76,6 +84,10 @@ public class Painter : MonoBehaviour {
             _maxXPen = source.width - 1;
             _minYPen = -brushSize / 2;
             _maxYPen = source.height - 1;
+		}
+
+		if(paintType== PaintType.DrawColorfulLine && paintColorful.Length>0){
+			paintColor = paintColorful[0];
 		}
 
 		if (_baseTexture != null) {
@@ -162,13 +174,7 @@ public class Painter : MonoBehaviour {
 		Ray ray = camera.ScreenPointToRay(pos);
 		if (Physics.Raycast(ray, out hit))
 		{
-			Vector3 localPos=transform.InverseTransformPoint(hit.point);
-			localPos.x*=transform.localScale.x;
-			localPos.y*=transform.localScale.y;
-			localPos*=100f;
-			localPos.x += _sourceWidth*0.5f;
-			localPos.y += _sourceHeight*0.5f;
-			Vector2 uv = new Vector2(localPos.x/_sourceWidth,localPos.y/_sourceHeight);
+			Vector2 uv = SpriteHitPoint2UV(hit.point);
 			if (!_isDown)
 			{
 				_isDown = true;
@@ -183,6 +189,21 @@ public class Painter : MonoBehaviour {
 			_delayApply+=Time.deltaTime;
 			_prevMousePosition = uv;
 		}
+	}
+
+	/// <summary>
+	/// Sprite中,hitPoint转uv坐标。hitPoint为世界坐标
+	/// </summary>
+	/// <returns>The hit point2 U.</returns>
+	/// <param name="hitPoint">Hit point.</param>
+	public Vector2 SpriteHitPoint2UV( Vector3 hitPoint){
+		Vector3 localPos=transform.InverseTransformPoint(hitPoint);
+		localPos.x*=transform.localScale.x;
+		localPos.y*=transform.localScale.y;
+		localPos*=100f;
+		localPos.x += _sourceWidth*0.5f;
+		localPos.y += _sourceHeight*0.5f;
+		return new Vector2(localPos.x/_sourceWidth,localPos.y/_sourceHeight);
 	}
 	
 	/// <summary>
@@ -244,6 +265,18 @@ public class Painter : MonoBehaviour {
 			}
 		}
 		return count <= temp;
+	}
+
+	/// <summary>
+	/// 画Sprite
+	/// </summary>
+	/// <param name="sr">Sr.</param>
+	/// <param name="x">The x coordinate.</param>
+	/// <param name="y">The y coordinate.</param>
+	public void DrawSprite( SpriteRenderer sr, float x, float y)
+	{
+		Texture2D t = sr.sprite.texture;
+		DrawTexture(t,x,y);
 	}
 
 
@@ -381,6 +414,20 @@ public class Painter : MonoBehaviour {
 
 	void PaintByPen(int startX,int startY,int endI,int endJ)
 	{
+		int tempBrushSize = this.brushSize<<1;
+		if(paintType== PaintType.DrawColorfulLine && paintColorful.Length>1){
+			Color32 currC = paintColorful[m_colorfulIndex];
+			paintColor = Color32.Lerp(paintColor,currC,Time.deltaTime*colorChangeSpeed);
+			m_colorfulTime+=Time.deltaTime*colorChangeSpeed;
+			if(m_colorfulTime>1f){
+				m_colorfulTime =0f;
+				++m_colorfulIndex;
+				if(m_colorfulIndex>=paintColorful.Length){
+					m_colorfulIndex = 0;
+				}
+			}
+		}
+
 		for(int i = startX; i<endI; i++)
 		{
 			if(i<_minXPen) continue;
@@ -461,7 +508,7 @@ public class Painter : MonoBehaviour {
 											_pixels[idx+3] = c.a;
 										}
 									}
-									else if(paintType== PaintType.DrawLine){
+									else if(paintType== PaintType.DrawLine || paintType== PaintType.DrawColorfulLine){
 										idx *= 4;
 										//mix the colors
 										_pixels[idx] = (byte)((0xff-penA)*_pixels[idx]/0xff + penA*c.r/0xff);
@@ -469,7 +516,6 @@ public class Painter : MonoBehaviour {
 										_pixels[idx+2] = (byte)((0xff-penA)*_pixels[idx+2]/0xff + penA*c.b/0xff);
 										_pixels[idx+3] = (byte)(0xff-(0xff-_pixels[idx+3])*(0xff-penA)/0xff);
 									}
-
 								}
 								
 							}
@@ -516,7 +562,18 @@ public class Painter : MonoBehaviour {
 		int rSquare = this.brushSize * this.brushSize;
 		int maxSize = rSquare << 2;
 		int tempBrushSize = this.brushSize<<1;
-
+		if(paintType== PaintType.DrawColorfulLine && paintColorful.Length>1){
+			Color32 currC = paintColorful[m_colorfulIndex];
+			paintColor = Color32.Lerp(paintColor,currC,Time.deltaTime*colorChangeSpeed);
+			m_colorfulTime+=Time.deltaTime*colorChangeSpeed;
+			if(m_colorfulTime>1f){
+				m_colorfulTime =0f;
+				++m_colorfulIndex;
+				if(m_colorfulIndex>=paintColorful.Length){
+					m_colorfulIndex = 0;
+				}
+			}
+		}
 		for (int i = 0; i < maxSize; i++)
 		{
 			int a = (i % tempBrushSize) - this.brushSize;
@@ -524,7 +581,7 @@ public class Painter : MonoBehaviour {
 			if ((a * a) + (b * b) < rSquare)
 			{
 				index = (((this._baseTexture.width * (y + b)) + x) + a) * 4;
-				if(paintType==PaintType.DrawLine){
+				if(paintType==PaintType.DrawLine|| paintType== PaintType.DrawColorfulLine){
 					if(isEraser){
 						this._pixels[index + 3] = 0;
 					}else{

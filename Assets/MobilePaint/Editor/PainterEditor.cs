@@ -25,16 +25,22 @@ public class PainterEditor : Editor {
 			source.penAlphaEnable = EditorGUILayout.Toggle(new GUIContent("Pen Alpha Support"),source.penAlphaEnable);
 		} else {
 			source.brushSize = EditorGUILayout.IntField(new GUIContent("Brush Size"),source.brushSize);
+
+			source.paintType = (Painter.PaintType)EditorGUILayout.EnumPopup(new GUIContent("Paint Type"), source.paintType);
+			if (source.paintType == Painter.PaintType.Scribble) {
+				source.source = (Texture2D)EditorGUILayout.ObjectField (new GUIContent ("Source Texture"), source.source, typeof(Texture2D), true);
+			} else if (source.paintType == Painter.PaintType.DrawLine) {
+				source.paintColor = EditorGUILayout.ColorField(new GUIContent("Paint Color"),source.paintColor);
+			}else if (source.paintType == Painter.PaintType.DrawColorfulLine) {
+				serializedObject.Update();
+				EditorGUILayout.PropertyField(serializedObject.FindProperty("paintColorful"), true);
+				EditorGUILayout.PropertyField(serializedObject.FindProperty("colorChangeSpeed"), false);
+				serializedObject.ApplyModifiedProperties();
+			}
 		}
 
-		source.paintType = (Painter.PaintType)EditorGUILayout.EnumPopup(new GUIContent("Paint Type"), source.paintType);
-		if (source.paintType == Painter.PaintType.Scribble) {
-			source.source = (Texture2D)EditorGUILayout.ObjectField (new GUIContent ("Source Texture"), source.source, typeof(Texture2D), true);
-		} else if (source.paintType == Painter.PaintType.DrawLine) {
-			source.paintColor = EditorGUILayout.ColorField(new GUIContent("Paint Color"),source.paintColor);
-		}
 
-		EditorGUILayout.EndVertical ();
+		EditorGUILayout.EndVertical();
 	}
 }
 

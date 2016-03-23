@@ -11,6 +11,7 @@ public class GUIController : MonoBehaviour {
     private bool _selectedDrawImg;
 	private bool _selectdPenAlpha;
 	private bool _isDrawLine;
+	private bool _isDrawColorfulLine;
 	private bool _isYellow;
 
 	private 
@@ -22,26 +23,32 @@ public class GUIController : MonoBehaviour {
 	
 	void OnGUI()
     {
-        _selectedDrawImg = GUI.Toggle(new Rect(0, 0, 100, 30), _selectedDrawImg, "Is Draw Img");
+        _selectedDrawImg = GUI.Toggle(new Rect(0, 0, 100, 30), _selectedDrawImg, "Draw Img?");
         if (!_selectedDrawImg)
         {
-            _selectedEraser = GUI.Toggle(new Rect(0, 30, 100, 30), _selectedEraser, "Is Eraser");
+            _selectedEraser = GUI.Toggle(new Rect(0, 30, 100, 30), _selectedEraser, "Eraser?");
             _paint.isEraser = _selectedEraser;
 
-			_selectdPenAlpha = GUI.Toggle(new Rect(120, 30, 100, 30), _selectdPenAlpha, "Pen Alpha");
+			_selectdPenAlpha = GUI.Toggle(new Rect(85, 30, 100, 30), _selectdPenAlpha, "Pen Alpha?");
 			_paint.penAlphaEnable = _selectdPenAlpha;
 
-			_isDrawLine = GUI.Toggle(new Rect(120, 0, 100, 30), _isDrawLine, "Is Draw Line");
+			_isDrawLine = GUI.Toggle(new Rect(85, 0, 100, 30), _isDrawLine, "Is Draw Line");
 			if(_isDrawLine){
-				_paint.paintType= Painter.PaintType.DrawLine;
 
-				_isYellow = GUI.Toggle(new Rect(240, 0, 100, 30), _isYellow, "Change to Yellow");
-				if(_isYellow){
-					_paint.paintColor = new Color32(0xff,0xcc,0,0xff);
-				}
-				else
-				{
-					_paint.paintColor =new Color32(0xff, 0, 0, 0xff);
+				_isDrawColorfulLine = GUI.Toggle(new Rect(190, 0, 100, 30), _isDrawColorfulLine, "colorful?");
+				if(_isDrawColorfulLine){
+					_paint.paintType= Painter.PaintType.DrawColorfulLine;
+				}else{
+					_paint.paintType= Painter.PaintType.DrawLine;
+
+					_isYellow = GUI.Toggle(new Rect(260, 0, 100, 30), _isYellow, "Yellow");
+					if(_isYellow){
+						_paint.paintColor = new Color32(0xff,0xcc,0,0xff);
+					}
+					else
+					{
+						_paint.paintColor =new Color32(0xff, 0, 0, 0xff);
+					}
 				}
 
 			}else{
