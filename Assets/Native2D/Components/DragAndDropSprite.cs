@@ -117,7 +117,6 @@ public class DragAndDropSprite : MonoBehaviour {
 		m_dragOffset = Vector3.zero;
 		m_spriteRender.sortingLayerName=dragSortLayerName;
 
-		StopAllCoroutines();
 		m_screenPosition = rayCastCamera.WorldToScreenPoint(m_trans.position);
 		if (!isDragOriginPoint)
 		{
