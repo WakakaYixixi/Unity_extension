@@ -99,6 +99,8 @@ public class Painter : MonoBehaviour {
 			_penColors = pen.GetPixels32 ();
 		}
 
+		_sourceWidth = source.width;
+		_sourceHeight = source.height;
 		_baseTexture = new Texture2D(source.width, source.height,TextureFormat.RGBA32,false);
 		_baseTexture.wrapMode = TextureWrapMode.Clamp;
 		Renderer render = GetComponent<Renderer>();
@@ -286,6 +288,7 @@ public class Painter : MonoBehaviour {
 	/// <param name="img">Image.</param>
 	/// <param name="x">The x coordinate.</param>
 	/// <param name="y">The y coordinate.</param>
+	/// <param name="isClear">如果为ture,则alpha会设置为0.</param>
 	public void DrawTexture( Texture2D img , float x, float y)
 	{
         int startX = Mathf.FloorToInt((x * source.width) - img.width /2);
@@ -322,11 +325,18 @@ public class Painter : MonoBehaviour {
                         if (c.a > 0)
                         {
                             idx *= 4;
-                            _pixels[idx] = c.r;
-                            _pixels[idx + 1] = c.g;
-                            _pixels[idx + 2] = c.b;
-                            if (c.a > _pixels[idx + 3])
-                                _pixels[idx + 3] = c.a;
+
+							if(isEraser){
+								_pixels[idx + 3]=0;
+							}
+							else
+							{
+								_pixels[idx] = c.r;
+								_pixels[idx + 1] = c.g;
+								_pixels[idx + 2] = c.b;
+								if (c.a > _pixels[idx + 3])
+									_pixels[idx + 3] = c.a;
+							}
                         }
                     }
 				}

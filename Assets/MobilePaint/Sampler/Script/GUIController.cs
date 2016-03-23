@@ -5,6 +5,7 @@ public class GUIController : MonoBehaviour {
 
 
     public Texture2D drawImage;
+	public bool isSprite = false;
 
     private Painter _paint;
     private bool _selectedEraser;
@@ -69,8 +70,15 @@ public class GUIController : MonoBehaviour {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 if (Physics.Raycast(ray, out hit))
                 {
-                    Vector2 point = hit.textureCoord;
-                    _paint.DrawTexture(drawImage, point.x, point.y);
+					if(isSprite){
+						Vector2 point = _paint.SpriteHitPoint2UV(hit.point);
+						_paint.DrawTexture(drawImage, point.x, point.y);
+					}
+					else
+					{
+						Vector2 point = hit.textureCoord;
+						_paint.DrawTexture(drawImage, point.x, point.y);
+					}
                 }
             }
         }

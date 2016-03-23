@@ -32,10 +32,10 @@ public class DragAndDrop3D : MonoBehaviour
 	private bool m_isTweening=false;
 	private Plane m_mousePickPlane = new Plane();
 
-	public Action<DragAndDrop3D> OnMouseDownAction = null ;
-	public Action<DragAndDrop3D> OnMouseDragAction = null ;
-	public Action<DragAndDrop3D,bool> OnMouseUpAction = null ;
-	public Action<DragAndDrop3D> OnTweenBackAction = null ;
+	public event Action<DragAndDrop3D> OnMouseDownAction = null ;
+	public event Action<DragAndDrop3D> OnMouseDragAction = null ;
+	public event Action<DragAndDrop3D,bool> OnMouseUpAction = null ;
+	public event Action<DragAndDrop3D> OnTweenBackAction = null ;
 
 	[HideInInspector]
 	public int rayCastMasksLength = 0; //use for editor
@@ -139,9 +139,9 @@ public class DragAndDrop3D : MonoBehaviour
 				{
 					int mask = GetLayerMask(rayCastMasks);
 					RaycastHit hit;
-					if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
+					if (Physics.Raycast(rayCastCamera.ScreenPointToRay(Input.mousePosition), out hit, raycastDistance, mask))
 					{
-						if (hit.collider.gameObject == gameObject)
+						if (hit.collider.gameObject == dragTarget.gameObject)
 						{
 							m_isDown = true;
 							OnMouseDownHandler();
@@ -307,7 +307,7 @@ public class DragAndDrop3D : MonoBehaviour
 		}
 		if (Physics.Raycast(rayCastCamera.ScreenPointToRay(dropPos), out hit, raycastDistance, mask))
 		{
-			if (hit.collider.gameObject != gameObject)
+			if (hit.collider.gameObject != dragTarget.gameObject)
 			{ 
 				//set layer
 				foreach(Transform child in m_trans.GetComponentsInChildren<Transform>()){
