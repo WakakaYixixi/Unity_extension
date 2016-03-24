@@ -73,6 +73,7 @@ public class SpriteDrag : MonoBehaviour {
 	public event Action<SpriteDrag> OnMouseDownAction = null ;
 	public event Action<SpriteDrag> OnMouseDragAction = null ;
 	public event Action<SpriteDrag> OnMouseUpAction = null ;
+	public event Action<SpriteDrag> OnTweenBackAction = null ;
 
 	// Use this for initialization
 	void Start () {
@@ -229,6 +230,9 @@ public class SpriteDrag : MonoBehaviour {
 					render.sortingLayerName=m_sortLayerName;
 				}
 				this.enabled = true;
+				if(OnTweenBackAction!=null){
+					OnTweenBackAction(this);
+				}
 			});
 			break;
 		case DragBackEffect.TweenScale:
@@ -240,12 +244,18 @@ public class SpriteDrag : MonoBehaviour {
 			dragTarget.localScale = Vector3.zero;
 			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
+				if(OnTweenBackAction!=null){
+					OnTweenBackAction(this);
+				}
 			});
 			break;
 		case DragBackEffect.ScaleDestroy:
 			this.enabled = false;
 			dragTarget.DOScale(Vector3.zero,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);
+				if(OnTweenBackAction!=null){
+					OnTweenBackAction(this);
+				}
 			});
 			break;
 		case DragBackEffect.FadeOutDestroy:
@@ -253,6 +263,9 @@ public class SpriteDrag : MonoBehaviour {
 			CanvasGroup group = dragTarget.gameObject.AddComponent<CanvasGroup>();
 			group.DOFade(0f,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);
+				if(OnTweenBackAction!=null){
+					OnTweenBackAction(this);
+				}
 			});
 			break;
 		}

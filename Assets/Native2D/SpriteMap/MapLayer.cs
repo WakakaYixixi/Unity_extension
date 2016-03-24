@@ -4,9 +4,15 @@ using System.Collections;
 public class MapLayer : MonoBehaviour {
 
 	public Vector2 size;//地图的大小
+
+	[Header("Drag Setting")]
+	public bool dragEnable = true;//是否可拖动
 	public float mapMoveSpeed = 1f; //移动地图时的速度
 	public bool freezeX=false; //X方向上是否不准移动
 	public bool freezeY=false; //Y方向上是否不准移动
+
+	[Header("Scale Setting")]
+	public bool multiScaleEnable = true;//是否支持多点缩放
 	public float minScale=1f;//最小scale
 	public float maxScale=1f;//最大scale
 
@@ -53,14 +59,16 @@ public class MapLayer : MonoBehaviour {
 
 		if(Input.touchCount<2)
 		{
-			if(Input.GetMouseButtonDown(0)){
-				OnTouchDown();
-			}
-			if(Input.GetMouseButton(0)){
-				OnTouchMove();
+			if(dragEnable){
+				if(Input.GetMouseButtonDown(0)){
+					OnTouchDown();
+				}
+				if(Input.GetMouseButton(0)){
+					OnTouchMove();
+				}
 			}
 		}
-		else
+		else if(multiScaleEnable)
 		{
 			m_reset = true;
 			Touch t1 = Input.touches[0];
@@ -74,7 +82,7 @@ public class MapLayer : MonoBehaviour {
 			FixScaleSize(delta,localPos.x,localPos.y);
 		}
 
-		if(Input.GetAxis("Mouse ScrollWheel") != 0)
+		if(dragEnable && Input.GetAxis("Mouse ScrollWheel") != 0)
 		{  
 			float delta = 1+Input.GetAxis("Mouse ScrollWheel");
 			Vector3 localPos = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
@@ -147,22 +155,24 @@ public class MapLayer : MonoBehaviour {
 	}
 
 
+
+
 	#region public function
 
 	/// <summary>
 	/// Middle坐标需要是Viewport层的局部坐标
 	/// </summary>
-	/// <param name="sizeDiff">Size diff.</param>
+	/// <param name="scale">要缩放的大小.</param>
 	/// <param name="middleX">Middle x.</param>
 	/// <param name="middleY">Middle y.</param>
-	public void ScaleMap(float sizeDiff,float middleX,float middleY){
+	public void ScaleMap(float scale,float middleX,float middleY){
 		m_matrix.Identity();
 		m_matrix.Scale(transform.localScale.x,transform.localScale.y);
 		m_matrix.Translate(transform.localPosition.x,transform.localPosition.y);
 		m_matrix.tx -= middleX;
 		m_matrix.ty -= middleY;
 
-		m_matrix.Scale(sizeDiff,sizeDiff);
+		m_matrix.Scale(scale,scale);
 
 		m_matrix.tx += middleX;
 		m_matrix.ty += middleY;
@@ -174,8 +184,9 @@ public class MapLayer : MonoBehaviour {
 		m_endPos.y = m_matrix.ty;
 	}
 
+
 	/// <summary>
-	/// 把一个点移动到viewport中间 , point是当前层的局部坐标
+	/// 把一个点移动到viewport中间 , point是MapLayer层的局部坐标
 	/// </summary>
 	/// <param name="middleX">Middle x.</param>
 	/// <param name="middleY">Middle y.</param>
@@ -204,6 +215,7 @@ public class MapLayer : MonoBehaviour {
 			m_endPos.x = m_initPos.x;
 		}
 	}
+
 
 	#endregion
 }

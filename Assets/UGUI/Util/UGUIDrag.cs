@@ -72,6 +72,7 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 	public event Action<UGUIDrag> OnMouseDownAction = null ;
 	public event Action<UGUIDrag> OnMouseDragAction = null ;
 	public event Action<UGUIDrag> OnMouseUpAction = null ;
+	public event Action<UGUIDrag> OnTweenBackAction = null ;
 
 	// Use this for initialization
 	void Start () {
@@ -194,6 +195,9 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 			dragTarget.DOMove(m_cachePosition,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				dragTarget.SetParent(m_parent);
 				this.enabled = true;
+				if(OnTweenBackAction!=null){
+					OnTweenBackAction(this);
+				}
 			});
 			break;
 		case DragBackEffect.TweenScale:
@@ -203,12 +207,18 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 			dragTarget.localScale = Vector3.zero;
 			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
+				if(OnTweenBackAction!=null){
+					OnTweenBackAction(this);
+				}
 			});
 			break;
 		case DragBackEffect.ScaleDestroy:
 			this.enabled = false;
 			dragTarget.DOScale(Vector3.zero,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);
+				if(OnTweenBackAction!=null){
+					OnTweenBackAction(this);
+				}
 			});
 			break;
 		case DragBackEffect.FadeOutDestroy:
@@ -216,6 +226,9 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 			CanvasGroup group = dragTarget.gameObject.AddComponent<CanvasGroup>();
 			group.DOFade(0f,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);
+				if(OnTweenBackAction!=null){
+					OnTweenBackAction(this);
+				}
 			});
 			break;
 		}
