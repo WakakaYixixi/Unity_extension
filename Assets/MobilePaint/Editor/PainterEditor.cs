@@ -35,7 +35,7 @@ public class PainterEditor : Editor {
 		}else if (source.paintType == Painter.PaintType.DrawColorfulLine) {
 			serializedObject.Update();
 			EditorGUILayout.PropertyField(serializedObject.FindProperty("paintColorful"), true);
-			EditorGUILayout.PropertyField(serializedObject.FindProperty("colorChangeSpeed"), false);
+			EditorGUILayout.PropertyField(serializedObject.FindProperty("colorChangeRate"), false);
 			serializedObject.ApplyModifiedProperties();
 		}
 

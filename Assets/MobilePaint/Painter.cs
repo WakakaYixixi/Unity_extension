@@ -36,7 +36,8 @@ public class Painter : MonoBehaviour {
 
 	//彩色方式
 	public Color32[] paintColorful ;
-	public float colorChangeSpeed = 1f;
+	//速度变化频率，越大变化越慢
+	public float colorChangeRate = 1f;
 	private int m_colorfulIndex = 1;
 	private float m_colorfulTime = 0f;
 
@@ -167,7 +168,7 @@ public class Painter : MonoBehaviour {
 	/// <summary>
 	/// 如果画布是Sprite
 	/// </summary>
-	/// <param name="pos">Position.</param>
+	/// <param name="pos">屏幕坐标.</param>
 	/// <param name="camera">Camera.</param>
 	public void DrawSpriteGraphics(Vector3 pos, Camera camera = null)
 	{
@@ -427,8 +428,8 @@ public class Painter : MonoBehaviour {
 		int tempBrushSize = this.brushSize<<1;
 		if(paintType== PaintType.DrawColorfulLine && paintColorful.Length>1){
 			Color32 currC = paintColorful[m_colorfulIndex];
-			paintColor = Color32.Lerp(paintColor,currC,Time.deltaTime*colorChangeSpeed);
-			m_colorfulTime+=Time.deltaTime*colorChangeSpeed;
+			paintColor = Color32.Lerp(paintColor,currC,Time.deltaTime*colorChangeRate);
+			m_colorfulTime+=Time.deltaTime*colorChangeRate;
 			if(m_colorfulTime>1f){
 				m_colorfulTime =0f;
 				++m_colorfulIndex;
@@ -574,8 +575,8 @@ public class Painter : MonoBehaviour {
 		int tempBrushSize = this.brushSize<<1;
 		if(paintType== PaintType.DrawColorfulLine && paintColorful.Length>1){
 			Color32 currC = paintColorful[m_colorfulIndex];
-			paintColor = Color32.Lerp(paintColor,currC,Time.deltaTime*colorChangeSpeed);
-			m_colorfulTime+=Time.deltaTime*colorChangeSpeed;
+			paintColor = Color32.Lerp(paintColor,currC,Time.deltaTime*colorChangeRate);
+			m_colorfulTime+=Time.deltaTime*colorChangeRate;
 			if(m_colorfulTime>1f){
 				m_colorfulTime =0f;
 				++m_colorfulIndex;

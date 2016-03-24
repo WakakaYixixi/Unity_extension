@@ -24,12 +24,12 @@ public class GUIController : MonoBehaviour {
 	
 	void OnGUI()
     {
-        _selectedDrawImg = GUI.Toggle(new Rect(0, 0, 100, 30), _selectedDrawImg, "Draw Img?");
+		_selectedDrawImg = GUI.Toggle(new Rect(0, 0, 100, 30), _selectedDrawImg, "Draw Img?");
+
+		_selectedEraser = GUI.Toggle(new Rect(0, 30, 100, 30), _selectedEraser, "Eraser?");
+		_paint.isEraser = _selectedEraser;
         if (!_selectedDrawImg)
         {
-            _selectedEraser = GUI.Toggle(new Rect(0, 30, 100, 30), _selectedEraser, "Eraser?");
-            _paint.isEraser = _selectedEraser;
-
 			_selectdPenAlpha = GUI.Toggle(new Rect(85, 30, 100, 30), _selectdPenAlpha, "Pen Alpha?");
 			_paint.penAlphaEnable = _selectdPenAlpha;
 

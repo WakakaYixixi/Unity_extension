@@ -6,7 +6,8 @@ using UnityEngine.EventSystems;
 public class PenUISpriteController : MonoBehaviour,IBeginDragHandler,IDragHandler,IEndDragHandler{
 
     private RectTransform _trans;
-    private Vector2 _pos;
+	private Vector3 _pos;
+	private Vector3 m_touchDownTargetOffset ;
 
 	public Painter paint;
 
@@ -18,16 +19,20 @@ public class PenUISpriteController : MonoBehaviour,IBeginDragHandler,IDragHandle
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        _pos = _trans.position;
+		_pos = _trans.position;
+		Vector3 touchDownMousePos;
+		RectTransformUtility.ScreenPointToWorldPointInRectangle(_trans,eventData.position,Camera.main,out touchDownMousePos);
+		m_touchDownTargetOffset = _pos-touchDownMousePos;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (eventData.dragging)
         {
-            _pos += eventData.delta;
-            _trans.position = _pos;
-			paint.DrawSpriteGraphics(_trans.position);
+			RectTransformUtility.ScreenPointToWorldPointInRectangle(_trans,eventData.position,Camera.main,out _pos);
+			_pos+=m_touchDownTargetOffset;
+			_trans.position = _pos;
+			paint.DrawSpriteGraphics(Camera.main.WorldToScreenPoint(_trans.position));
         }
     }
 
