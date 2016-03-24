@@ -64,6 +64,7 @@ public class DragAndDrop3D : MonoBehaviour
 	public Vector3 dragOffset;
 	
 	[Tooltip("拖动时的缓动参数.")]
+	[Range(0f,1f)]
 	public float dragMoveDamp = 0.5f;
 	
 	[Tooltip("移动时在哪个面上移动，如果为null，则在拖动物的Z轴面移动.")]
