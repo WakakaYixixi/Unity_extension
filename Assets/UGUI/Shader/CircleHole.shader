@@ -86,11 +86,10 @@ Shader "ZZL/UI/Circle Hole" {
 
 			fixed4 frag(v2f IN) : SV_Target
 			{
-				half4 color =tex2D(_MainTex, IN.texcoord) * IN.color;
-				clip (color.a - 0.01);
-				
+				half4 color =tex2D(_MainTex, IN.texcoord) * IN.color;				
              	half hole = min(distance(IN.texcoord, _Center) / _Radius, 1.);
              	color.a *= pow(hole, _Shape);
+				clip (color.a - 0.01);
                 return color;
 			}
 		ENDCG
