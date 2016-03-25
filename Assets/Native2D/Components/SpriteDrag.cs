@@ -4,7 +4,7 @@ using System;
 using DG.Tweening;
 
 /// <summary>
-/// Drag and drop sprite.
+/// Drag and drop sprite.需要dragTarget上面有Collider2D组件
 /// Author :zhouzhanglin
 /// </summary>
 public class SpriteDrag : MonoBehaviour {
