@@ -88,7 +88,8 @@ Shader "ZZL/UI/Circle Hole" {
 			{
 				half4 color =tex2D(_MainTex, IN.texcoord) * IN.color;				
              	half hole = min(distance(IN.texcoord, _Center) / _Radius, 1.);
-             	color.a *= pow(hole, _Shape);
+             	color.a *= pow(hole, _Shape);//中间呈现一个洞
+             	//color.a*=1-pow(hole,_Shape);//只显示中间
 				clip (color.a - 0.01);
                 return color;
 			}

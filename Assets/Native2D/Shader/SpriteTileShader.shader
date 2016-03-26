@@ -5,8 +5,7 @@
 		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
 		_Color ("Tint", Color) = (1,1,1,1)
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
-		_RepeatX ("Repeat X", Float) = 1
-        _RepeatY ("Repeat Y", Float) = 1
+		_OffsetAndTile("Offset And Tile",Vector)=(0,0,1,1)
 	}
  
 	SubShader
@@ -48,14 +47,13 @@
 			};
 			
 			fixed4 _Color;
-			half _RepeatX;
-            half _RepeatY;
+			float4 _OffsetAndTile;
  
 			v2f vert(appdata_t IN)
 			{
 				v2f OUT;
 				OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
-				OUT.texcoord = IN.texcoord * half2(_RepeatX, _RepeatY);
+				OUT.texcoord = IN.texcoord * _OffsetAndTile.zw+_OffsetAndTile.xy;
 				OUT.color = IN.color * _Color;
 				#ifdef PIXELSNAP_ON
 				OUT.vertex = UnityPixelSnap (OUT.vertex);
