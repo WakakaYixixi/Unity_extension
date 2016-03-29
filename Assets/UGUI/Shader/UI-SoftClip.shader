@@ -1,4 +1,5 @@
-﻿Shader "ZZL/UI/UI Soft Mask"
+﻿//此shader应该放在mask下面的子元素上，而不是Mask上
+Shader "ZZL/UI/UI Soft Mask"
 {
 	Properties
 	{
