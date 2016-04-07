@@ -10,10 +10,14 @@ public class SpriteMask : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		
+		Clip();
 	}
 	
 	void Update () {
+		Clip();
+	}
+
+	void Clip(){
 		if(maskMaterials!=null){
 			Vector4 rect  = new Vector4(maskSize.x,maskSize.y,maskSize.width,maskSize.height);
 			rect.x+=transform.position.x;
