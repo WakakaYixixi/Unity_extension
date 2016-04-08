@@ -5,8 +5,7 @@
 		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
 		_Color ("Tint", Color) = (1,1,1,1)
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
-		_RectX("RectX" , Range(0,1)) = 1
-		_RectY("RectY" , Range(0,1)) = 1
+		_Rect("Rect" , Vector) = (-1,-1,1,1)
 	}
 
 	SubShader
@@ -24,6 +23,7 @@
 		Lighting Off
 		ZWrite Off
 		Blend One OneMinusSrcAlpha
+		colormask RGB
 
 		Pass
 		{
@@ -32,6 +32,7 @@
 			#pragma fragment frag
 			#pragma multi_compile _ PIXELSNAP_ON
 			#include "UnityCG.cginc"
+			#include "UnityUI.cginc"
 			
 			struct appdata_t
 			{
@@ -45,15 +46,16 @@
 				float4 vertex   : SV_POSITION;
 				fixed4 color    : COLOR;
 				half2 texcoord  : TEXCOORD0;
+				float4 worldpos : TEXCOORD1;
 			};
 			
 			fixed4 _Color;
-			fixed _RectX;
-			fixed _RectY;
+			float4 _Rect;
 
 			v2f vert(appdata_t IN)
 			{
 				v2f OUT;
+				OUT.worldpos = IN.vertex;
 				OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
 				OUT.texcoord = IN.texcoord;
 				OUT.color = IN.color * _Color;
@@ -80,12 +82,11 @@
 			fixed4 frag(v2f IN) : SV_Target
 			{
 				fixed4 c = SampleSpriteTexture (IN.texcoord) * IN.color;
+				c.rgb *= c.a;
 
-				if(IN.texcoord.x>_RectX || IN.texcoord.y>_RectY){
-					clip(-1);
-				}else{
-					c.rgb *= c.a;
-				}
+				c *= UnityGet2DClipping(IN.worldpos.xy, _Rect);
+
+				clip (c.a - 0.001);
 				return c;
 			}
 		ENDCG
