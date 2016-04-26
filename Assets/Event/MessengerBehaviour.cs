@@ -20,27 +20,27 @@ public class MessengerBehaviour : MonoBehaviour {
 		}
 	}
 	//No parameters
-	public void AddListener(string eventType, Callback handler) {
+	public void AddListener(string eventType, Action handler) {
 		OnListenerAdding(eventType, handler);
-		eventTable[eventType] = (Callback)eventTable[eventType] + handler;
+		eventTable[eventType] = (Action)eventTable[eventType] + handler;
 	}
 	
 	//Single parameter
-	public void AddListener<T>(string eventType, Callback<T> handler) {
+	public void AddListener<T>(string eventType, Action<T> handler) {
 		OnListenerAdding(eventType, handler);
-		eventTable[eventType] = (Callback<T>)eventTable[eventType] + handler;
+		eventTable[eventType] = (Action<T>)eventTable[eventType] + handler;
 	}
 	
 	//Two parameters
-	public void AddListener<T, U>(string eventType, Callback<T, U> handler) {
+	public void AddListener<T, U>(string eventType, Action<T, U> handler) {
 		OnListenerAdding(eventType, handler);
-		eventTable[eventType] = (Callback<T, U>)eventTable[eventType] + handler;
+		eventTable[eventType] = (Action<T, U>)eventTable[eventType] + handler;
 	}
 	
 	//Three parameters
-	public void AddListener<T, U, V>(string eventType, Callback<T, U, V> handler) {
+	public void AddListener<T, U, V>(string eventType, Action<T, U, V> handler) {
 		OnListenerAdding(eventType, handler);
-		eventTable[eventType] = (Callback<T, U, V>)eventTable[eventType] + handler;
+		eventTable[eventType] = (Action<T, U, V>)eventTable[eventType] + handler;
 	}
 	#endregion
 
@@ -65,37 +65,37 @@ public class MessengerBehaviour : MonoBehaviour {
 	}
 
 	//No parameters
-	public void RemoveListener(string eventType, Callback handler) {
+	public void RemoveListener(string eventType, Action handler) {
 		OnListenerRemoving(eventType, handler);
 		if (eventTable.ContainsKey (eventType)) {
-			eventTable [eventType] = (Callback)eventTable [eventType] - handler;
+			eventTable [eventType] = (Action)eventTable [eventType] - handler;
 			OnListenerRemoved (eventType);
 		}
 	}
 	
 	//Single parameter
-	public void RemoveListener<T>(string eventType, Callback<T> handler) {
+	public void RemoveListener<T>(string eventType, Action<T> handler) {
 		OnListenerRemoving(eventType, handler);
 		if (eventTable.ContainsKey (eventType)) {
-			eventTable [eventType] = (Callback<T>)eventTable [eventType] - handler;
+			eventTable [eventType] = (Action<T>)eventTable [eventType] - handler;
 			OnListenerRemoved (eventType);
 		}
 	}
 	
 	//Two parameters
-	public void RemoveListener<T, U>(string eventType, Callback<T, U> handler) {
+	public void RemoveListener<T, U>(string eventType, Action<T, U> handler) {
 		OnListenerRemoving(eventType, handler);
 		if (eventTable.ContainsKey (eventType)) {
-			eventTable [eventType] = (Callback<T, U>)eventTable [eventType] - handler;
+			eventTable [eventType] = (Action<T, U>)eventTable [eventType] - handler;
 			OnListenerRemoved (eventType);
 		}
 	}
 	
 	//Three parameters
-	public void RemoveListener<T, U, V>(string eventType, Callback<T, U, V> handler) {
+	public void RemoveListener<T, U, V>(string eventType, Action<T, U, V> handler) {
 		OnListenerRemoving(eventType, handler);
 		if (eventTable.ContainsKey (eventType)) {
-			eventTable [eventType] = (Callback<T, U, V>)eventTable [eventType] - handler;
+			eventTable [eventType] = (Action<T, U, V>)eventTable [eventType] - handler;
 			OnListenerRemoved (eventType);
 		}
 	}
@@ -119,10 +119,10 @@ public class MessengerBehaviour : MonoBehaviour {
 	public void DispatchEvent(string eventType) {
 		Delegate d;
 		if (eventTable.TryGetValue(eventType, out d)) {
-			Callback callback = d as Callback;
+			Action Action = d as Action;
 			
-			if (callback != null) {
-				callback();
+			if (Action != null) {
+				Action();
 			} else {
 				throw new Exception(eventType);
 			}
@@ -133,10 +133,10 @@ public class MessengerBehaviour : MonoBehaviour {
 	public void DispatchEvent<T>(string eventType, T arg1) {
 		Delegate d;
 		if (eventTable.TryGetValue(eventType, out d)) {
-			Callback<T> callback = d as Callback<T>;
+			Action<T> Action = d as Action<T>;
 			
-			if (callback != null) {
-				callback(arg1);
+			if (Action != null) {
+				Action(arg1);
 			} else {
 				throw new Exception(eventType);
 			}
@@ -147,10 +147,10 @@ public class MessengerBehaviour : MonoBehaviour {
 	public void DispatchEvent<T, U>(string eventType, T arg1, U arg2) {
 		Delegate d;
 		if (eventTable.TryGetValue(eventType, out d)) {
-			Callback<T, U> callback = d as Callback<T, U>;
+			Action<T, U> Action = d as Action<T, U>;
 			
-			if (callback != null) {
-				callback(arg1, arg2);
+			if (Action != null) {
+				Action(arg1, arg2);
 			} else {
 				throw new Exception(eventType);
 			}
@@ -161,10 +161,10 @@ public class MessengerBehaviour : MonoBehaviour {
 	public void DispatchEvent<T, U, V>(string eventType, T arg1, U arg2, V arg3) {
 		Delegate d;
 		if (eventTable.TryGetValue(eventType, out d)) {
-			Callback<T, U, V> callback = d as Callback<T, U, V>;
+			Action<T, U, V> Action = d as Action<T, U, V>;
 			
-			if (callback != null) {
-				callback(arg1, arg2, arg3);
+			if (Action != null) {
+				Action(arg1, arg2, arg3);
 			} else {
 				throw new Exception(eventType);
 			}

@@ -164,63 +164,63 @@ static internal class Messenger {
 
 	#region AddListener
 	//No parameters
-    static public void AddListener(string eventType, Callback handler) {
+    static public void AddListener(string eventType, Action handler) {
         OnListenerAdding(eventType, handler);
-        eventTable[eventType] = (Callback)eventTable[eventType] + handler;
+        eventTable[eventType] = (Action)eventTable[eventType] + handler;
     }
 
 	//Single parameter
-	static public void AddListener<T>(string eventType, Callback<T> handler) {
+	static public void AddListener<T>(string eventType, Action<T> handler) {
         OnListenerAdding(eventType, handler);
-        eventTable[eventType] = (Callback<T>)eventTable[eventType] + handler;
+        eventTable[eventType] = (Action<T>)eventTable[eventType] + handler;
     }
 
 	//Two parameters
-	static public void AddListener<T, U>(string eventType, Callback<T, U> handler) {
+	static public void AddListener<T, U>(string eventType, Action<T, U> handler) {
         OnListenerAdding(eventType, handler);
-        eventTable[eventType] = (Callback<T, U>)eventTable[eventType] + handler;
+        eventTable[eventType] = (Action<T, U>)eventTable[eventType] + handler;
     }
 
 	//Three parameters
-	static public void AddListener<T, U, V>(string eventType, Callback<T, U, V> handler) {
+	static public void AddListener<T, U, V>(string eventType, Action<T, U, V> handler) {
         OnListenerAdding(eventType, handler);
-        eventTable[eventType] = (Callback<T, U, V>)eventTable[eventType] + handler;
+        eventTable[eventType] = (Action<T, U, V>)eventTable[eventType] + handler;
     }
 	#endregion
 
 	#region RemoveListener
 	//No parameters
-    static public void RemoveListener(string eventType, Callback handler) {
+    static public void RemoveListener(string eventType, Action handler) {
         OnListenerRemoving(eventType, handler);
 		if (eventTable.ContainsKey (eventType)) {
-			eventTable [eventType] = (Callback)eventTable [eventType] - handler;
+			eventTable [eventType] = (Action)eventTable [eventType] - handler;
 			OnListenerRemoved (eventType);
 		}
     }
 
 	//Single parameter
-	static public void RemoveListener<T>(string eventType, Callback<T> handler) {
+	static public void RemoveListener<T>(string eventType, Action<T> handler) {
         OnListenerRemoving(eventType, handler);
 		if (eventTable.ContainsKey (eventType)) {
-			eventTable [eventType] = (Callback<T>)eventTable [eventType] - handler;
+			eventTable [eventType] = (Action<T>)eventTable [eventType] - handler;
 			OnListenerRemoved (eventType);
 		}
     }
 
 	//Two parameters
-	static public void RemoveListener<T, U>(string eventType, Callback<T, U> handler) {
+	static public void RemoveListener<T, U>(string eventType, Action<T, U> handler) {
         OnListenerRemoving(eventType, handler);
 		if (eventTable.ContainsKey (eventType)) {
-			eventTable [eventType] = (Callback<T, U>)eventTable [eventType] - handler;
+			eventTable [eventType] = (Action<T, U>)eventTable [eventType] - handler;
 			OnListenerRemoved (eventType);
 		}
     }
 
 	//Three parameters
-	static public void RemoveListener<T, U, V>(string eventType, Callback<T, U, V> handler) {
+	static public void RemoveListener<T, U, V>(string eventType, Action<T, U, V> handler) {
         OnListenerRemoving(eventType, handler);
 		if (eventTable.ContainsKey (eventType)) {
-			eventTable [eventType] = (Callback<T, U, V>)eventTable [eventType] - handler;
+			eventTable [eventType] = (Action<T, U, V>)eventTable [eventType] - handler;
 			OnListenerRemoved (eventType);
 		}
     }
@@ -236,10 +236,10 @@ static internal class Messenger {
 
         Delegate d;
         if (eventTable.TryGetValue(eventType, out d)) {
-            Callback callback = d as Callback;
+            Action Action = d as Action;
 
-            if (callback != null) {
-                callback();
+            if (Action != null) {
+                Action();
             } else {
                 throw CreateBroadcastSignatureException(eventType);
             }
@@ -255,10 +255,10 @@ static internal class Messenger {
 
         Delegate d;
         if (eventTable.TryGetValue(eventType, out d)) {
-            Callback<T> callback = d as Callback<T>;
+            Action<T> Action = d as Action<T>;
 
-            if (callback != null) {
-                callback(arg1);
+            if (Action != null) {
+                Action(arg1);
             } else {
                 throw CreateBroadcastSignatureException(eventType);
             }
@@ -274,10 +274,10 @@ static internal class Messenger {
 
         Delegate d;
         if (eventTable.TryGetValue(eventType, out d)) {
-            Callback<T, U> callback = d as Callback<T, U>;
+            Action<T, U> Action = d as Action<T, U>;
 
-            if (callback != null) {
-                callback(arg1, arg2);
+            if (Action != null) {
+                Action(arg1, arg2);
             } else {
                 throw CreateBroadcastSignatureException(eventType);
             }
@@ -293,10 +293,10 @@ static internal class Messenger {
 
         Delegate d;
         if (eventTable.TryGetValue(eventType, out d)) {
-            Callback<T, U, V> callback = d as Callback<T, U, V>;
+            Action<T, U, V> Action = d as Action<T, U, V>;
 
-            if (callback != null) {
-                callback(arg1, arg2, arg3);
+            if (Action != null) {
+                Action(arg1, arg2, arg3);
             } else {
                 throw CreateBroadcastSignatureException(eventType);
             }
