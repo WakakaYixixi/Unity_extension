@@ -16,7 +16,7 @@ void OnUp( SpriteLayerInputManager.TouchEvent evt){
 	transform.DOScale(m_localScale,0.1f);
 }
 */
-/// Sprite touch事件的分发和管理
+/// Sprite touch事件的分发和管理，Sprite上面需要添加Collider2D组件，触发顺序根据z
 /// </summary>
 public class SpriteLayerInputManager : MonoBehaviour {
 
