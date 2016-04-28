@@ -26,8 +26,8 @@ public class AnimQueue : MonoBehaviour {
 
 	IEnumerator PlayAnim( AnimVO vo){
 		yield return new WaitForSeconds(vo.delay);
-		//全部只播放layer=0的动画，NormalizedTime为0.25f
-		vo.animator.Play(vo.animName,0,0.25f);
+		//全部只播放layer=0的动画
+		vo.animator.Play(vo.animName,0,0f);
 	}
 
 	/// <summary>
