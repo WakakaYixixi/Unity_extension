@@ -57,36 +57,38 @@ public class MapLayer : MonoBehaviour {
 			return;
 		}
 
-		if(Input.touchCount<2)
-		{
-			if(dragEnable){
-				if(Input.GetMouseButtonDown(0)){
-					OnTouchDown();
-				}
-				if(Input.GetMouseButton(0)){
-					OnTouchMove();
+		if(!InputUtil.CheckMouseOnUGUI()){
+			if(Input.touchCount<2)
+			{
+				if(dragEnable){
+					if(Input.GetMouseButtonDown(0)){
+						OnTouchDown();
+					}
+					if(Input.GetMouseButton(0)){
+						OnTouchMove();
+					}
 				}
 			}
-		}
-		else if(multiScaleEnable)
-		{
-			m_reset = true;
-			Touch t1 = Input.touches[0];
-			Touch t2 = Input.touches[1];
-			Vector2 t1PrevPos = t1.deltaPosition+t1.position;
-			Vector2 t2PrevPos = t2.deltaPosition+t2.position;
-			float delta = Vector2.Distance(t1PrevPos,t2PrevPos)/Vector2.Distance(t1.position,t2.position);
-			delta*=delta;
+			else if(multiScaleEnable)
+			{
+				m_reset = true;
+				Touch t1 = Input.touches[0];
+				Touch t2 = Input.touches[1];
+				Vector2 t1PrevPos = t1.deltaPosition+t1.position;
+				Vector2 t2PrevPos = t2.deltaPosition+t2.position;
+				float delta = Vector2.Distance(t1PrevPos,t2PrevPos)/Vector2.Distance(t1.position,t2.position);
+				delta*=delta;
 
-			Vector3 localPos = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-			FixScaleSize(delta,localPos.x,localPos.y);
-		}
+				Vector3 localPos = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+				FixScaleSize(delta,localPos.x,localPos.y);
+			}
 
-		if(dragEnable && Input.GetAxis("Mouse ScrollWheel") != 0)
-		{  
-			float delta = 1+Input.GetAxis("Mouse ScrollWheel");
-			Vector3 localPos = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-			FixScaleSize(delta,localPos.x,localPos.y);
+			if(dragEnable && Input.GetAxis("Mouse ScrollWheel") != 0)
+			{  
+				float delta = 1+Input.GetAxis("Mouse ScrollWheel");
+				Vector3 localPos = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+				FixScaleSize(delta,localPos.x,localPos.y);
+			}
 		}
 
 		float speed = mapMoveSpeed;
@@ -216,6 +218,35 @@ public class MapLayer : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// 移动到某一个点, point是MapLayer层的局部坐标
+	/// </summary>
+	/// <param name="point">Point.</param>
+	public void MoveTo(Vector2 point)
+	{
+		point.x = transform.localPosition.x+point.x*transform.localScale.x;
+		point.y = transform.localPosition.y+point.y*transform.localScale.y;
+		m_endPos.x = transform.localPosition.x-point.x;
+		m_endPos.y = transform.localPosition.y-point.y;
+
+		m_isAutoMoved = true;
+
+		if (m_endPos.x>0) m_endPos.x=0;
+		else if(m_endPos.x<-size.x*transform.localScale.x+m_viewPort.viewPort.width)
+			m_endPos.x = -size.x*transform.localScale.x+m_viewPort.viewPort.width;
+
+		if (m_endPos.y>0) m_endPos.y=0;
+		else if(m_endPos.y<-size.y*transform.localScale.y+m_viewPort.viewPort.height)
+			m_endPos.y = -size.y*transform.localScale.y+m_viewPort.viewPort.height;
+
+		if(freezeY){
+			m_endPos.y = m_initPos.y;
+		}
+		if(freezeX){
+			m_endPos.x = m_initPos.x;
+		}
+
+	}
 
 	#endregion
 }
