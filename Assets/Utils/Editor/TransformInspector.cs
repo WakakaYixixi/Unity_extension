@@ -26,16 +26,22 @@ public class TransformInspector : Editor {
 		DrawScale();
 		DrawGlobalPosition();
 
-		bool mode = GUILayout.Toggle(pivotMode,"Change Pivot","Button");
-		if(mode!=pivotMode){
-			if(mode){
-				tool = Tools.current;
-				Tools.current = Tool.None;
-			}else{
-				Tools.current = tool;
+		if((target as Transform).childCount>0){
+			bool mode = GUILayout.Toggle(pivotMode,"Change Children Pivot","Button");
+			if(mode!=pivotMode){
+				if(mode){
+					tool = Tools.current;
+					Tools.current = Tool.None;
+				}else{
+					Tools.current = tool;
+				}
 			}
+			pivotMode = mode;
 		}
-		pivotMode = mode;
+		else
+		{
+			pivotMode = false;
+		}
 
 		serializedObject.ApplyModifiedProperties();
 	}
@@ -113,7 +119,7 @@ public class TransformInspector : Editor {
 		if(pivotMode){
 			Transform trans = target as Transform;
 			Handles.color = Color.red;
-			Handles.Label(pivot+Vector3.up*0.5f,"Change Pivot");
+			Handles.Label(pivot+Vector3.up*0.5f,"Change Children Pivot");
 			Vector3 tempPivot = Handles.DoPositionHandle(pivot,Quaternion.identity);
 			Vector3 movePivot = tempPivot-pivot;
 			for(int i=0 ;i<trans.childCount;++i){
