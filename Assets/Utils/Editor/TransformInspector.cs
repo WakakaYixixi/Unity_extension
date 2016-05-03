@@ -1,14 +1,22 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEditor;
 
+/// <summary>
+/// 扩展Transform面板，显示世界坐标，更改原点
+/// author:zhouzhanglin
+/// </summary>
+[CanEditMultipleObjects]
 [CustomEditor(typeof(Transform))]
-public class WorldPosViewer : Editor {
+public class TransformInspector : Editor {
+
+	static bool pivotMode = false;
+	static Tool tool;
 
 	SerializedProperty mPos;
 	SerializedProperty mScale;
 	public override void OnInspectorGUI()
 	{
+		pivot = (target as Transform).position;
 		EditorGUIUtility.labelWidth = 15f;
 		mPos = serializedObject.FindProperty("m_LocalPosition");
 		mScale = serializedObject.FindProperty("m_LocalScale");
@@ -17,6 +25,17 @@ public class WorldPosViewer : Editor {
 		DrawRotation();
 		DrawScale();
 		DrawGlobalPosition();
+
+		bool mode = GUILayout.Toggle(pivotMode,"Change Pivot","Button");
+		if(mode!=pivotMode){
+			if(mode){
+				tool = Tools.current;
+				Tools.current = Tool.None;
+			}else{
+				Tools.current = tool;
+			}
+		}
+		pivotMode = mode;
 
 		serializedObject.ApplyModifiedProperties();
 	}
@@ -33,6 +52,7 @@ public class WorldPosViewer : Editor {
 			if (reset) mPos.vector3Value = Vector3.zero;
 		}
 		GUILayout.EndHorizontal();
+		Undo.RecordObject(target,"move");
 	}
 
 	void DrawGlobalPosition(){
@@ -43,6 +63,7 @@ public class WorldPosViewer : Editor {
 			tran.position = EditorGUILayout.Vector3Field("", tran.position);
 		}
 		GUILayout.EndHorizontal();
+		Undo.RecordObject(target,"move");
 	}
 
 	void DrawScale ()
@@ -57,6 +78,7 @@ public class WorldPosViewer : Editor {
 			if (reset) mScale.vector3Value = Vector3.one;
 		}
 		GUILayout.EndHorizontal();
+		Undo.RecordObject(target,"scale");
 	}
 
 	void DrawRotation ()
@@ -75,11 +97,35 @@ public class WorldPosViewer : Editor {
 				(serializedObject.targetObject as Transform).localEulerAngles = ls;
 		}
 		GUILayout.EndHorizontal();
+
+		Undo.RecordObject(target,"rotate");
 	}
 
 	void FloatField(string name,ref float f)
 	{
 		f = EditorGUILayout.FloatField(name,f);
+	}
+
+
+
+	private Vector3 pivot;
+	void OnSceneGUI(){
+		if(pivotMode){
+			Transform trans = target as Transform;
+			Handles.color = Color.red;
+			Handles.Label(pivot+Vector3.up*0.5f,"Change Pivot");
+			Vector3 tempPivot = Handles.DoPositionHandle(pivot,Quaternion.identity);
+			Vector3 movePivot = tempPivot-pivot;
+			for(int i=0 ;i<trans.childCount;++i){
+				Transform child = trans.GetChild(i);
+				child.position-= new Vector3(movePivot.x,movePivot.y,0f);
+			}
+			trans.position+= new Vector3(movePivot.x,movePivot.y,0f);
+			pivot = tempPivot;
+			Undo.RecordObject(target,"move");
+			Undo.RecordObject(target,"rotate");
+			SceneView.RepaintAll();
+		}
 	}
 
 }
