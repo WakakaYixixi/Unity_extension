@@ -59,6 +59,7 @@ public class SimpleCCD : MonoBehaviour
 		}
 
 		endTransform.rotation = targetIK.rotation;
+
 	}
 
 	void CalculateIK()
@@ -120,4 +121,35 @@ public class SimpleCCD : MonoBehaviour
 		angle = Mathf.Abs((angle % 360) + 360) % 360;
 		return Mathf.Clamp(angle, min, max);
 	}
+
+
+
+
+
+
+
+	void OnDrawGizmos() {
+		if(endTransform)
+		{
+			Gizmos.color = Color.blue;
+			Transform endTrans = endTransform;
+			while(endTrans!=transform)
+			{
+				Transform parent = endTrans.parent;
+
+				Vector3 v = Quaternion.AngleAxis(45, Vector3.forward) * ((endTrans.position - parent.position) / 5 );
+				Gizmos.DrawLine(parent.position, parent.position + v);
+				Gizmos.DrawLine(parent.position + v, endTrans.position);
+
+				v = Quaternion.AngleAxis(-45, Vector3.forward) * ((endTrans.position - parent.position) / 5);
+				Gizmos.DrawLine(parent.position, parent.position + v);
+				Gizmos.DrawLine(parent.position + v, endTrans.position);
+
+				Gizmos.DrawLine(parent.position,endTrans.position);
+
+				endTrans = parent;
+			}
+		}
+	}
+
 }
