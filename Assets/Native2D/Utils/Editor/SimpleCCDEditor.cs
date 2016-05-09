@@ -19,7 +19,7 @@ public class SimpleCCDEditor
 		foreach (var target in targets)
 		{
 			if(target.targetIK){
-				target.targetIK.position = Handles.FreeMoveHandle(target.targetIK.position,Quaternion.identity,2f,Vector3.zero,Handles.ArrowCap);
+				target.targetIK.position = Handles.FreeMoveHandle(target.targetIK.position,Quaternion.identity,.1f,Vector3.zero,Handles.SphereCap);
 			}
 			foreach (var node in target.angleLimits)
 			{
