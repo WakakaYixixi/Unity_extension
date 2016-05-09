@@ -53,7 +53,7 @@ public class SimpleCCDEditor
 
 	static Transform FindChildNode (Transform parent, Transform endTransform)
 	{
-		if (endTransform.parent != parent)
+		if (endTransform && endTransform.parent != parent)
 			return FindChildNode(parent, endTransform.parent); ;
 
 		return endTransform;
