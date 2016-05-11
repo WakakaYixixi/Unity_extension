@@ -38,17 +38,22 @@ public class RenderTexturePainter : MonoBehaviour {
 	public bool isEraser = false;
 	//纯色方式.
 	public Color penColor=new Color(1, 0, 0, 1);
-	//彩色方式
-	public Color[] paintColorful ;
-
-	//速度变化频率，越大变化越慢
-	public float colorChangeRate = 1f;
-	private int m_colorfulIndex = 1;
-	private float m_colorfulTime = 0f;
 
 	//笔刷缩放值
 	public float brushScale = 1f;
 
+
+//	[Header(" Colorfull paint Setting")]
+//	//彩色方式
+//	public Color[] paintColorful ;
+//
+//	//速度变化频率，越大变化越慢
+//	public float colorChangeRate = 1f;
+//	private int m_colorfulIndex = 1;
+//	private float m_colorfulTime = 0f;
+
+
+	[Header("Auto Setting")]
 	//是否自动初始化.
 	public bool isAutoInit = false;
 	public bool isAutoDestroy = true;
@@ -56,11 +61,20 @@ public class RenderTexturePainter : MonoBehaviour {
 	//init show picture
 	public bool initShowSource = false;
 
+
+
+
 	private RenderTexture m_rt;
+	public RenderTexture renderTexture{ get{ return m_rt; } }
+
 	private bool m_inited = false;
 	private bool m_isDown = false;
 	private Vector3 m_prevMousePosition;
 	private Material m_penMat,m_sourceMat,m_canvasMat;
+
+	public Material penMat{ get{ return m_penMat; } }
+	public Material sourceMat{ get{ return m_sourceMat; } }
+	public Material canvasMat{ get{ return m_canvasMat; } }
 
 	// Use this for initialization
 	void Start () {
@@ -141,6 +155,15 @@ public class RenderTexturePainter : MonoBehaviour {
 		if(paintType== PaintType.DrawLine){
 			m_canvasMat.color=penColor;
 		}
+	}
+
+	/// <summary>
+	/// 设置画布颜色
+	/// </summary>
+	/// <param name="c">C.</param>
+	public void SetPaintCanvasColor(Color c){
+		m_canvasMat.color = c;
+		m_canvasMat.SetFloat("_Alpha",c.a);
 	}
 
 	/// <summary>
