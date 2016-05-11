@@ -10,10 +10,11 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType"="Transparent" }
+		Tags { "RenderType"="Transparent" "Queue"="Transparent" "IgnoreProjector"="True"}
 		LOD 100
 		Cull off
 		ZTest Always
+		ZWrite off
 		Blend [_BlendSrc] [_BlendDst]
 
 		Pass
@@ -59,6 +60,8 @@
 				fixed4 col = tex2D(_MainTex, i.uv);
 				col.rgb*=_Color.rgb;
 				col.a*=_Alpha;
+
+				clip(col.a-0.01)
 				// apply fog
 				UNITY_APPLY_FOG(i.fogCoord, col);
 				return col;
