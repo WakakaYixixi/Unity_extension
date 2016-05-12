@@ -52,7 +52,6 @@
 				v2f o;
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
 			}
 			
@@ -61,11 +60,10 @@
 				// sample the texture
 				fixed4 col = tex2D(_MainTex, i.uv);
 				col.rgb*=_Color.rgb;
-				col.a*=_Alpha;
+				col*=_Alpha;
 
-				clip(col.a-_Cutoff)
-				// apply fog
-				UNITY_APPLY_FOG(i.fogCoord, col);
+				clip(col.a-_Cutoff);
+
 				return col;
 			}
 			ENDCG

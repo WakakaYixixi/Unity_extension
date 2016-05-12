@@ -16,6 +16,7 @@ public class RenderTexturePainter : MonoBehaviour {
 
 	[Header("Canvas Setting")]
 	//画布大小
+	public bool userSourceTexSize=true;
 	public int canvasWidth=512;
 	public int canvasHeight=512;
 
@@ -32,7 +33,7 @@ public class RenderTexturePainter : MonoBehaviour {
 	//画笔方式.
 	public Texture penTex, sourceTex;
 
-	public Shader paintShader,scribbleShader;
+	public Shader paintShader;
 
 	//是否为擦除.
 	public bool isEraser = false;
@@ -71,6 +72,7 @@ public class RenderTexturePainter : MonoBehaviour {
 	private bool m_isDown = false;
 	private Vector3 m_prevMousePosition;
 	private Material m_penMat,m_sourceMat,m_canvasMat;
+	private Vector2 m_sourceTexScale;
 
 	public Material penMat{ get{ return m_penMat; } }
 	public Material sourceMat{ get{ return m_sourceMat; } }
@@ -88,50 +90,47 @@ public class RenderTexturePainter : MonoBehaviour {
 		if(!m_inited){
 			m_inited = true;
 
+			if(userSourceTexSize&&sourceTex){
+				canvasWidth = sourceTex.width;
+				canvasHeight = sourceTex.height;
+			}
+
 			m_rt = new RenderTexture(canvasWidth,canvasHeight,renderTextureDepth,renderTextureformat);
 			m_rt.useMipMap = false;
-			m_rt.antiAliasing=1;
-			m_rt.anisoLevel =1 ;
 
-			if(paintType== PaintType.Scribble){
-				canvasColor = new Color(1,1,1,0);
-			}
+
 			//canvas
 			m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
 			CreateQuad(m_canvasMat);
 			m_canvasMat.mainTexture = m_rt;
 
-			//pen
-			if(isEraser){
-				m_penMat = CreateMat(paintShader,penColor,BlendMode.Zero,BlendMode.OneMinusSrcAlpha,penColor.a);
-			}else{
-				if(paintType== PaintType.Scribble){
-					// m_penMat = CreateMat(scribbleShader,penColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,penColor.a);
-					// m_penMat.SetTexture("_SourceTex",sourceTex);
-					// m_penMat.SetTextureScale("_SourceTex",new Vector2((float)canvasWidth/penTex.width,(float)canvasHeight/penTex.height)*0.5f);
 
-					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,penColor.a);
+			if(isEraser)
+			{
+				m_penMat = CreateMat(paintShader,penColor,BlendMode.Zero,BlendMode.OneMinusSrcAlpha,penColor.a);
+				m_sourceMat = CreateMat(paintShader,Color.white,BlendMode.DstAlpha,BlendMode.Zero);
+			}
+			else
+			{
+				if(paintType== PaintType.Scribble){
+
+					canvasColor = new Color(1,1,1,0);
+					m_canvasMat.SetColor("_Color",canvasColor);
+					m_penMat = CreateMat(paintShader,penColor,BlendMode.One,BlendMode.OneMinusSrcAlpha);
 					m_penMat.SetFloat("_Cutoff",0.99f);
+					m_sourceMat = CreateMat(paintShader,Color.white,BlendMode.DstAlpha,BlendMode.OneMinusDstAlpha);
 
 				}else if(paintType== PaintType.DrawLine){
+
 					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.One,penColor.a);
 					m_canvasMat.color=penColor;
+					m_sourceMat = CreateMat(paintShader, Color.white,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
 				}
-			}
-
-			//source
-			if(paintType== PaintType.DrawLine){
-				m_sourceMat = CreateMat(paintShader, Color.white,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
-			}else if(paintType== PaintType.Scribble){
-				m_sourceMat = CreateMat(paintShader,Color.white,BlendMode.DstAlpha,BlendMode.OneMinusDstAlpha);
-				m_sourceMat.SetTexture("_MainTex",sourceTex);
 			}
 
 			ClearCanvas();
 			if(isShowSource){
-				RenderTexture.active = m_rt;
-				Graphics.Blit(sourceTex,m_rt,m_sourceMat);
-				RenderTexture.active = null;
+				ShowSourceTexture();
 			}
 		}
 	}
@@ -184,8 +183,9 @@ public class RenderTexturePainter : MonoBehaviour {
 	/// </summary>
 	public void ShowSourceTexture(){
 		if(sourceTex){
+			m_canvasMat.SetColor("_Color",new Color(1,1,1,1));
 			RenderTexture.active = m_rt;
-			Graphics.Blit(sourceTex,m_rt,m_sourceMat);
+			Graphics.Blit(sourceTex,m_rt);
 			RenderTexture.active = null;
 		}
 	}
@@ -199,7 +199,35 @@ public class RenderTexturePainter : MonoBehaviour {
 		return m;
 	}
 
-	public void StartDraw(Vector3 screenPos , Camera camera=null){
+	/// <summary>
+	/// Draw一次
+	/// </summary>
+	/// <param name="screenPos">Screen position.</param>
+	/// <param name="camera">Camera.</param>
+	public void ClickDraw(Vector3 screenPos , Camera camera=null){
+		if (camera == null) camera = Camera.main;
+		Vector3 worldPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPos));
+		screenPos = new Vector3(worldPos.x * canvasWidth, canvasHeight - worldPos.y * canvasHeight,0f);
+
+		GL.PushMatrix();
+		GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
+		RenderTexture.active = m_rt;
+		float w = penTex.width*brushScale;
+		float h = penTex.height*brushScale;
+		Graphics.DrawTexture(new Rect((screenPos.x-w*0.5f),(screenPos.y-h*0.5f),w,h),penTex,m_penMat);
+		if(paintType == PaintType.Scribble){
+			Graphics.Blit(sourceTex,m_rt,m_sourceMat,0);
+		}
+		RenderTexture.active = null;
+		GL.PopMatrix();
+	}
+
+	/// <summary>
+	/// 移动动时draw
+	/// </summary>
+	/// <param name="screenPos">Screen position.</param>
+	/// <param name="camera">Camera.</param>
+	public void Drawing(Vector3 screenPos , Camera camera=null){
 		if (camera == null) camera = Camera.main;
 		Vector3 worldPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPos));
 		screenPos = new Vector3(worldPos.x * canvasWidth, canvasHeight - worldPos.y * canvasHeight,0f);
@@ -214,7 +242,7 @@ public class RenderTexturePainter : MonoBehaviour {
 			GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
 			RenderTexture.active = m_rt;
 			LerpDraw(screenPos,m_prevMousePosition);
-			if(paintType == PaintType.Scribble){
+			if(!isEraser && paintType == PaintType.Scribble){
 				Graphics.Blit(sourceTex,m_rt,m_sourceMat,0);
 			}
 			RenderTexture.active = null;
@@ -223,6 +251,9 @@ public class RenderTexturePainter : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// 结束draw
+	/// </summary>
 	public void EndDraw(){
 		m_isDown = false;
 	}
@@ -254,15 +285,6 @@ public class RenderTexturePainter : MonoBehaviour {
 				Vector2 pos = new Vector2(prev.x + (lDifx * lDelta), prev.y + (lDify * lDelta));
 				Graphics.DrawTexture(new Rect((pos.x-w*0.5f),(pos.y-h*0.5f),w,h),penTex,m_penMat);
 			}
-		}
-		else
-		{
-			// if(paintType== PaintType.Scribble){
-			// 	print(-current*0.01f+"  "+m_penMat.GetTextureScale("_SourceTex"));
-			// 	m_penMat.SetTextureOffset("_SourceTex",-new Vector2(current.x,current.y)*0.01f);
-			// 	Graphics.DrawTexture(new Rect((current.x-w*0.5f),(current.y-h*0.5f),w,h),penTex,m_penMat);
-			// }
-			Graphics.DrawTexture(new Rect((current.x-w*0.5f),(current.y-h*0.5f),w,h),penTex,m_penMat);
 		}
 	}
 
