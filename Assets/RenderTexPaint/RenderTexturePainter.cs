@@ -204,8 +204,8 @@ public class RenderTexturePainter : MonoBehaviour {
 	/// <param name="camera">Camera.</param>
 	public void ClickDraw(Vector3 screenPos , Camera camera=null){
 		if (camera == null) camera = Camera.main;
-		Vector3 worldPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPos));
-		screenPos = new Vector3(worldPos.x * canvasWidth, canvasHeight - worldPos.y * canvasHeight,0f);
+		Vector3 uvPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPos));
+		screenPos = new Vector3(uvPos.x * canvasWidth, canvasHeight - uvPos.y * canvasHeight,0f);
 
 		GL.PushMatrix();
 		GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
@@ -227,8 +227,8 @@ public class RenderTexturePainter : MonoBehaviour {
 	/// <param name="camera">Camera.</param>
 	public void Drawing(Vector3 screenPos , Camera camera=null){
 		if (camera == null) camera = Camera.main;
-		Vector3 worldPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPos));
-		screenPos = new Vector3(worldPos.x * canvasWidth, canvasHeight - worldPos.y * canvasHeight,0f);
+		Vector3 uvPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPos));
+		screenPos = new Vector3(uvPos.x * canvasWidth, canvasHeight - uvPos.y * canvasHeight,0f);
 
 		if(!m_isDown){
 			m_isDown = true;
@@ -270,10 +270,10 @@ public class RenderTexturePainter : MonoBehaviour {
 	}
 
 	void LerpDraw(Vector3 current , Vector3 prev){
-		float w = penTex.width*brushScale;
-		float h = penTex.height*brushScale;
 		float distance = Vector2.Distance(current, prev);
 		if(distance>0f){
+			float w = penTex.width*brushScale;
+			float h = penTex.height*brushScale;
 			float lerpDamp = Mathf.Min(w,h)*0.02f;
 			for (float i = 0; i < distance; i += lerpDamp)
 			{

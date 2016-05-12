@@ -1,9 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 用来测试RenderTexturePainter和PaintCompleteChecker
+/// </summary>
 public class RenderPainterController : MonoBehaviour {
 
 	public RenderTexturePainter painter;
+	public PaintCompleteChecker checker;
 	private bool m_isEraser = false;
 
 	// Use this for initialization
@@ -15,9 +19,11 @@ public class RenderPainterController : MonoBehaviour {
 	void Update () {
 		if(Input.GetMouseButton(0)){
 			painter.Drawing(Input.mousePosition);
+			checker.Drawing(Input.mousePosition);
 		}
 		if(Input.GetMouseButtonUp(0)){
 			painter.EndDraw();
+			checker.EndDraw();
 		}
 	}
 

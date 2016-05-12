@@ -48,11 +48,17 @@ public class CompleteCheckerEditor : Editor {
 			}
 			m_showSource = showSource;
 		}
-
 		EditorGUILayout.EndHorizontal();
+
+		EditorGUILayout.Space();
+		EditorGUILayout.BeginHorizontal();
 		if(GUILayout.Button("Save Grid")){
 			SaveGrid();
 		}
+		if(GUILayout.Button("Read Grid Data")){
+			ReadGrid();
+		}
+		EditorGUILayout.EndHorizontal();
 	}
 
 	void CreateGrid(){
@@ -62,8 +68,8 @@ public class CompleteCheckerEditor : Editor {
 			checker.gridsDic = new Dictionary<string,Rect> ();
 			checker.enablesDic = new Dictionary<string,bool> ();
 
-			int gridW = Mathf.FloorToInt(painter.penTex.width*painter.brushScale/2f);
-			int gridH = Mathf.FloorToInt(painter.penTex.height*painter.brushScale/2f);
+			int gridW = Mathf.FloorToInt(painter.penTex.width*painter.brushScale/4f);
+			int gridH = Mathf.FloorToInt(painter.penTex.height*painter.brushScale/4f);
 			int canvasW = painter.sourceTex.width;
 			int canvasH = painter.sourceTex.height;
 
@@ -84,16 +90,28 @@ public class CompleteCheckerEditor : Editor {
 		PaintCompleteChecker checker = target as PaintCompleteChecker;
 		if(checker.gridsDic!=null){
 			PaintRectDictionary map1 =new PaintRectDictionary();
-			foreach(string key in checker.gridsDic.Keys){
-				map1[key] = checker.gridsDic[key];
-			}
-			AssetDatabase.CreateAsset(map1,"Assets/paint_grids_"+checker.name+".asset");
-
 			PaintEnableDictionary map2 =new PaintEnableDictionary();
-			foreach(string key in checker.enablesDic.Keys){
-				map2[key] = checker.enablesDic[key];
+
+			foreach(string key in checker.gridsDic.Keys){
+				if(checker.enablesDic[key])
+				{
+					map1[key] = checker.gridsDic[key];
+					map2[key] = checker.enablesDic[key];
+				}
 			}
-			AssetDatabase.CreateAsset(map2,"Assets/paint_enable_"+checker.name+".asset");
+			AssetDatabase.CreateAsset(map1,"Assets/Paint_Rect_"+checker.name+".asset");
+			AssetDatabase.CreateAsset(map2,"Assets/Paint_Enable_"+checker.name+".asset");
+		}
+	}
+
+	void ReadGrid()
+	{
+		PaintCompleteChecker checker = target as PaintCompleteChecker;
+		if(checker.assetRectDic!=null){
+			checker.gridsDic = checker.assetRectDic.ConvertToDictionary();
+			if(checker.assetEnableDic!=null){
+				checker.enablesDic = checker.assetEnableDic.ConvertToDictionary();
+			}
 		}
 	}
 
@@ -118,7 +136,7 @@ public class CompleteCheckerEditor : Editor {
 					foreach(string key in checker.gridsDic.Keys)
 					{
 						Rect rect = checker.gridsDic[key];
-						if(Intersect(rect,brushSize)){
+						if(checker.Intersect(rect,brushSize)){
 							checker.enablesDic[key]=true;
 						}
 					}
@@ -126,7 +144,7 @@ public class CompleteCheckerEditor : Editor {
 					foreach(string key in checker.gridsDic.Keys)
 					{
 						Rect rect = checker.gridsDic[key];
-						if(Intersect(rect,brushSize)){
+						if(checker.Intersect(rect,brushSize)){
 							checker.enablesDic[key]=false;
 						}
 					}
@@ -138,22 +156,5 @@ public class CompleteCheckerEditor : Editor {
 				break;
 			}
 		}
-	}
-
-	bool Intersect( Rect a, Rect b ) {
-		FlipNegative( ref a );
-		FlipNegative( ref b );
-		bool c1 = a.xMin < b.xMax;
-		bool c2 = a.xMax > b.xMin;
-		bool c3 = a.yMin < b.yMax;
-		bool c4 = a.yMax > b.yMin;
-		return c1 && c2 && c3 && c4;
-	}
-
-	void FlipNegative(ref Rect r) {
-		if( r.width < 0 ) 
-			r.x -= ( r.width *= -1 );
-		if( r.height < 0 )
-			r.y -= ( r.height *= -1 );
 	}
 }
