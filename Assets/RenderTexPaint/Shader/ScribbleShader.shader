@@ -1,11 +1,12 @@
-﻿Shader "ZZL/Unlit/Painter/Paint Shader"
+﻿Shader "ZZL/Unlit/Painter/Scribble Shader"
 {
 	Properties
 	{
-		_MainTex ("Texture", 2D) = "white" {}
+		_MainTex ("Texture", 2D) = "white" {} //penTex
+		_SourceTex ("Source Tex", 2D) = "white" {}// sourceTex
 		_Color("Color",Color)=(1,1,1,1)
 		_Alpha("Alpha",Range(0,1))=1
-		_Cutoff("Alpha cutoff",Range(0,1))=0
+		_Cutoff("Alpha cutoff",Range(0,1))=0.01
 		[Enum(UnityEngine.Rendering.BlendMode)] _BlendSrc("Src Factor",float)=5
 		[Enum(UnityEngine.Rendering.BlendMode)] _BlendDst("Dst Factor",float)=10
 	}
@@ -37,12 +38,15 @@
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
+				float4 worldPosition : TEXCOORD1;
 				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
 			};
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
+			sampler2D _SourceTex;
+			float4 _SourceTex_ST;
 			fixed4 _Color;
 			fixed _Alpha;
 			fixed _Cutoff;
@@ -50,6 +54,7 @@
 			v2f vert (appdata v)
 			{
 				v2f o;
+				o.worldPosition = mul(_Object2World,v.vertex);
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				UNITY_TRANSFER_FOG(o,o.vertex);
@@ -59,7 +64,10 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = tex2D(_MainTex, i.uv);
+				fixed4 col = tex2D(_SourceTex, i.uv);
+				fixed4 col1 = tex2D (_MainTex,(- _SourceTex_ST.xy)/_SourceTex_ST.zw );
+				col *= col1.a;
+
 				col.rgb*=_Color.rgb;
 				col.a*=_Alpha;
 
