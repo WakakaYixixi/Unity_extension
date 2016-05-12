@@ -64,7 +64,6 @@ public class RenderTexturePainter : MonoBehaviour {
 
 
 
-
 	private RenderTexture m_rt;
 	public RenderTexture renderTexture{ get{ return m_rt; } }
 
@@ -97,7 +96,6 @@ public class RenderTexturePainter : MonoBehaviour {
 
 			m_rt = new RenderTexture(canvasWidth,canvasHeight,renderTextureDepth,renderTextureformat);
 			m_rt.useMipMap = false;
-
 
 			//canvas
 			m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
