@@ -1,8 +1,9 @@
-﻿Shader "ZZL/Unlit/Painter/Paint Shader"
+﻿Shader "ZZL/Unlit/Painter/Scribble Shader"
 {
 	Properties
 	{
-		_MainTex ("Texture", 2D) = "white" {}
+		_MainTex ("Source Tex", 2D) = "white" {}
+		_PenTex("Pen Tex",2D) = "white" {}
 		_Color("Color",Color)=(1,1,1,1)
 		_Alpha("Alpha",Range(0,1))=1
 		_Cutoff("Alpha cutoff",Range(0,1))=0
@@ -37,12 +38,15 @@
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
+				float2 uv1 : TEXCOORD1;
 				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
 			};
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
+			sampler2D _PenTex;
+			float4 _PenTex_ST;
 			fixed4 _Color;
 			fixed _Alpha;
 			fixed _Cutoff;
@@ -52,6 +56,7 @@
 				v2f o;
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				o.uv1 = v.uv*_PenTex_ST.xy-_PenTex_ST.zw;
 				return o;
 			}
 			
@@ -61,6 +66,9 @@
 				fixed4 col = tex2D(_MainTex, i.uv);
 				col.rgb*=_Color.rgb;
 				col.a*=_Alpha;
+
+				fixed4 mask = tex2D (_PenTex,i.uv1 );
+				col.a*=mask.a;
 
 				clip(col.a-_Cutoff);
 
