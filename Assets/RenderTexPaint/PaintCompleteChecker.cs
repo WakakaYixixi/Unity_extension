@@ -133,6 +133,8 @@ public class PaintCompleteChecker : MonoBehaviour {
 	}
 
 
+
+
 	void OnDrawGizmos(){
 		if(gridsDic!=null && enablesDic!=null){
 
@@ -158,6 +160,4 @@ public class PaintCompleteChecker : MonoBehaviour {
 			Gizmos.matrix = oldGizmosMatrix;
 		}
 	}
-
-
 }

@@ -7,8 +7,6 @@ using System.IO;
 [CustomEditor(typeof(PaintCompleteChecker))]
 public class CompleteCheckerEditor : Editor {
 
-	private static bool m_showSource = false;
-
 	public override void OnInspectorGUI(){
 
 		EditorGUILayout.Space();
@@ -28,25 +26,14 @@ public class CompleteCheckerEditor : Editor {
 		if(GUILayout.Button("Create Check Grid")){
 			CreateGrid();
 		}
-		bool showSource = GUILayout.Toggle(m_showSource,"Show Source Tex","Button");
-		if(m_showSource!=showSource){
+		if(GUILayout.Button("Show Source Tex")){
 			PaintCompleteChecker checker = target as PaintCompleteChecker;
 			RenderTexturePainter painter = checker.gameObject.GetComponent<RenderTexturePainter>();
-			if(showSource){
-				if(painter&&painter.sourceTex){
-					SpriteRenderer render = checker.GetComponent<SpriteRenderer>();
-					if(!render) render = checker.gameObject.AddComponent<SpriteRenderer>();
-					render.sprite = Sprite.Create((Texture2D)painter.sourceTex,new Rect(0,0,painter.sourceTex.width,painter.sourceTex.height),Vector2.one*0.5f);
-				}
-			}
-			else
-			{
+			if(painter&&painter.sourceTex){
 				SpriteRenderer render = checker.GetComponent<SpriteRenderer>();
-				if(render){
-					DestroyImmediate(render);
-				}
+				if(!render) render = checker.gameObject.AddComponent<SpriteRenderer>();
+				render.sprite = Sprite.Create((Texture2D)painter.sourceTex,new Rect(0,0,painter.sourceTex.width,painter.sourceTex.height),Vector2.one*0.5f);
 			}
-			m_showSource = showSource;
 		}
 		EditorGUILayout.EndHorizontal();
 

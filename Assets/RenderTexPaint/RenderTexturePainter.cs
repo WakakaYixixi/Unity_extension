@@ -271,6 +271,7 @@ public class RenderTexturePainter : MonoBehaviour {
 
 	void LerpDraw(Vector3 current , Vector3 prev){
 		float distance = Vector2.Distance(current, prev);
+		Vector2 pos;
 		if(distance>0f){
 			float w = penTex.width*brushScale;
 			float h = penTex.height*brushScale;
@@ -280,7 +281,8 @@ public class RenderTexturePainter : MonoBehaviour {
 				float lDelta = i / distance;
 				float lDifx = current.x - prev.x;
 				float lDify = current.y - prev.y;
-				Vector2 pos = new Vector2(prev.x + (lDifx * lDelta), prev.y + (lDify * lDelta));
+				pos.x = prev.x + (lDifx * lDelta);
+				pos.y = prev.y + (lDify * lDelta);
 				Graphics.DrawTexture(new Rect((pos.x-w*0.5f),(pos.y-h*0.5f),w,h),penTex,m_penMat);
 			}
 		}
