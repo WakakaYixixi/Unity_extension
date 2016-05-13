@@ -116,7 +116,7 @@ public class RenderTexturePainterEx : MonoBehaviour {
 					float w = penTex.width*brushScale;
 					float h = penTex.height*brushScale;
 					m_sourceMat.SetTextureScale("_PenTex",new Vector2(canvasWidth/h*0.2f,canvasHeight/w*0.2f));
-//					m_sourceMat.SetFloat("_Cutoff",0.99f);
+					m_sourceMat.SetFloat("_Cutoff",0.99f);
 
 				}else if(paintType== PaintType.DrawLine){
 

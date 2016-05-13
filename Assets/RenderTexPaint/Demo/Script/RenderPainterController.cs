@@ -14,7 +14,10 @@ public class RenderPainterController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Application.targetFrameRate=60;
-		m_isEraser = painter.isEraser;
+		if(painter) 
+			m_isEraser = painter.isEraser;
+		if(painterEx) 
+			m_isEraser = painterEx.isEraser;
 	}
 	
 	// Update is called once per frame
@@ -27,7 +30,10 @@ public class RenderPainterController : MonoBehaviour {
 //			checker.Drawing(Input.mousePosition);
 		}
 		if(Input.GetMouseButtonUp(0)){
-			painter.EndDraw();
+			if(painter) 
+				painter.EndDraw();
+			if(painterEx) 
+				painterEx.EndDraw();
 //			checker.EndDraw();
 		}
 	}
