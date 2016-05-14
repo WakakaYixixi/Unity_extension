@@ -9,3 +9,4 @@ obj/
 *.unityproj
 *.DS_Store
 Ios_test
+*.apk
