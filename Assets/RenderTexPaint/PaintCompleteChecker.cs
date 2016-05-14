@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+/// <summary>
+/// 涂抹完成判断
+/// </summary>
 [RequireComponent(typeof(RenderTexturePainter))]
 public class PaintCompleteChecker : MonoBehaviour {
 	//网格初始值
@@ -29,30 +31,64 @@ public class PaintCompleteChecker : MonoBehaviour {
 
 	private bool m_isDown;
 	private Vector3 m_prevMousePosition;
+	private Vector2 m_lerpSize ;
+	private List<string> m_keyList = new List<string>();
+	private int m_totalCount;
+
+	/// <summary>
+	/// 完成的进度 0-1
+	/// </summary>
+	/// <value>The progress.</value>
+	public float Progress{
+		get {return 1f-(float)gridsDic.Count/m_totalCount; }
+	}
 
 	void Start(){
 		m_painter = GetComponent<RenderTexturePainter>();
+		Reset();
+	}
+
+	/// <summary>
+	/// Reset
+	/// </summary>
+	public void Reset(){
 		if(assetRectDic!=null){
 			gridsDic = assetRectDic.ConvertToDictionary();
 			if(assetEnableDic!=null){
 				enablesDic = assetEnableDic.ConvertToDictionary();
 			}
+			m_totalCount = gridsDic.Count;
 		}
+
+		float w = m_painter.penTex.width*m_painter.brushScale*0.005f;
+		float h = m_painter.penTex.height*m_painter.brushScale*0.005f;
+		m_lerpSize = new Vector2(w,h); 
 	}
 
 	public void ClickDraw(Vector3 screenPos , Camera camera=null){
 		if (camera == null) camera = Camera.main;
 		Vector3 localPos= transform.InverseTransformPoint(camera.ScreenToWorldPoint(screenPos));
+
+		float w = m_lerpSize.x;
+		float h = m_lerpSize.y;
+		float lerpDamp = Mathf.Min(w,h);
+		Rect brushSize = new Rect((localPos.x-w*0.5f),(localPos.y-h*0.5f),w,h);
 		foreach(string key in gridsDic.Keys)
 		{
 			Rect rect = gridsDic[key];
-			if(rect.Contains(localPos)){
+			if(Vector2.Distance(rect.center,brushSize.center)<lerpDamp*0.75f){
 				if(enablesDic[key]){
 					enablesDic[key] = false;
-					//数量+1
+					m_keyList.Add(key);
 				}
 			}
 		}
+		//移除完成部分
+		int count = m_keyList.Count;
+		for(int i=0;i<count;++i){
+			gridsDic.Remove(m_keyList[i]);
+		}
+		m_keyList.Clear();
 	}
 
 	/// <summary>
@@ -82,12 +118,11 @@ public class PaintCompleteChecker : MonoBehaviour {
 		m_isDown = false;
 	}
 
-
 	void LerpDraw(Vector3 current , Vector3 prev){
 		float distance = Vector2.Distance(current, prev);
 		if(distance>0f){
-			float w = m_painter.penTex.width*m_painter.brushScale*0.002f;
-			float h = m_painter.penTex.height*m_painter.brushScale*0.002f;
+			float w = m_lerpSize.x;
+			float h = m_lerpSize.y;
 	
 			float lerpDamp = Mathf.Min(w,h);
 			Vector2 pos;
@@ -103,25 +138,23 @@ public class PaintCompleteChecker : MonoBehaviour {
 				foreach(string key in gridsDic.Keys)
 				{
 					Rect rect = gridsDic[key];
-					if(Intersect(ref brushSize,ref rect)){
+					if(Vector2.Distance(rect.center,brushSize.center)<lerpDamp*0.75f){
 						if(enablesDic[key]){
 							enablesDic[key] = false;
-							//数量+1
-
+							m_keyList.Add(key);
 						}
 					}
 				}
 			}
+			//移除完成部分
+			int count = m_keyList.Count;
+			for(int i=0;i<count;++i){
+				gridsDic.Remove(m_keyList[i]);
+			}
+			m_keyList.Clear();
 		}
 	}
 
-	public bool Intersect(ref Rect a,ref Rect b ) {
-		bool c1 = a.xMin < b.xMax;
-		bool c2 = a.xMax > b.xMin;
-		bool c3 = a.yMin < b.yMax;
-		bool c4 = a.yMax > b.yMin;
-		return c1 && c2 && c3 && c4;
-	}
 
 	void OnDrawGizmos(){
 		if(gridsDic!=null && enablesDic!=null){

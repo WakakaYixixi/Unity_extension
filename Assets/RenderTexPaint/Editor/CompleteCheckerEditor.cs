@@ -102,6 +102,13 @@ public class CompleteCheckerEditor : Editor {
 		}
 	}
 
+	bool Intersect(ref Rect a,ref Rect b ) {
+		bool c1 = a.xMin < b.xMax;
+		bool c2 = a.xMax > b.xMin;
+		bool c3 = a.yMin < b.yMax;
+		bool c4 = a.yMax > b.yMin;
+		return c1 && c2 && c3 && c4;
+	}
 
 	void OnSceneGUI() {
 		PaintCompleteChecker checker = target as PaintCompleteChecker;
@@ -123,7 +130,7 @@ public class CompleteCheckerEditor : Editor {
 					foreach(string key in checker.gridsDic.Keys)
 					{
 						Rect rect = checker.gridsDic[key];
-						if(checker.Intersect(ref rect,ref brushSize)){
+						if(Intersect(ref rect,ref brushSize)){
 							checker.enablesDic[key]=true;
 						}
 					}
@@ -131,7 +138,7 @@ public class CompleteCheckerEditor : Editor {
 					foreach(string key in checker.gridsDic.Keys)
 					{
 						Rect rect = checker.gridsDic[key];
-						if(checker.Intersect(ref rect,ref brushSize)){
+						if(Intersect(ref rect,ref brushSize)){
 							checker.enablesDic[key]=false;
 						}
 					}
