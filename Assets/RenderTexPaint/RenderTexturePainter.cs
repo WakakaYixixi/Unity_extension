@@ -13,7 +13,7 @@ public class RenderTexturePainter : MonoBehaviour {
 	{
 		Scribble,//对图片进行涂和擦除.
 		DrawLine,//画线.
-//		DrawColorfulLine,//画彩色线
+		DrawColorfulLine,//画彩色线，画笔贴图必须要有alpha=1的部分，否则不会显示
 	}
 	public enum RenderTexDepth{
 		Depth0 = 0,
@@ -56,14 +56,14 @@ public class RenderTexturePainter : MonoBehaviour {
 	public bool isEraser = false;
 
 
-//	[Header(" Colorfull paint Setting")]
-//	//彩色方式
-//	public Color[] paintColorful ;
-//
-//	//速度变化频率，越大变化越慢
-//	public float colorChangeRate = 1f;
-//	private int m_colorfulIndex = 1;
-//	private float m_colorfulTime = 0f;
+	[Header(" Colorfull paint Setting")]
+	//彩色方式
+	public Color[] paintColorful ;
+
+	//速度变化频率，越大变化越慢
+	public float colorChangeRate = 1f;
+	private int m_colorfulIndex = 1;
+	private float m_colorfulTime = 0f;
 
 
 	[Header("Auto Setting")]
@@ -114,7 +114,7 @@ public class RenderTexturePainter : MonoBehaviour {
 				m_canvasMat.SetTexture("_SourceTex",sourceTex);
 				m_canvasMat.SetTexture("_RenderTex",m_rt);
 			}
-			else if(paintType== PaintType.DrawLine)
+			else
 			{
 				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,1f,0.02f);
 				CreateQuad(m_canvasMat);
@@ -135,6 +135,11 @@ public class RenderTexturePainter : MonoBehaviour {
 				}else if(paintType== PaintType.DrawLine){
 					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.One,penColor.a);
 					m_canvasMat.color=penColor;
+
+				}else if(paintType== PaintType.DrawColorfulLine){
+					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,penColor.a);
+					m_canvasMat.color=Color.white;
+					m_penMat.SetFloat("_Cutoff",0.99f);
 				}
 			}
 
@@ -149,12 +154,20 @@ public class RenderTexturePainter : MonoBehaviour {
 	public void SetIsEraser( bool value){
 		if(isEraser!=value){
 			isEraser = value;
+			m_penMat.SetFloat("_Cutoff",0f);
 			if(isEraser){
 				m_penMat.SetFloat("_BlendSrc",(int)BlendMode.Zero);
 				m_penMat.SetFloat("_BlendDst",(int)BlendMode.OneMinusSrcAlpha);
 			}else{
 				m_penMat.SetFloat("_BlendSrc",(int)BlendMode.SrcAlpha);
-				m_penMat.SetFloat("_BlendDst",(int)BlendMode.One);
+				if(paintType== PaintType.DrawColorfulLine){
+					m_penMat.SetFloat("_Cutoff",0.99f);
+					m_penMat.SetFloat("_BlendDst",(int)BlendMode.OneMinusSrcAlpha);
+				}
+				else
+				{
+					m_penMat.SetFloat("_BlendDst",(int)BlendMode.One);
+				}
 			}
 		}
 	}
@@ -238,6 +251,22 @@ public class RenderTexturePainter : MonoBehaviour {
 		}
 
 		if(m_isDown){
+
+			if(paintType== PaintType.DrawColorfulLine){
+				Color currC = paintColorful[m_colorfulIndex];
+				penColor = Color.Lerp(penColor,currC,Time.deltaTime*colorChangeRate);
+				m_colorfulTime+=Time.deltaTime*colorChangeRate;
+				if(m_colorfulTime>1f){
+					m_colorfulTime =0f;
+					++m_colorfulIndex;
+					if(m_colorfulIndex>=paintColorful.Length){
+						m_colorfulIndex = 0;
+					}
+				}
+				m_penMat.color=penColor;
+			}
+
+
 			GL.PushMatrix();
 			GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
 			RenderTexture.active = m_rt;

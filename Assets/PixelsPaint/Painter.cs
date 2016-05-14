@@ -201,8 +201,6 @@ public class Painter : MonoBehaviour {
 	/// <param name="hitPoint">Hit point.</param>
 	public Vector2 SpriteHitPoint2UV( Vector3 hitPoint){
 		Vector3 localPos=transform.InverseTransformPoint(hitPoint);
-		localPos.x*=transform.localScale.x;
-		localPos.y*=transform.localScale.y;
 		localPos*=100f;
 		localPos.x += _sourceWidth*0.5f;
 		localPos.y += _sourceHeight*0.5f;
