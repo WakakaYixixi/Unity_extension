@@ -81,6 +81,9 @@ public class RenderPainterController : MonoBehaviour {
 				painter.penTex = penTexs[m_penTexIndex];
 			}
 
+			enableCheckComplete = GUI.Toggle(new Rect(220,110,150,40),enableCheckComplete,"Check Progress","Button");
+
+
 			if(enableCheckComplete && checker ){
 				GUI.Label( new Rect(10,140,200,40),"Progress:"+checker.Progress.ToString("N2"));
 			}
