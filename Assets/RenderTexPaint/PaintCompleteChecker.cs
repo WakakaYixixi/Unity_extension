@@ -3,9 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 /// <summary>
 /// 涂抹完成判断
+/// author:zhouzhanglin
 /// </summary>
 [RequireComponent(typeof(RenderTexturePainter))]
 public class PaintCompleteChecker : MonoBehaviour {
+
+	#if UNITY_EDITOR
 	//网格初始值
 	public bool gridDefaultStatus=false;
 
@@ -18,29 +21,34 @@ public class PaintCompleteChecker : MonoBehaviour {
 
 	public Dictionary<string,Rect> gridsDic;
 	public Dictionary<string,bool> enablesDic;
+	#endif
 
-	[Header("Asset File")]
+
+	[Header("Check Data File")]
 	//拖文件到这上面
-	public PaintRectDictionary assetRectDic;
-	public PaintEnableDictionary assetEnableDic;
+	public ScribbleCheckData checkData;
+
+	//是否可以reset数据，如果为否，则直接操作原数据，为true就会产生一个副本
+	public bool canResetData = false;
 
 	private RenderTexturePainter m_painter;
 	public RenderTexturePainter painter{
 		get { return m_painter; }
 	}
 
+
 	private bool m_isDown;
 	private Vector3 m_prevMousePosition;
 	private Vector2 m_lerpSize ;
-	private List<string> m_keyList = new List<string>();
 	private int m_totalCount;
+	private List<Vector2> m_checkPoints;
 
 	/// <summary>
 	/// 完成的进度 0-1
 	/// </summary>
 	/// <value>The progress.</value>
 	public float Progress{
-		get {return 1f-(float)gridsDic.Count/m_totalCount; }
+		get {return 1f-(float)m_checkPoints.Count/m_totalCount; }
 	}
 
 	void Start(){
@@ -52,12 +60,33 @@ public class PaintCompleteChecker : MonoBehaviour {
 	/// Reset
 	/// </summary>
 	public void Reset(){
-		if(assetRectDic!=null){
-			gridsDic = assetRectDic.ConvertToDictionary();
-			if(assetEnableDic!=null){
-				enablesDic = assetEnableDic.ConvertToDictionary();
+		if(checkData!=null){
+			int count = checkData.checkPoints.Count;
+			m_totalCount = count;
+
+			if(canResetData)
+				m_checkPoints = new List<Vector2>();
+			else 
+				m_checkPoints = checkData.checkPoints;
+
+			#if UNITY_EDITOR
+			gridsDic = new Dictionary<string,Rect>();
+			enablesDic = new Dictionary<string,bool>();
+			#endif
+
+			for(int i=0;i<count;++i){
+				Vector2 v = checkData.checkPoints[i];
+
+				if(canResetData)
+					m_checkPoints.Add(v);
+
+				#if UNITY_EDITOR
+				Rect rect = new Rect( v.x-checkData.gridSize.x*0.005f,v.y-checkData.gridSize.y*0.005f, checkData.gridSize.x*0.01f,checkData.gridSize.y*0.01f);
+				string key = v.x+"-"+v.y;
+				gridsDic[key]=rect;
+				enablesDic[key] = true;
+				#endif
 			}
-			m_totalCount = gridsDic.Count;
 		}
 		if(m_painter && m_painter.penTex){
 			float w = m_painter.penTex.width*m_painter.brushScale*0.005f;
@@ -74,22 +103,21 @@ public class PaintCompleteChecker : MonoBehaviour {
 		float h = m_lerpSize.y;
 		float lerpDamp = Mathf.Min(w,h);
 		Rect brushSize = new Rect((localPos.x-w*0.5f),(localPos.y-h*0.5f),w,h);
-		foreach(string key in gridsDic.Keys)
-		{
-			Rect rect = gridsDic[key];
-			if(Vector2.Distance(rect.center,brushSize.center)<lerpDamp*0.75f){
-				if(enablesDic[key]){
-					enablesDic[key] = false;
-					m_keyList.Add(key);
-				}
+
+		int count = m_checkPoints.Count;
+		for(int i=0;i<m_checkPoints.Count;++i){
+			Vector2 point = m_checkPoints[i];
+			if(Vector2.Distance(point,brushSize.center)<lerpDamp*0.75f){
+				m_checkPoints.RemoveAt(i);
+				--i;
+
+				#if UNITY_EDITOR
+				string key = point.x+"-"+point.y;
+				gridsDic.Remove(key);
+				enablesDic.Remove(key);
+				#endif
 			}
 		}
-		//移除完成部分
-		int count = m_keyList.Count;
-		for(int i=0;i<count;++i){
-			gridsDic.Remove(m_keyList[i]);
-		}
-		m_keyList.Clear();
 	}
 
 	/// <summary>
@@ -136,27 +164,24 @@ public class PaintCompleteChecker : MonoBehaviour {
 				pos.y = prev.y + (lDify * lDelta);
 
 				Rect brushSize = new Rect((pos.x-w*0.5f),(pos.y-h*0.5f),w,h);
-				foreach(string key in gridsDic.Keys)
-				{
-					Rect rect = gridsDic[key];
-					if(Vector2.Distance(rect.center,brushSize.center)<lerpDamp*0.75f){
-						if(enablesDic[key]){
-							enablesDic[key] = false;
-							m_keyList.Add(key);
-						}
+				for(int j=0;j<m_checkPoints.Count;++j){
+					Vector2 point = m_checkPoints[j];
+					if(Vector2.Distance(point,brushSize.center)<lerpDamp*0.75f){
+						m_checkPoints.RemoveAt(j);
+						--j;
+
+						#if UNITY_EDITOR
+						string key = point.x+"-"+point.y;
+						gridsDic.Remove(key);
+						enablesDic.Remove(key);
+						#endif
 					}
 				}
 			}
-			//移除完成部分
-			int count = m_keyList.Count;
-			for(int i=0;i<count;++i){
-				gridsDic.Remove(m_keyList[i]);
-			}
-			m_keyList.Clear();
 		}
 	}
 
-
+	#if UNITY_EDITOR
 	void OnDrawGizmos(){
 		if(gridsDic!=null && enablesDic!=null){
 
@@ -182,4 +207,5 @@ public class PaintCompleteChecker : MonoBehaviour {
 			Gizmos.matrix = oldGizmosMatrix;
 		}
 	}
+	#endif
 }

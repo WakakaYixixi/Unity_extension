@@ -4,6 +4,7 @@ using UnityEngine.Rendering;
 
 /// <summary>
 /// 通过Render texture 实现画笔.
+/// author:zhouzhanglin
 /// </summary>
 public class RenderTexturePainter : MonoBehaviour {
 
@@ -420,6 +421,7 @@ public class RenderTexturePainter : MonoBehaviour {
 
 
 
+	#if UNITY_EDITOR
 	void OnDrawGizmos(){
 		Gizmos.color = Color.red;
 		Matrix4x4 cubeTransform = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
@@ -428,6 +430,7 @@ public class RenderTexturePainter : MonoBehaviour {
 		Gizmos.DrawWireCube(Vector3.zero,new Vector3(canvasWidth*0.01f,canvasHeight*0.01f,0.1f));
 		Gizmos.matrix = oldGizmosMatrix;
 	}
+	#endif
 
 	#endregion
 

@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using System.IO;
 
+/// <summary>
+/// Complete checker editor.
+/// author:zhouzhanglin
+/// </summary>
 [CustomEditor(typeof(PaintCompleteChecker))]
 public class CompleteCheckerEditor : Editor {
 
@@ -15,15 +19,13 @@ public class CompleteCheckerEditor : Editor {
 		EditorGUILayout.PropertyField(serializedObject.FindProperty("brushSize"), true);
 		EditorGUILayout.PropertyField(serializedObject.FindProperty("enableColor"), true);
 		EditorGUILayout.PropertyField(serializedObject.FindProperty("disableColor"), true);
-
-		EditorGUILayout.PropertyField(serializedObject.FindProperty("assetRectDic"), true);
-		EditorGUILayout.PropertyField(serializedObject.FindProperty("assetEnableDic"), true);
-
+		EditorGUILayout.PropertyField(serializedObject.FindProperty("checkData"), true);
+		EditorGUILayout.PropertyField(serializedObject.FindProperty("canResetData"), true);
 		serializedObject.ApplyModifiedProperties();
 
 		EditorGUILayout.Space();
 		EditorGUILayout.BeginHorizontal();
-		if(GUILayout.Button("(Ctrl+) Read Data")){
+		if(GUILayout.Button("(Ctrl+)Read Data")){
 			ReadGrid();
 		}
 		if(GUILayout.Button("Show Source Tex")){
@@ -40,11 +42,11 @@ public class CompleteCheckerEditor : Editor {
 
 		EditorGUILayout.Space();
 		EditorGUILayout.BeginHorizontal();
-		if(GUILayout.Button("(Ctrl+) Create Data")){
+		if(GUILayout.Button("(Ctrl+)Create Data")){
 			CreateGrid();
 		}
-		if(GUILayout.Button("Save Grid")){
-			SaveGrid();
+		if(GUILayout.Button("Save Grid Data")){
+			SaveDataToFile();
 		}
 		EditorGUILayout.EndHorizontal();
 
@@ -59,8 +61,10 @@ public class CompleteCheckerEditor : Editor {
 			checker.gridsDic = new Dictionary<string,Rect> ();
 			checker.enablesDic = new Dictionary<string,bool> ();
 
-			int gridW = Mathf.FloorToInt(painter.penTex.width*painter.brushScale/2f);
-			int gridH = Mathf.FloorToInt(painter.penTex.height*painter.brushScale/2f);
+			Vector2 gridSize = GetGridSize();
+			int gridW = (int)gridSize.x;
+			int gridH = (int)gridSize.y;
+
 			int canvasW = painter.sourceTex.width;
 			int canvasH = painter.sourceTex.height;
 
@@ -76,32 +80,49 @@ public class CompleteCheckerEditor : Editor {
 		}
 	}
 
-	void SaveGrid(){
+	void SaveDataToFile(){
 		//序列化存储
 		PaintCompleteChecker checker = target as PaintCompleteChecker;
 		if(checker.gridsDic!=null){
-			PaintRectDictionary map1 =new PaintRectDictionary();
-			PaintEnableDictionary map2 =new PaintEnableDictionary();
-
-			foreach(string key in checker.gridsDic.Keys){
-				if(checker.enablesDic[key])
-				{
-					map1[key] = checker.gridsDic[key];
-					map2[key] = checker.enablesDic[key];
-				}
-			}
-			AssetDatabase.CreateAsset(map1,"Assets/"+checker.name+"_rect.asset");
-			AssetDatabase.CreateAsset(map2,"Assets/"+checker.name+"_enable.asset");
+			AssetDatabase.CreateAsset(GetGridData(),"Assets/"+checker.name+"_ScribbleCheckData.asset");
 		}
+	}
+
+	ScribbleCheckData GetGridData(){
+		PaintCompleteChecker checker = target as PaintCompleteChecker;
+		ScribbleCheckData checkData = new ScribbleCheckData();
+		checkData.checkPoints = new List<Vector2>();
+		checkData.gridSize = GetGridSize();
+		foreach(string key in checker.gridsDic.Keys){
+			if(checker.enablesDic[key])
+			{
+				Rect r = checker.gridsDic[key];
+				checkData.checkPoints.Add(r.center);
+			}
+		}
+		return checkData;
+	}
+
+	Vector2 GetGridSize(){
+		PaintCompleteChecker checker = target as PaintCompleteChecker;
+		RenderTexturePainter painter = checker.gameObject.GetComponent<RenderTexturePainter>();
+		int gridW = Mathf.FloorToInt(painter.penTex.width*painter.brushScale/4f);
+		int gridH = Mathf.FloorToInt(painter.penTex.height*painter.brushScale/4f);
+		return new Vector2(gridW,gridH);
 	}
 
 	void ReadGrid()
 	{
 		PaintCompleteChecker checker = target as PaintCompleteChecker;
-		if(checker.assetRectDic!=null){
-			checker.gridsDic = checker.assetRectDic.ConvertToDictionary();
-			if(checker.assetEnableDic!=null){
-				checker.enablesDic = checker.assetEnableDic.ConvertToDictionary();
+		if(checker.checkData!=null){
+			checker.gridsDic = new Dictionary<string, Rect>();
+			checker.enablesDic = new Dictionary<string, bool>();
+			Vector2 gridSize = GetGridSize();
+			foreach(Vector2 v in checker.checkData.checkPoints){
+				Rect rect = new Rect( v.x-gridSize.x*0.005f,v.y-gridSize.y*0.005f, gridSize.x*0.01f,gridSize.y*0.01f);
+				string key = v.x+"-"+v.y;
+				checker.gridsDic[key]=rect;
+				checker.enablesDic[key] = true;
 			}
 		}
 	}
