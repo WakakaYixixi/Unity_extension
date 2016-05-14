@@ -13,8 +13,8 @@ public class PaintCompleteChecker : MonoBehaviour {
 	[Range(0.1f,1f)]
 	public float brushSize = 0.2f;
 
-	public Color enableColor = Color.blue;
-	public Color disableColor = Color.yellow;
+	public Color enableColor = new Color(0f,0f,1f,0.4f);
+	public Color disableColor = new Color(1f,0.92f,0.016f,0.1f);
 
 	public Dictionary<string,Rect> gridsDic;
 	public Dictionary<string,bool> enablesDic;
@@ -59,10 +59,11 @@ public class PaintCompleteChecker : MonoBehaviour {
 			}
 			m_totalCount = gridsDic.Count;
 		}
-
-		float w = m_painter.penTex.width*m_painter.brushScale*0.005f;
-		float h = m_painter.penTex.height*m_painter.brushScale*0.005f;
-		m_lerpSize = new Vector2(w,h); 
+		if(m_painter && m_painter.penTex){
+			float w = m_painter.penTex.width*m_painter.brushScale*0.005f;
+			float h = m_painter.penTex.height*m_painter.brushScale*0.005f;
+			m_lerpSize = new Vector2(w,h); 
+		}
 	}
 
 	public void ClickDraw(Vector3 screenPos , Camera camera=null){

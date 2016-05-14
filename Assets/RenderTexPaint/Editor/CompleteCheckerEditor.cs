@@ -23,8 +23,8 @@ public class CompleteCheckerEditor : Editor {
 
 		EditorGUILayout.Space();
 		EditorGUILayout.BeginHorizontal();
-		if(GUILayout.Button("Create Check Grid")){
-			CreateGrid();
+		if(GUILayout.Button("(Ctrl+) Read Data")){
+			ReadGrid();
 		}
 		if(GUILayout.Button("Show Source Tex")){
 			PaintCompleteChecker checker = target as PaintCompleteChecker;
@@ -37,15 +37,19 @@ public class CompleteCheckerEditor : Editor {
 		}
 		EditorGUILayout.EndHorizontal();
 
+
 		EditorGUILayout.Space();
 		EditorGUILayout.BeginHorizontal();
+		if(GUILayout.Button("(Ctrl+) Create Data")){
+			CreateGrid();
+		}
 		if(GUILayout.Button("Save Grid")){
 			SaveGrid();
 		}
-		if(GUILayout.Button("Read Grid Data")){
-			ReadGrid();
-		}
 		EditorGUILayout.EndHorizontal();
+
+		EditorGUILayout.Space();
+		EditorGUILayout.TextArea("Cmd/Ctrl + Mouse: Add Point\nAlt + Mouse : Remove Point");
 	}
 
 	void CreateGrid(){
@@ -55,8 +59,8 @@ public class CompleteCheckerEditor : Editor {
 			checker.gridsDic = new Dictionary<string,Rect> ();
 			checker.enablesDic = new Dictionary<string,bool> ();
 
-			int gridW = Mathf.FloorToInt(painter.penTex.width*painter.brushScale/4f);
-			int gridH = Mathf.FloorToInt(painter.penTex.height*painter.brushScale/4f);
+			int gridW = Mathf.FloorToInt(painter.penTex.width*painter.brushScale/2f);
+			int gridH = Mathf.FloorToInt(painter.penTex.height*painter.brushScale/2f);
 			int canvasW = painter.sourceTex.width;
 			int canvasH = painter.sourceTex.height;
 
@@ -86,8 +90,8 @@ public class CompleteCheckerEditor : Editor {
 					map2[key] = checker.enablesDic[key];
 				}
 			}
-			AssetDatabase.CreateAsset(map1,"Assets/Paint_Rect_"+checker.name+".asset");
-			AssetDatabase.CreateAsset(map2,"Assets/Paint_Enable_"+checker.name+".asset");
+			AssetDatabase.CreateAsset(map1,"Assets/"+checker.name+"_rect.asset");
+			AssetDatabase.CreateAsset(map2,"Assets/"+checker.name+"_enable.asset");
 		}
 	}
 
