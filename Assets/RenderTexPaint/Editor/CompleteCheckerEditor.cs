@@ -123,7 +123,7 @@ public class CompleteCheckerEditor : Editor {
 					foreach(string key in checker.gridsDic.Keys)
 					{
 						Rect rect = checker.gridsDic[key];
-						if(checker.Intersect(rect,brushSize)){
+						if(checker.Intersect(ref rect,ref brushSize)){
 							checker.enablesDic[key]=true;
 						}
 					}
@@ -131,7 +131,7 @@ public class CompleteCheckerEditor : Editor {
 					foreach(string key in checker.gridsDic.Keys)
 					{
 						Rect rect = checker.gridsDic[key];
-						if(checker.Intersect(rect,brushSize)){
+						if(checker.Intersect(ref rect,ref brushSize)){
 							checker.enablesDic[key]=false;
 						}
 					}

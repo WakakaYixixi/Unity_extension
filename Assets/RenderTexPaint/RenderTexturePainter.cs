@@ -213,7 +213,7 @@ public class RenderTexturePainter : MonoBehaviour {
 		float w = penTex.width*brushScale;
 		float h = penTex.height*brushScale;
 		Graphics.DrawTexture(new Rect((screenPos.x-w*0.5f),(screenPos.y-h*0.5f),w,h),penTex,m_penMat);
-		if(paintType == PaintType.Scribble){
+		if(!isEraser && paintType == PaintType.Scribble){
 			Graphics.Blit(sourceTex,m_rt,m_sourceMat,0);
 		}
 		RenderTexture.active = null;

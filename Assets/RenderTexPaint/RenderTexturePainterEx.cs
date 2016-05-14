@@ -7,14 +7,23 @@ using UnityEngine.Rendering;
 /// </summary>
 public class RenderTexturePainterEx : MonoBehaviour {
 
+	#region enums
 	public enum PaintType
 	{
 		Scribble,//对图片进行涂和擦除.
 		DrawLine,//画线.
 //		DrawColorfulLine,//画彩色线
 	}
+	public enum RenderTexDepth{
+		Depth0 = 0,
+		Depth16 = 16,
+		Depth24 = 24,
+	}
+	#endregion
 
-	[Header("Canvas Setting")]
+
+
+	[Header("Paint Canvas Setting")]
 	//画布大小
 	public bool userSourceTexSize=true;
 	public int canvasWidth=512;
@@ -25,7 +34,7 @@ public class RenderTexturePainterEx : MonoBehaviour {
 
 
 	[Header("RenderTexture Setting")]
-	public int renderTextureDepth = 16;
+	public RenderTexDepth renderTextureDepth = RenderTexDepth.Depth0;
 	public RenderTextureFormat renderTextureformat=RenderTextureFormat.ARGB32;
 
 	[Header("Painter Setting")]
@@ -35,13 +44,15 @@ public class RenderTexturePainterEx : MonoBehaviour {
 
 	public Shader paintShader,scribbleShader;
 
-	//是否为擦除.
-	public bool isEraser = false;
 	//纯色方式.
 	public Color penColor=new Color(1, 0, 0, 1);
 
 	//笔刷缩放值
+	[Range(0.1f,5f)]
 	public float brushScale = 1f;
+
+	//是否为擦除.
+	public bool isEraser = false;
 
 
 //	[Header(" Colorfull paint Setting")]
@@ -56,11 +67,8 @@ public class RenderTexturePainterEx : MonoBehaviour {
 
 	[Header("Auto Setting")]
 	//是否自动初始化.
-	public bool isAutoInit = false;
+	public bool isAutoInit = true;
 	public bool isAutoDestroy = true;
-
-	//init show picture
-	public bool initShowSource = false;
 
 
 
@@ -70,21 +78,22 @@ public class RenderTexturePainterEx : MonoBehaviour {
 	private bool m_inited = false;
 	private bool m_isDown = false;
 	private Vector3 m_prevMousePosition;
-	private Material m_penMat,m_sourceMat,m_canvasMat;
+	private Material m_penMat,m_canvasMat;
 	private Vector2 m_sourceTexScale;
 
 	public Material penMat{ get{ return m_penMat; } }
-	public Material sourceMat{ get{ return m_sourceMat; } }
 	public Material canvasMat{ get{ return m_canvasMat; } }
+
+	private Rect m_uv = new Rect(0f,0f,1f,1f);
 
 	// Use this for initialization
 	void Start () {
 		if (isAutoInit) {
-			Init(initShowSource);
+			Init();
 		}
 	}
 
-	public void Init(bool isShowSource=false)
+	public void Init()
 	{
 		if(!m_inited){
 			m_inited = true;
@@ -94,42 +103,41 @@ public class RenderTexturePainterEx : MonoBehaviour {
 				canvasHeight = sourceTex.height;
 			}
 
-			m_rt = new RenderTexture(canvasWidth,canvasHeight,renderTextureDepth,renderTextureformat);
+			m_rt = new RenderTexture(canvasWidth,canvasHeight,(int)renderTextureDepth,renderTextureformat);
 			m_rt.useMipMap = false;
 
 			//canvas
-			m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
-			CreateQuad(m_canvasMat);
-			m_canvasMat.mainTexture = m_rt;
+			if(paintType== PaintType.Scribble){
+				m_canvasMat = CreateMat(scribbleShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,1f,0.02f);
+				CreateQuad(m_canvasMat);
+				m_canvasMat.SetTexture("_SourceTex",sourceTex);
+				m_canvasMat.SetTexture("_RenderTex",m_rt);
+			}
+			else if(paintType== PaintType.DrawLine)
+			{
+				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,1f,0.02f);
+				CreateQuad(m_canvasMat);
+				m_canvasMat.mainTexture = m_rt;
+			}
 
 			if(isEraser)
 			{
-				m_penMat = CreateMat(paintShader,penColor,BlendMode.Zero,BlendMode.OneMinusSrcAlpha,penColor.a);
-				m_sourceMat = CreateMat(paintShader,Color.white,BlendMode.DstAlpha,BlendMode.Zero);
+				canvasColor.a = 1f;
+				m_penMat = CreateMat(paintShader,penColor,BlendMode.Zero,BlendMode.OneMinusSrcAlpha);
 			}
 			else
 			{
 				if(paintType== PaintType.Scribble){
-					m_sourceMat = CreateMat(scribbleShader,Color.white,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
-					m_sourceMat.SetTexture("_PenTex",penTex);
-			
-					float w = penTex.width*brushScale;
-					float h = penTex.height*brushScale;
-					m_sourceMat.SetTextureScale("_PenTex",new Vector2(canvasWidth/h*0.2f,canvasHeight/w*0.2f));
-					m_sourceMat.SetFloat("_Cutoff",0.99f);
+					canvasColor.a = 0f;
+					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.One);
 
 				}else if(paintType== PaintType.DrawLine){
-
 					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.One,penColor.a);
 					m_canvasMat.color=penColor;
-					m_sourceMat = CreateMat(paintShader, Color.white,BlendMode.One,BlendMode.OneMinusSrcAlpha);
 				}
 			}
 
 			ClearCanvas();
-			if(isShowSource){
-				ShowSourceTexture();
-			}
 		}
 	}
 
@@ -144,14 +152,8 @@ public class RenderTexturePainterEx : MonoBehaviour {
 				m_penMat.SetFloat("_BlendSrc",(int)BlendMode.Zero);
 				m_penMat.SetFloat("_BlendDst",(int)BlendMode.OneMinusSrcAlpha);
 			}else{
-				if(paintType== PaintType.Scribble){
-					m_penMat.SetFloat("_BlendSrc",(int)BlendMode.One);
-					m_penMat.SetFloat("_BlendDst",(int)BlendMode.OneMinusSrcAlpha);
-				}else{
-					m_penMat.SetFloat("_BlendSrc",(int)BlendMode.SrcAlpha);
-					m_penMat.SetFloat("_BlendDst",(int)BlendMode.One);
-					m_canvasMat.color=penColor;
-				}
+				m_penMat.SetFloat("_BlendSrc",(int)BlendMode.SrcAlpha);
+				m_penMat.SetFloat("_BlendDst",(int)BlendMode.One);
 			}
 		}
 	}
@@ -171,51 +173,53 @@ public class RenderTexturePainterEx : MonoBehaviour {
 	/// 设置画布颜色
 	/// </summary>
 	/// <param name="c">C.</param>
-	public void SetPaintCanvasColor(Color c){
-		m_canvasMat.color = c;
-		m_canvasMat.SetFloat("_Alpha",c.a);
+	public void SetCanvasColor(Color c){
+		canvasColor = c;
+		m_canvasMat.color = canvasColor;
 	}
 
 	/// <summary>
-	/// 显示原图
+	/// Sets the canvas alpha. 0-1
 	/// </summary>
-	public void ShowSourceTexture(){
-		if(sourceTex){
-			m_canvasMat.SetColor("_Color",new Color(1,1,1,1));
-			RenderTexture.active = m_rt;
-			Graphics.Blit(sourceTex,m_rt);
-			RenderTexture.active = null;
-		}
+	/// <param name="alpha">Alpha.</param>
+	public void SetCanvasAlpha(float alpha){
+		canvasColor.a = alpha;
+		m_canvasMat.SetFloat("_Alpha",alpha);
 	}
-
-	Material CreateMat(Shader shader ,Color c, BlendMode src , BlendMode dst , float alpha=1f){
-		Material m = new Material(shader);
-		m.SetFloat("_BlendSrc",(int)src);
-		m.SetFloat("_BlendDst",(int)dst);
-		m.SetColor("_Color",c);
-		m.SetFloat("_Cutoff",0f);
-		m.SetFloat("_Alpha",alpha);
-		return m;
+	public float GetCanvasAlpha(){
+		return m_canvasMat.GetFloat("_Alpha");
 	}
 
 	/// <summary>
-	/// Draw一次
+	///  Draw一次，用于点击draw
 	/// </summary>
-	/// <param name="screenPos">Screen position.</param>
-	/// <param name="camera">Camera.</param>
-	public void ClickDraw(Vector3 screenPos , Camera camera=null){
+	/// <param name="screenPos">Screen position. 屏幕坐标</param>
+	/// <param name="camera">Camera. 为空时是Camera.main</param>
+	/// <param name="pen">Pen. 为null时是默认的画笔贴图</param>
+	public void ClickDraw(Vector3 screenPos , Camera camera=null , Texture pen=null){
 		if (camera == null) camera = Camera.main;
+		if(pen==null) pen = penTex;
 		Vector3 uvPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPos));
-		screenPos = new Vector3(uvPos.x * canvasWidth, canvasHeight - uvPos.y * canvasHeight,0f);
 
-		GL.PushMatrix();
-		GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
-		RenderTexture.active = m_rt;
-		float w = penTex.width*brushScale;
-		float h = penTex.height*brushScale;
-		Graphics.DrawTexture(new Rect((screenPos.x-w*0.5f),(screenPos.y-h*0.5f),w,h),penTex,m_penMat);
-		RenderTexture.active = null;
-		GL.PopMatrix();
+		if(m_uv.Contains(uvPos))
+		{
+			screenPos = new Vector3(uvPos.x * canvasWidth, canvasHeight - uvPos.y * canvasHeight,0f);
+
+			float w = pen.width*brushScale;
+			float h = pen.height*brushScale;
+			Rect rect = new Rect((screenPos.x-w*0.5f),(screenPos.y-h*0.5f),w,h);
+			m_uv.width=canvasWidth;
+			m_uv.height=canvasHeight;
+			if(Intersect(ref rect,ref m_uv))
+			{
+				GL.PushMatrix();
+				GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
+				RenderTexture.active = m_rt;
+				Graphics.DrawTexture(rect,pen,m_penMat);
+				RenderTexture.active = null;
+				GL.PopMatrix();
+			}
+		}
 	}
 
 	/// <summary>
@@ -226,8 +230,7 @@ public class RenderTexturePainterEx : MonoBehaviour {
 	public void Drawing(Vector3 screenPos , Camera camera=null){
 		if (camera == null) camera = Camera.main;
 		Vector3 uvPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPos));
-		screenPos = uvPos;//new Vector3(uvPos.x * canvasWidth, canvasHeight - uvPos.y * canvasHeight,0f);
-
+		screenPos = new Vector3(uvPos.x * canvasWidth, canvasHeight - uvPos.y * canvasHeight,0f);
 		if(!m_isDown){
 			m_isDown = true;
 			m_prevMousePosition = screenPos;
@@ -237,7 +240,7 @@ public class RenderTexturePainterEx : MonoBehaviour {
 			GL.PushMatrix();
 			GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
 			RenderTexture.active = m_rt;
-			LerpDraw(screenPos,m_prevMousePosition);
+			LerpDraw(ref screenPos,ref m_prevMousePosition);
 			RenderTexture.active = null;
 			GL.PopMatrix();
 			m_prevMousePosition = screenPos;
@@ -252,51 +255,20 @@ public class RenderTexturePainterEx : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Sprite中,hitPoint转uv坐标。hitPoint为世界坐标
+	/// 清除画面，如果是scribble擦除，会显示原图
 	/// </summary>
-	/// <returns>The hit point2 U.</returns>
-	/// <param name="hitPoint">Hit point.</param>
-	Vector2 SpriteHitPoint2UV( Vector3 hitPoint){
-		Vector3 localPos=transform.InverseTransformPoint(hitPoint);
-		localPos*=100f;
-		localPos.x += canvasWidth*0.5f;
-		localPos.y += canvasHeight*0.5f;
-		return new Vector2(localPos.x/canvasWidth,localPos.y/canvasHeight);
-	}
-
-	void LerpDraw(Vector3 current , Vector3 prev){
-		float distance = Vector2.Distance(current, prev);
-		Vector2 pos;
-		if(distance>0f){
-			Vector2 bs = m_sourceMat.GetTextureScale("_PenTex");
-			float w = bs.x*0.1f*brushScale;
-			float h = bs.y*0.1f*brushScale;
-			float lerpDamp = Mathf.Min(w,h)*0.02f;
-			for (float i = 0; i < distance; i += lerpDamp)
-			{
-				float lDelta = i / distance;
-				float lDifx = current.x - prev.x;
-				float lDify = current.y - prev.y;
-				pos.x = prev.x + (lDifx * lDelta);
-				pos.y = prev.y + (lDify * lDelta);
-
-				pos.x*=bs.x;
-				pos.y*=bs.y;
-				pos.x-=0.5f;
-				pos.y-=0.5f;
-
-				m_sourceMat.SetTextureOffset("_PenTex",pos);
-				Graphics.DrawTexture(new Rect(0,0,canvasWidth,canvasHeight),sourceTex,m_sourceMat);
-			}
-		}
-	}
-
-
 	public void ClearCanvas()
 	{
 		if(m_rt){
 			Graphics.SetRenderTarget (m_rt);
-			GL.Clear(true,true,canvasColor);
+			Color c = canvasColor ;
+			if(isEraser){
+				c.a = 1f;
+				GL.Clear(true,true,c);
+			}else{
+				c.a = 0f;
+				GL.Clear(true,true,c);
+			}
 		}
 	}
 
@@ -315,10 +287,72 @@ public class RenderTexturePainterEx : MonoBehaviour {
 		if(m_penMat){
 			Destroy(m_penMat);
 		}
-		if(m_sourceMat){
-			Destroy(m_sourceMat);
+	}
+
+
+
+
+
+	#region private function
+
+
+	/// <summary>
+	/// 创建材质
+	/// </summary>
+	/// <returns>The mat.</returns>
+	/// <param name="shader">Shader.</param>
+	/// <param name="c">C.</param>
+	/// <param name="src">Source.</param>
+	/// <param name="dst">Dst.</param>
+	/// <param name="alpha">Alpha.</param>
+	/// <param name="cutoff">Cutoff.</param>
+	Material CreateMat(Shader shader ,Color c, BlendMode src , BlendMode dst , float alpha=1f,float cutoff=0f){
+		Material m = new Material(shader);
+		m.SetFloat("_BlendSrc",(int)src);
+		m.SetFloat("_BlendDst",(int)dst);
+		m.SetColor("_Color",c);
+		m.SetFloat("_Cutoff",cutoff);
+		m.SetFloat("_Alpha",alpha);
+		return m;
+	}
+
+
+	/// <summary>
+	/// Sprite中,hitPoint转uv坐标。hitPoint为世界坐标
+	/// </summary>
+	/// <returns>The hit point2 U.</returns>
+	/// <param name="hitPoint">Hit point.</param>
+	Vector2 SpriteHitPoint2UV( Vector3 hitPoint){
+		Vector3 localPos=transform.InverseTransformPoint(hitPoint);
+		localPos*=100f;
+		localPos.x += canvasWidth*0.5f;
+		localPos.y += canvasHeight*0.5f;
+		return new Vector2(localPos.x/canvasWidth,localPos.y/canvasHeight);
+	}
+
+	void LerpDraw(ref Vector3 current ,ref Vector3 prev){
+		float distance = Vector2.Distance(current, prev);
+		if(distance>0f){
+			Vector2 pos;
+			float w = penTex.width*brushScale;
+			float h = penTex.height*brushScale;
+			float lerpDamp = Mathf.Min(w,h)*0.02f;
+			m_uv.width = canvasWidth;
+			m_uv.height = canvasHeight;
+			for (float i = 0; i < distance; i += lerpDamp)
+			{
+				float lDelta = i / distance;
+				float lDifx = current.x - prev.x;
+				float lDify = current.y - prev.y;
+				pos.x = prev.x + (lDifx * lDelta);
+				pos.y = prev.y + (lDify * lDelta);
+				Rect rect = new Rect(pos.x-w*0.5f,pos.y-h*0.5f,w,h);
+				if(Intersect(ref m_uv,ref rect))
+				{
+					Graphics.DrawTexture(rect,penTex,m_penMat);
+				}
+			}
 		}
-		m_sourceMat = null;
 	}
 
 	void OnDestroy(){
@@ -327,6 +361,13 @@ public class RenderTexturePainterEx : MonoBehaviour {
 		}
 	}
 
+	bool Intersect(ref Rect a,ref Rect b ) {
+		bool c1 = a.xMin < b.xMax;
+		bool c2 = a.xMax > b.xMin;
+		bool c3 = a.yMin < b.yMax;
+		bool c4 = a.yMax > b.yMin;
+		return c1 && c2 && c3 && c4;
+	}
 
 	void CreateQuad( Material mat){
 		Mesh m = new Mesh();
@@ -363,4 +404,7 @@ public class RenderTexturePainterEx : MonoBehaviour {
 		Gizmos.DrawWireCube(Vector3.zero,new Vector3(canvasWidth*0.01f,canvasHeight*0.01f,0.1f));
 		Gizmos.matrix = oldGizmosMatrix;
 	}
+
+	#endregion
+
 }

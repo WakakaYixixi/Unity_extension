@@ -103,7 +103,7 @@ public class PaintCompleteChecker : MonoBehaviour {
 				foreach(string key in gridsDic.Keys)
 				{
 					Rect rect = gridsDic[key];
-					if(Intersect(brushSize,rect)){
+					if(Intersect(ref brushSize,ref rect)){
 						if(enablesDic[key]){
 							enablesDic[key] = false;
 							//数量+1
@@ -115,25 +115,13 @@ public class PaintCompleteChecker : MonoBehaviour {
 		}
 	}
 
-	public bool Intersect( Rect a, Rect b ) {
-		FlipNegative( ref a );
-		FlipNegative( ref b );
+	public bool Intersect(ref Rect a,ref Rect b ) {
 		bool c1 = a.xMin < b.xMax;
 		bool c2 = a.xMax > b.xMin;
 		bool c3 = a.yMin < b.yMax;
 		bool c4 = a.yMax > b.yMin;
 		return c1 && c2 && c3 && c4;
 	}
-
-	void FlipNegative(ref Rect r) {
-		if( r.width < 0 ) 
-			r.x -= ( r.width *= -1 );
-		if( r.height < 0 )
-			r.y -= ( r.height *= -1 );
-	}
-
-
-
 
 	void OnDrawGizmos(){
 		if(gridsDic!=null && enablesDic!=null){

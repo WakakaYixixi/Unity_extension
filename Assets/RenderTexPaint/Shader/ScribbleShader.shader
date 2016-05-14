@@ -2,8 +2,8 @@
 {
 	Properties
 	{
-		_MainTex ("Source Tex", 2D) = "white" {}
-		_PenTex("Pen Tex",2D) = "white" {}
+		_SourceTex ("Source Tex", 2D) = "white" {}
+		_RenderTex("Render Tex",2D) = "white" {} //用来做遮罩
 		_Color("Color",Color)=(1,1,1,1)
 		_Alpha("Alpha",Range(0,1))=1
 		_Cutoff("Alpha cutoff",Range(0,1))=0
@@ -38,15 +38,13 @@
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
-				float2 uv1 : TEXCOORD1;
 				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
 			};
 
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
-			sampler2D _PenTex;
-			float4 _PenTex_ST;
+			sampler2D _SourceTex;
+			float4 _SourceTex_ST;
+			sampler2D _RenderTex;
 			fixed4 _Color;
 			fixed _Alpha;
 			fixed _Cutoff;
@@ -55,19 +53,18 @@
 			{
 				v2f o;
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				o.uv1 = v.uv*_PenTex_ST.xy-_PenTex_ST.zw;
+				o.uv = TRANSFORM_TEX(v.uv, _SourceTex);
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = tex2D(_MainTex, i.uv);
+				fixed4 col = tex2D(_SourceTex, i.uv);
 				col.rgb*=_Color.rgb;
 				col.a*=_Alpha;
 
-				fixed4 mask = tex2D (_PenTex,i.uv1 );
+				fixed4 mask = tex2D (_RenderTex,i.uv );
 				col.a*=mask.a;
 
 				clip(col.a-_Cutoff);
