@@ -14,12 +14,16 @@ public class TransformInspector : Editor {
 
 	SerializedProperty mPos;
 	SerializedProperty mScale;
+
+	public void OnEnable(){
+		mPos = serializedObject.FindProperty("m_LocalPosition");
+		mScale = serializedObject.FindProperty("m_LocalScale");
+	}
+
 	public override void OnInspectorGUI()
 	{
 		pivot = (target as Transform).position;
 		EditorGUIUtility.labelWidth = 15f;
-		mPos = serializedObject.FindProperty("m_LocalPosition");
-		mScale = serializedObject.FindProperty("m_LocalScale");
 
 		DrawPosition();
 		DrawRotation();
@@ -32,6 +36,7 @@ public class TransformInspector : Editor {
 				if(mode){
 					tool = Tools.current;
 					Tools.current = Tool.None;
+					pivot = (target as Transform).position;
 				}else{
 					Tools.current = tool;
 				}
@@ -65,8 +70,10 @@ public class TransformInspector : Editor {
 		GUILayout.BeginHorizontal();
 		{
 			Transform tran = target as Transform;
-			EditorGUILayout.LabelField("World Pos",GUILayout.Width(80f));
-			tran.position = EditorGUILayout.Vector3Field("", tran.position);
+			EditorGUILayout.LabelField("World Pos",GUILayout.Width(74f));
+			EditorGUILayout.LabelField("X  "+tran.position.x , GUILayout.Width(70f),GUILayout.ExpandWidth(true));
+			EditorGUILayout.LabelField("Y  "+tran.position.y , GUILayout.Width(70f),GUILayout.ExpandWidth(true));
+			EditorGUILayout.LabelField("Z  "+tran.position.z , GUILayout.Width(70f),GUILayout.ExpandWidth(true));
 		}
 		GUILayout.EndHorizontal();
 		Undo.RecordObject(target,"move");
@@ -121,10 +128,16 @@ public class TransformInspector : Editor {
 			Handles.color = Color.red;
 			Handles.Label(pivot+Vector3.up*0.5f,"Change Children Pivot");
 			Vector3 tempPivot = Handles.DoPositionHandle(pivot,Quaternion.identity);
+			if(Vector3.Distance(tempPivot,pivot)<0.001f) {
+				SceneView.RepaintAll();
+				return;
+			}
+
 			Vector3 movePivot = tempPivot-pivot;
 			for(int i=0 ;i<trans.childCount;++i){
 				Transform child = trans.GetChild(i);
 				child.position-= new Vector3(movePivot.x,movePivot.y,0f);
+				Undo.RecordObject(child,"move");
 			}
 			trans.position+= new Vector3(movePivot.x,movePivot.y,0f);
 			pivot = tempPivot;
