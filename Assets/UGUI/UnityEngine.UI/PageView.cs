@@ -20,7 +20,7 @@ namespace UnityEngine.UI
         private PageViewController m_controller;
         public PageViewController controller { get { return m_controller;  } }
 
-        private long m_dragTime = 0 ;
+		private float m_dragTime = 0 ;
         private bool m_drag = false;
         private Vector2 m_end = Vector2.zero;
 
@@ -69,7 +69,7 @@ namespace UnityEngine.UI
             _enableUpdate = true;
             //记录开始拖动时内容的位置和开始拖动时的时间戳.
             m_contentPos = content.anchoredPosition;
-            m_dragTime = System.DateTime.Now.Ticks / 10000;
+			m_dragTime = Time.realtimeSinceStartup;
             base.OnBeginDrag(eventData);
         }
 
@@ -86,29 +86,30 @@ namespace UnityEngine.UI
             if (!controller.dragEnable) return;
             if (eventData.button != PointerEventData.InputButton.Left)
                 return;
+			if(!m_drag) return;
             m_drag = false;
             base.OnEndDrag(eventData);
 
-            if (System.DateTime.Now.Ticks / 10000 - m_dragTime < 100)
+			if (Time.realtimeSinceStartup - m_dragTime < 0.2f)
             {
                 //拖动的时间比较快时换页码.
                 if(horizontal){
-                    if (eventData.delta.x >= 0.5f)
+					if (eventData.position.x-eventData.pressPosition.x>= 0.5f)
                     {
                         PrevPage();
                     }
-                    else if (eventData.delta.x <= -0.5f)
+					else if (eventData.position.x -eventData.pressPosition.x<= -0.5f)
                      {
                          NextPage();
                     }
                 }
                 else if (vertical)
                 {
-                    if (eventData.delta.y >= 0.5f)
+					if (eventData.position.y -eventData.pressPosition.y>= 0.5f)
                     {
                         NextPage();
                     }
-                    else if (eventData.delta.y <= -0.5f)
+					else if (eventData.position.y-eventData.pressPosition.y <= -0.5f)
                     {
                         PrevPage();
                     }
@@ -119,22 +120,22 @@ namespace UnityEngine.UI
                 //拖动的距离超过一半时换页码.
                 if (horizontal)
                 {
-                    if (content.anchoredPosition.x - m_contentPos.x > viewRect.sizeDelta.x / 2)
+                    if (content.anchoredPosition.x - m_contentPos.x > viewRect.sizeDelta.x / 2f)
                     {
                         PrevPage();
                     }
-                    else if (content.anchoredPosition.x - m_contentPos.x < -viewRect.sizeDelta.x / 2)
+					else if (content.anchoredPosition.x - m_contentPos.x < -viewRect.sizeDelta.x / 2f)
                     {
                         NextPage();
                     }
                 }
                 else if (vertical)
                 {
-                    if (content.anchoredPosition.y - m_contentPos.y > viewRect.sizeDelta.y / 2)
+					if (content.anchoredPosition.y - m_contentPos.y > viewRect.sizeDelta.y / 2f)
                     {
                         NextPage();
                     }
-                    else if (content.anchoredPosition.y - m_contentPos.y < -viewRect.sizeDelta.y / 2)
+					else if (content.anchoredPosition.y - m_contentPos.y < -viewRect.sizeDelta.y / 2f)
                     {
                         PrevPage();
                     }

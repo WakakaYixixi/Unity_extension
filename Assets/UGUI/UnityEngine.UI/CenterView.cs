@@ -23,7 +23,7 @@ namespace UnityEngine.UI
         private bool m_drag = false;
         private Vector2 m_end = Vector2.zero;
 
-        private long m_dragTime = 0;
+		private float m_dragTime = 0;
         private int m_totalPage = 0;
         //从0开始.
         public int totalPage { get { return m_totalPage; } }
@@ -108,7 +108,7 @@ namespace UnityEngine.UI
             _enableUpdate = true;
             //记录开始拖动时内容的位置和开始拖动时的时间戳.
             m_contentPos = content.anchoredPosition;
-            m_dragTime = System.DateTime.Now.Ticks / 10000;
+			m_dragTime = Time.realtimeSinceStartup;
             base.OnBeginDrag(eventData);
         }
 
@@ -131,7 +131,7 @@ namespace UnityEngine.UI
             //遍历所有的，判断离哪个最近.
             if (horizontal)
             {
-                if (System.DateTime.Now.Ticks / 10000 - m_dragTime < 100)
+				if (Time.realtimeSinceStartup - m_dragTime < 0.1f)
                 {
                     //时间很短.
                     m_end.x += (eventData.delta.x + content.anchoredPosition.x - m_contentPos.x)*2f;
@@ -172,7 +172,7 @@ namespace UnityEngine.UI
             }
             else if (vertical)
             {
-                if (System.DateTime.Now.Ticks / 10000 - m_dragTime < 100)
+				if (Time.realtimeSinceStartup - m_dragTime < 0.1f)
                 {
                     //时间很短.
                     m_end.y += (eventData.delta.y + content.anchoredPosition.y - m_contentPos.y)*2f;

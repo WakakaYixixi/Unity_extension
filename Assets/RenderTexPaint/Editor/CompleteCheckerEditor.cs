@@ -90,7 +90,7 @@ public class CompleteCheckerEditor : Editor {
 
 	ScribbleCheckData GetGridData(){
 		PaintCompleteChecker checker = target as PaintCompleteChecker;
-		ScribbleCheckData checkData = new ScribbleCheckData();
+		ScribbleCheckData checkData = ScriptableObject.CreateInstance<ScribbleCheckData>();
 		checkData.checkPoints = new List<Vector2>();
 		checkData.gridSize = GetGridSize();
 		foreach(string key in checker.gridsDic.Keys){

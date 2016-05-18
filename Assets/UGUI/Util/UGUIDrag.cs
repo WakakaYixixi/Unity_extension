@@ -8,18 +8,22 @@ using DG.Tweening;
 /// <summary>
 /// 用于拖动UGUI控件
 /// </summary>
-public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUpHandler{
-
+public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHandler{
+	
 	public enum DragBackEffect{
 		None,Immediately, TweenPosition, TweenScale , ScaleDestroy , FadeOutDestroy , Destroy
 	}
 
-	private bool m_isDown = false;
 	private Vector3 m_cachePosition;
 	private Vector3 m_cacheScale;
+	private Vector3 m_cacheRotation;
 	private Vector3 m_worldPos;
 	private Vector3 m_touchDownTargetOffset ;
 	private Transform m_parent;
+	private bool m_isDragging = false;
+	public bool isDragging{
+		get { return m_isDragging; }
+	}
 
 	[Tooltip("拖动的对象，默认为自己.")]
 	public RectTransform dragTarget;
@@ -34,14 +38,17 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 	[Tooltip("在拖动时是否固定在拖动物的原点.")]
 	public bool isDragOriginPoint = false;
 
-	[Tooltip("当isDragOriginPoint为true时，拖动时的偏移值.")]
+	[Tooltip("当isDragOriginPoint为true时，拖动时的偏移值.单位像素")]
 	public Vector2 dragOffset;
 
-	[Tooltip("主要用于影响层级显示.")]
+	[Tooltip("主要用于影响层级显示.单位米")]
 	public float dragOffsetZ=0f;
 
 	[Tooltip("Drag时的变化的大小.")]
 	public float dragChangeScale = 1f;
+
+	[Tooltip("Drag时角度的变化值")]
+	public float dragChangeRotate = 0f;
 
 	[Tooltip("拖动时的缓动参数.")]
 	[Range(0f,1f)]
@@ -69,10 +76,13 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 	[Tooltip("Tween 的效果")]
 	public Ease tweenEase = Ease.Linear;
 
-	public event Action<UGUIDrag> OnMouseDownAction = null ;
-	public event Action<UGUIDrag> OnMouseDragAction = null ;
-	public event Action<UGUIDrag> OnMouseUpAction = null ;
-	public event Action<UGUIDrag> OnTweenBackAction = null ;
+	public event Action<UGUIDrag,PointerEventData> OnBeginDragAction = null ;
+	public event Action<UGUIDrag,PointerEventData> OnDragAction = null ;
+	public event Action<UGUIDrag,PointerEventData> OnEndDragAction = null ;
+	public event Action<UGUIDrag> OnTweenOverAction = null ;
+	public delegate bool DragValidCheck(PointerEventData eventData);
+	public event DragValidCheck DragValidCheckEvent;
+
 
 	// Use this for initialization
 	void Start () {
@@ -87,13 +97,29 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 			rayCastCamera = Camera.main;
 		}
 	}
-	
-	public void OnPointerDown(PointerEventData eventData)
+
+	private bool m_canDrag = true;
+
+	public void OnBeginDrag (PointerEventData eventData)
 	{
-		m_cachePosition = dragTarget.position;
+		m_canDrag = true;
+		if(!this.enabled) return;
+
+		if(DragValidCheckEvent!=null) {
+			if(!DragValidCheckEvent(eventData)){
+				m_canDrag = false;
+				return;
+			}
+		}
+		this.m_isDragging = true;
+		this.GetComponent<Graphic>().raycastTarget = false;
+		m_cachePosition = dragTarget.localPosition;
 		m_cacheScale = dragTarget.localScale;
 		if(dragChangeScale!=0f){
-			dragTarget.DOScale(m_cacheScale*dragChangeScale,0.25f);
+			dragTarget.DOScale(m_cacheScale*dragChangeScale,0.4f);
+		}
+		if(dragChangeRotate!=0f){
+			dragTarget.DOLocalRotate(m_cacheRotation +new Vector3(0f,0f,dragChangeRotate),0.4f,RotateMode.Fast);
 		}
 
 		dragTarget.position += new Vector3(0,0,dragOffsetZ);
@@ -101,8 +127,11 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 		Vector3 touchDownMousePos;
 		RectTransformUtility.ScreenPointToWorldPointInRectangle(dragTarget,eventData.position,rayCastCamera,out touchDownMousePos);
 		m_touchDownTargetOffset = m_worldPos-touchDownMousePos;
+		if(!isDragOriginPoint){
+			m_worldPos+=m_touchDownTargetOffset;
+		}
+		m_worldPos += (Vector3)dragOffset*0.01f;
 
-		m_isDown = true ;
 		m_parent = dragTarget.parent;
 		if(!string.IsNullOrEmpty(dragingParent)){
 			GameObject go = GameObject.Find(dragingParent);
@@ -111,44 +140,24 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 			}
 		}
 
-		if(OnMouseDownAction!=null){
-			OnMouseDownAction(this);
+		if(OnBeginDragAction!=null){
+			OnBeginDragAction(this,eventData);
 		}
 	}
 
-	public void OnDrag(PointerEventData eventData)
+	public void OnEndDrag (PointerEventData eventData)
 	{
-		if (eventData.dragging)
-		{
-			RectTransformUtility.ScreenPointToWorldPointInRectangle(dragTarget,eventData.position,rayCastCamera,out m_worldPos);
-			if(!isDragOriginPoint){
-				m_worldPos+=m_touchDownTargetOffset;
-			}
-			m_worldPos += (Vector3)dragOffset;
-			if(sendHoverEvent && !string.IsNullOrEmpty(onHoverMethodName)){
-				Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
-				if(cols.Length>0){
-					foreach(Collider2D col in cols){
-						if(col.gameObject!=gameObject)
-							col.SendMessage(onHoverMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
-					}
-					gameObject.SendMessage(onHoverMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
-				}
-			}
-		}
+		if(!this.enabled || !this.m_canDrag) return;
+		m_isDragging = false;
 
-		if(OnMouseDragAction!=null){
-			OnMouseDragAction(this);
-		}
-	}
-
-	public void OnPointerUp(PointerEventData eventData)
-	{
+		DOTween.Kill(dragTarget);
 		if(dragChangeScale!=0f){
 			dragTarget.DOScale(m_cacheScale,0.25f);
 		}
+		if(dragChangeRotate!=0f){
+			dragTarget.DOLocalRotate(m_cacheRotation,0.25f,RotateMode.Fast);
+		}
 
-		m_isDown = false ;
 		if(!string.IsNullOrEmpty(onDropMethodName)){
 			Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
 			if(cols.Length>0){
@@ -156,7 +165,7 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 					if(col.gameObject!=gameObject)
 						col.SendMessage(onDropMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
 				}
-				gameObject.SendMessage(onDropMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
+				gameObject.SendMessage(onDropMethodName, cols , SendMessageOptions.DontRequireReceiver);
 			}
 		}
 		if(releaseAutoBack){
@@ -166,13 +175,53 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 			dragTarget.SetParent(m_parent);
 		}
 
-		if(OnMouseUpAction!=null){
-			OnMouseUpAction(this);
+		if(OnEndDragAction!=null){
+			OnEndDragAction(this,eventData);
+		}
+		this.GetComponent<Graphic>().raycastTarget = true;
+	}
+
+
+	public void OnDrag(PointerEventData eventData)
+	{
+		if(!this.enabled  || !m_canDrag)  return;
+
+		if(!string.IsNullOrEmpty(dragingParent) && !dragTarget.parent.name.Equals(dragingParent)){
+			GameObject go = GameObject.Find(dragingParent);
+			if(go){
+				dragTarget.SetParent(go.transform);
+			}
+		}
+
+		if (eventData.dragging)
+		{
+			m_isDragging = true;
+			RectTransformUtility.ScreenPointToWorldPointInRectangle(dragTarget,eventData.position,rayCastCamera,out m_worldPos);
+			if(!isDragOriginPoint){
+				m_worldPos+=m_touchDownTargetOffset;
+			}
+			m_worldPos += (Vector3)dragOffset*0.01f;
+			if(sendHoverEvent && !string.IsNullOrEmpty(onHoverMethodName)){
+				Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
+				if(cols.Length>0){
+					foreach(Collider2D col in cols){
+						if(col.gameObject!=gameObject)
+							col.SendMessage(onHoverMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
+					}
+					gameObject.SendMessage(onHoverMethodName, cols , SendMessageOptions.DontRequireReceiver);
+				}
+			}
+		}
+
+		if(OnDragAction!=null){
+			OnDragAction(this,eventData);
 		}
 	}
 
+
 	void Update(){
-		if(m_isDown){
+		if(!this.enabled) return;
+		if(m_canDrag && m_isDragging){
 			dragTarget.position = Vector3.Lerp(dragTarget.position,m_worldPos,dragMoveDamp);
 		}
 	}
@@ -185,30 +234,30 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 		{
 		case DragBackEffect.Immediately:
 			dragTarget.SetParent(m_parent);
-			dragTarget.position=m_cachePosition;
+			dragTarget.localPosition=m_cachePosition;
 			break;
 		case DragBackEffect.Destroy:
 			Destroy(dragTarget.gameObject);
 			break;
 		case DragBackEffect.TweenPosition:
 			this.enabled = false;
-			dragTarget.DOMove(m_cachePosition,backDuring).SetEase(tweenEase).OnComplete(()=>{
-				dragTarget.SetParent(m_parent);
+			dragTarget.SetParent(m_parent);
+			dragTarget.DOLocalMove(m_cachePosition,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
-				if(OnTweenBackAction!=null){
-					OnTweenBackAction(this);
+				if(OnTweenOverAction!=null){
+					OnTweenOverAction(this);
 				}
 			});
 			break;
 		case DragBackEffect.TweenScale:
 			this.enabled = false;
 			dragTarget.SetParent(m_parent);
-			dragTarget.position=m_cachePosition;
+			dragTarget.localPosition=m_cachePosition;
 			dragTarget.localScale = Vector3.zero;
 			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
-				if(OnTweenBackAction!=null){
-					OnTweenBackAction(this);
+				if(OnTweenOverAction!=null){
+					OnTweenOverAction(this);
 				}
 			});
 			break;
@@ -216,8 +265,8 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 			this.enabled = false;
 			dragTarget.DOScale(Vector3.zero,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);
-				if(OnTweenBackAction!=null){
-					OnTweenBackAction(this);
+				if(OnTweenOverAction!=null){
+					OnTweenOverAction(this);
 				}
 			});
 			break;
@@ -226,8 +275,8 @@ public class UGUIDrag: MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUp
 			CanvasGroup group = dragTarget.gameObject.AddComponent<CanvasGroup>();
 			group.DOFade(0f,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);
-				if(OnTweenBackAction!=null){
-					OnTweenBackAction(this);
+				if(OnTweenOverAction!=null){
+					OnTweenOverAction(this);
 				}
 			});
 			break;
