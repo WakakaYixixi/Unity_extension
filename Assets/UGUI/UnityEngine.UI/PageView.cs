@@ -90,7 +90,7 @@ namespace UnityEngine.UI
             m_drag = false;
             base.OnEndDrag(eventData);
 
-			if (Time.realtimeSinceStartup - m_dragTime < 0.2f)
+			if (Time.realtimeSinceStartup - m_dragTime < 0.2f  && Vector3.Distance(eventData.pressPosition,eventData.position)>50f )
             {
                 //拖动的时间比较快时换页码.
                 if(horizontal){
