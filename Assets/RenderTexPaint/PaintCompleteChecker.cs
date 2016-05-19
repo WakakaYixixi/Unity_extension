@@ -104,7 +104,6 @@ public class PaintCompleteChecker : MonoBehaviour {
 		float lerpDamp = Mathf.Min(w,h);
 		Rect brushSize = new Rect((localPos.x-w*0.5f),(localPos.y-h*0.5f),w,h);
 
-		int count = m_checkPoints.Count;
 		for(int i=0;i<m_checkPoints.Count;++i){
 			Vector2 point = m_checkPoints[i];
 			if(Vector2.Distance(point,brushSize.center)<lerpDamp*0.75f){

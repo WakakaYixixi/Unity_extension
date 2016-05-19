@@ -32,6 +32,8 @@ public class RenderTexturePainter : MonoBehaviour {
 
 	//默认背景颜色
 	public Color canvasColor = new Color(1,1,1,0);
+	public string sortingLayer = "Default";
+	public int sortingOrder = 0;
 
 
 	[Header("RenderTexture Setting")]
@@ -82,6 +84,7 @@ public class RenderTexturePainter : MonoBehaviour {
 	private Material m_penMat,m_canvasMat;
 	private Vector2 m_sourceTexScale;
 
+	public bool isInited{ get { return m_inited; } }
 	public Material penMat{ get{ return m_penMat; } }
 	public Material canvasMat{ get{ return m_canvasMat; } }
 
@@ -446,6 +449,8 @@ public class RenderTexturePainter : MonoBehaviour {
 
 		MeshRenderer rend = gameObject.AddComponent<MeshRenderer>();
 		rend.material = mat;
+		rend.sortingLayerName=sortingLayer;
+		rend.sortingOrder = sortingOrder;
 	}
 
 
