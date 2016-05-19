@@ -115,6 +115,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		this.GetComponent<Graphic>().raycastTarget = false;
 		m_cachePosition = dragTarget.localPosition;
 		m_cacheScale = dragTarget.localScale;
+		m_cacheRotation = dragTarget.localRotation;
 		if(dragChangeScale!=0f){
 			dragTarget.DOScale(m_cacheScale*dragChangeScale,0.4f);
 		}
