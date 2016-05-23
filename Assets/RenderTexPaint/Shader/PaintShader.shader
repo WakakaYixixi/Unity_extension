@@ -13,7 +13,7 @@
 	{
 		Tags { "RenderType"="Transparent" "Queue"="Transparent" "IgnoreProjector"="True"}
 		LOD 100
-		Cull off
+		Cull back
 		ZTest Always
 		ZWrite off
 		Blend [_BlendSrc] [_BlendDst]
@@ -60,7 +60,7 @@
 				// sample the texture
 				fixed4 col = tex2D(_MainTex, i.uv);
 				col.rgb*=_Color.rgb;
-				col.a*=_Alpha;
+				col*=_Alpha;
 
 				clip(col.a-_Cutoff);
 

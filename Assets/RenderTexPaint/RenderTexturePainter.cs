@@ -14,6 +14,7 @@ public class RenderTexturePainter : MonoBehaviour {
 		Scribble,//对图片进行涂和擦除.
 		DrawLine,//画线.
 		DrawColorfulLine,//画彩色线，画笔贴图必须要有alpha=1的部分，否则不会显示
+		None = 100
 	}
 	public enum RenderTexDepth{
 		Depth0 = 0,
@@ -22,7 +23,9 @@ public class RenderTexturePainter : MonoBehaviour {
 	}
 	#endregion
 
-
+	#if UNITY_EDITOR
+	public Color gizmosColor = Color.red;
+	#endif
 
 	[Header("Paint Canvas Setting")]
 	//画布大小
@@ -34,11 +37,6 @@ public class RenderTexturePainter : MonoBehaviour {
 	public Color canvasColor = new Color(1,1,1,0);
 	public string sortingLayer = "Default";
 	public int sortingOrder = 0;
-
-
-	[Header("RenderTexture Setting")]
-	public RenderTexDepth renderTextureDepth = RenderTexDepth.Depth0;
-	public RenderTextureFormat renderTextureformat=RenderTextureFormat.ARGB32;
 
 	[Header("Painter Setting")]
 	public PaintType paintType = PaintType.Scribble;
@@ -70,8 +68,9 @@ public class RenderTexturePainter : MonoBehaviour {
 
 	[Header("Auto Setting")]
 	//是否自动初始化.
-	public bool isAutoInit = true;
+	public bool isAutoInit = false;
 	public bool isAutoDestroy = true;
+	public bool isShowSource = false;
 
 
 
@@ -107,19 +106,19 @@ public class RenderTexturePainter : MonoBehaviour {
 				canvasHeight = sourceTex.height;
 			}
 
-			m_rt = new RenderTexture(canvasWidth,canvasHeight,(int)renderTextureDepth,renderTextureformat);
+			m_rt = new RenderTexture(canvasWidth,canvasHeight,0,RenderTextureFormat.ARGB32);
 			m_rt.useMipMap = false;
 
 			//canvas
 			if(paintType== PaintType.Scribble){
-				m_canvasMat = CreateMat(scribbleShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,1f,0.02f);
+				m_canvasMat = CreateMat(scribbleShader,canvasColor,BlendMode.One,BlendMode.OneMinusSrcAlpha,1f,0.02f);
 				CreateQuad(m_canvasMat);
 				m_canvasMat.SetTexture("_SourceTex",sourceTex);
 				m_canvasMat.SetTexture("_RenderTex",m_rt);
 			}
 			else
 			{
-				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,1f,0.02f);
+				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.One,BlendMode.OneMinusSrcAlpha,1f,0.02f);
 				CreateQuad(m_canvasMat);
 				m_canvasMat.mainTexture = m_rt;
 			}
@@ -135,18 +134,28 @@ public class RenderTexturePainter : MonoBehaviour {
 					canvasColor.a = 0f;
 					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.One);
 
-				}else if(paintType== PaintType.DrawLine){
-					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.One,penColor.a);
-					m_canvasMat.color=penColor;
-
-				}else if(paintType== PaintType.DrawColorfulLine){
-					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,penColor.a);
-					m_canvasMat.color=Color.white;
+				}
+				else if(paintType== PaintType.DrawLine || paintType== PaintType.DrawColorfulLine)
+				{
+					m_penMat = CreateMat(paintShader,penColor,BlendMode.One,BlendMode.OneMinusSrcAlpha,penColor.a);
 					m_penMat.SetFloat("_Cutoff",0.99f);
+
+				}else if(paintType== PaintType.None){
+					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
 				}
 			}
 
-			ResetCanvas();
+			if(isShowSource){
+				if(m_rt && sourceTex){
+					Graphics.SetRenderTarget (m_rt);
+					Graphics.Blit(sourceTex,m_rt);
+					RenderTexture.active = null;
+				}
+			}else{
+
+				ResetCanvas();
+			}
+
 		}
 	}
 
@@ -163,12 +172,14 @@ public class RenderTexturePainter : MonoBehaviour {
 				m_penMat.SetFloat("_BlendDst",(int)BlendMode.OneMinusSrcAlpha);
 			}else{
 				m_penMat.SetFloat("_BlendSrc",(int)BlendMode.SrcAlpha);
-				if(paintType== PaintType.DrawColorfulLine){
+				if(paintType== PaintType.DrawLine || paintType== PaintType.DrawColorfulLine){
 					m_penMat.SetFloat("_Cutoff",0.99f);
 					m_penMat.SetFloat("_BlendDst",(int)BlendMode.OneMinusSrcAlpha);
 				}
-				else
-				{
+				else if(paintType== PaintType.None){
+					m_penMat.SetFloat("_BlendDst",(int)BlendMode.SrcAlpha);
+				}
+				else {
 					m_penMat.SetFloat("_BlendDst",(int)BlendMode.One);
 				}
 			}
@@ -208,31 +219,47 @@ public class RenderTexturePainter : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// 重新设置原图
+	/// </summary>
+	/// <param name="sourceTex">Source tex.</param>
+	public void SetSourceTexture( Texture2D sourceTex){
+		this.sourceTex = sourceTex;
+		if(m_canvasMat){
+			m_canvasMat.SetTexture("_SourceTex",sourceTex);
+		}
+	}
+
+	/// <summary>
 	///  Draw一次，用于点击draw
 	/// </summary>
 	/// <param name="screenPos">Screen position. 屏幕坐标</param>
 	/// <param name="camera">Camera. 为空时是Camera.main</param>
 	/// <param name="pen">Pen. 为null时是默认的画笔贴图</param>
-	public void ClickDraw(Vector3 screenPos , Camera camera=null , Texture pen=null){
+	public void ClickDraw(Vector3 screenPos , Camera camera=null , Texture pen=null , Material drawMat = null , RenderTexture rt=null){
 		if (camera == null) camera = Camera.main;
 		if(pen==null) pen = penTex;
+		if(drawMat==null) drawMat = m_penMat;
+		if(rt==null) rt = m_rt;
 		Vector3 uvPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPos));
 
 		if(m_uv.Contains(uvPos))
 		{
 			screenPos = new Vector3(uvPos.x * canvasWidth, canvasHeight - uvPos.y * canvasHeight,0f);
-
-			float w = pen.width*brushScale;
-			float h = pen.height*brushScale;
+			float w = pen.width;
+			float h = pen.height;
 			Rect rect = new Rect((screenPos.x-w*0.5f),(screenPos.y-h*0.5f),w,h);
 			m_uv.width=canvasWidth;
 			m_uv.height=canvasHeight;
 			if(Intersect(ref rect,ref m_uv))
 			{
+				if(paintType == PaintType.DrawLine || paintType== PaintType.DrawColorfulLine)
+				{
+					m_penMat.color=penColor;
+				}
 				GL.PushMatrix();
 				GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
-				RenderTexture.active = m_rt;
-				Graphics.DrawTexture(rect,pen,m_penMat);
+				RenderTexture.active = rt;
+				Graphics.DrawTexture(rect,pen,drawMat);
 				RenderTexture.active = null;
 				GL.PopMatrix();
 			}
@@ -254,7 +281,6 @@ public class RenderTexturePainter : MonoBehaviour {
 		}
 
 		if(m_isDown){
-
 			if(paintType== PaintType.DrawColorfulLine){
 				Color currC = paintColorful[m_colorfulIndex];
 				penColor = Color.Lerp(penColor,currC,Time.deltaTime*colorChangeRate);
@@ -268,8 +294,10 @@ public class RenderTexturePainter : MonoBehaviour {
 				}
 				m_penMat.color=penColor;
 			}
-
-
+			else if(paintType== PaintType.DrawLine)
+			{
+				m_penMat.color=penColor;
+			}
 			GL.PushMatrix();
 			GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
 			RenderTexture.active = m_rt;
@@ -296,12 +324,12 @@ public class RenderTexturePainter : MonoBehaviour {
 			Graphics.SetRenderTarget (m_rt);
 			Color c = canvasColor ;
 			if(isEraser){
-				c.a = 1f;
 				GL.Clear(true,true,c);
 			}else{
-				c.a = 0f;
+				c = new Color(0,0,0,0);
 				GL.Clear(true,true,c);
 			}
+			RenderTexture.active = null;
 		}
 	}
 
@@ -331,12 +359,18 @@ public class RenderTexturePainter : MonoBehaviour {
 	}
 
 	public void Dispose(){
+		m_inited = false;
 		if(m_rt){
 			ResetCanvas();
 			RenderTexture.active = null;
 			m_rt.Release();
 			m_rt = null;
 		}
+		MeshFilter meshFilter= gameObject.GetComponent<MeshFilter>();
+		if(meshFilter!=null) Destroy(meshFilter);
+
+		MeshRenderer rend = gameObject.GetComponent<MeshRenderer>();
+		if(rend!=null) Destroy(rend);
 
 		if(m_canvasMat){
 			Destroy(m_canvasMat);
@@ -444,10 +478,12 @@ public class RenderTexturePainter : MonoBehaviour {
 		m.RecalculateBounds();
 		m.RecalculateNormals();
 
-		MeshFilter meshFilter= gameObject.AddComponent<MeshFilter>();
+		MeshFilter meshFilter= gameObject.GetComponent<MeshFilter>();
+		if(meshFilter==null) meshFilter = gameObject.AddComponent<MeshFilter>();
 		meshFilter.mesh = m;
 
-		MeshRenderer rend = gameObject.AddComponent<MeshRenderer>();
+		MeshRenderer rend = gameObject.GetComponent<MeshRenderer>();
+		if(rend==null) rend = gameObject.AddComponent<MeshRenderer>();
 		rend.material = mat;
 		rend.sortingLayerName=sortingLayer;
 		rend.sortingOrder = sortingOrder;
@@ -457,7 +493,7 @@ public class RenderTexturePainter : MonoBehaviour {
 
 	#if UNITY_EDITOR
 	void OnDrawGizmos(){
-		Gizmos.color = Color.red;
+		Gizmos.color = gizmosColor;
 		Matrix4x4 cubeTransform = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
 		Matrix4x4 oldGizmosMatrix = Gizmos.matrix;
 		Gizmos.matrix *= cubeTransform;
