@@ -62,10 +62,10 @@
 				// sample the texture
 				fixed4 col = tex2D(_SourceTex, i.uv);
 				col.rgb*=_Color.rgb;
-				col*=_Alpha;
+				col.a*=_Alpha;
 
 				fixed4 mask = tex2D (_RenderTex,i.uv );
-				col*=mask.a;
+				col.a*=mask.a;
 
 				clip(col.a-_Cutoff);
 

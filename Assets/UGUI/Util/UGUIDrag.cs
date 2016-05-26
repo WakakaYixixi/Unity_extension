@@ -20,9 +20,26 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	private Vector3 m_worldPos;
 	private Vector3 m_touchDownTargetOffset ;
 	private Transform m_parent;
+	private bool m_isDown = false;
 	private bool m_isDragging = false;
 	public bool isDragging{
-		get { return m_isDragging; }
+		get { return m_isDragging && m_isDown; }
+	}
+	private bool m_canDrag = true;
+	public bool canDrag{
+		get { return m_canDrag; }
+		set { 
+			m_canDrag = value; 
+			if(!value) {
+				m_isDragging = false;
+				m_isDown = false;
+			}
+
+		}
+	}
+	public Vector3 dragTargetWorldPos{
+		get { return m_worldPos; }
+		set { m_worldPos = value; }
 	}
 
 	[Tooltip("拖动的对象，默认为自己.")]
@@ -52,7 +69,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 
 	[Tooltip("拖动时的缓动参数.")]
 	[Range(0f,1f)]
-	public float dragMoveDamp = 0.5f;
+	public float dragMoveDamp = 1f;
 
 	[Tooltip("拖动时的所在的父窗器，用于拖动时在UI最上层，如果不填，则在当前层.")]
 	public string dragingParent = "Canvas";
@@ -64,6 +81,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	[Header("Event")]
 	public bool sendHoverEvent = false;
 	public string onHoverMethodName = "OnHover";
+	public string onHoverOutMethodName = "OnHoverOut";
 	public string onDropMethodName = "OnDrop";
 
 	[Header("Back Effect")]
@@ -98,12 +116,9 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		}
 	}
 
-	private bool m_canDrag = true;
-
 	public void OnBeginDrag (PointerEventData eventData)
 	{
-		m_canDrag = true;
-		if(!this.enabled) return;
+		if(!this.enabled || m_isDown) return;
 
 		if(DragValidCheckEvent!=null) {
 			if(!DragValidCheckEvent(eventData)){
@@ -111,6 +126,10 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 				return;
 			}
 		}
+		m_isDown = true;
+		m_canDrag = true;
+		dragTarget.DOKill();
+
 		this.m_isDragging = true;
 		this.GetComponent<Graphic>().raycastTarget = false;
 		m_cachePosition = dragTarget.localPosition;
@@ -148,8 +167,9 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 
 	public void OnEndDrag (PointerEventData eventData)
 	{
-		if(!this.enabled || !this.m_canDrag) return;
+		if(!this.enabled || !this.m_canDrag || !m_isDown) return;
 		m_isDragging = false;
+		m_isDown = false;
 
 		DOTween.Kill(dragTarget);
 		if(dragChangeScale!=0f){
@@ -185,7 +205,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 
 	public void OnDrag(PointerEventData eventData)
 	{
-		if(!this.enabled  || !m_canDrag)  return;
+		if(!this.enabled  || !m_canDrag || !m_isDown)  return;
 
 		if(!string.IsNullOrEmpty(dragingParent) && !dragTarget.parent.name.Equals(dragingParent)){
 			GameObject go = GameObject.Find(dragingParent);
@@ -202,7 +222,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 				m_worldPos+=m_touchDownTargetOffset;
 			}
 			m_worldPos += (Vector3)dragOffset*0.01f;
-			if(sendHoverEvent && !string.IsNullOrEmpty(onHoverMethodName)){
+			if(sendHoverEvent){
 				Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
 				if(cols.Length>0){
 					foreach(Collider2D col in cols){
@@ -210,6 +230,10 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 							col.SendMessage(onHoverMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
 					}
 					gameObject.SendMessage(onHoverMethodName, cols , SendMessageOptions.DontRequireReceiver);
+				}
+				else
+				{
+					gameObject.SendMessage(onHoverOutMethodName,SendMessageOptions.DontRequireReceiver);
 				}
 			}
 		}
@@ -236,15 +260,19 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		case DragBackEffect.Immediately:
 			dragTarget.SetParent(m_parent);
 			dragTarget.localPosition=m_cachePosition;
+			dragTarget.localScale = m_cacheScale;
+			dragTarget.localEulerAngles = m_cacheRotation;
 			break;
 		case DragBackEffect.Destroy:
 			Destroy(dragTarget.gameObject);
 			break;
 		case DragBackEffect.TweenPosition:
 			this.enabled = false;
+			this.m_canDrag = false;
 			dragTarget.SetParent(m_parent);
 			dragTarget.DOLocalMove(m_cachePosition,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
+				this.m_canDrag = true;
 				if(OnTweenOverAction!=null){
 					OnTweenOverAction(this);
 				}
@@ -252,11 +280,13 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			break;
 		case DragBackEffect.TweenScale:
 			this.enabled = false;
+			this.m_canDrag = false;
 			dragTarget.SetParent(m_parent);
 			dragTarget.localPosition=m_cachePosition;
 			dragTarget.localScale = Vector3.zero;
 			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
+				this.m_canDrag = true;
 				if(OnTweenOverAction!=null){
 					OnTweenOverAction(this);
 				}
@@ -264,6 +294,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			break;
 		case DragBackEffect.ScaleDestroy:
 			this.enabled = false;
+			this.m_canDrag = false;
 			dragTarget.DOScale(Vector3.zero,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);
 				if(OnTweenOverAction!=null){
@@ -273,7 +304,9 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			break;
 		case DragBackEffect.FadeOutDestroy:
 			this.enabled = false;
+			this.m_canDrag = false;
 			CanvasGroup group = dragTarget.gameObject.AddComponent<CanvasGroup>();
+			group.blocksRaycasts = false;
 			group.DOFade(0f,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);
 				if(OnTweenOverAction!=null){

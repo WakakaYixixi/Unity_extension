@@ -16,6 +16,8 @@ namespace UnityEngine.UI
         public float pageDamp = 0.2f;
         //是否支持鼠标拖动.
         public bool dragEnable = true;
+		//在区域外时是否还可以拖动
+		public bool dragEnableOutSide = true;
         //是否自动初始化.
         public bool autoInit = true;
 
@@ -36,6 +38,10 @@ namespace UnityEngine.UI
             get { return m_pageView; }
         }
 
+		void Awake(){
+			m_pageView = GetComponent<PageView>();
+		}
+
         IEnumerator Start()
         {
             if (autoInit)
@@ -51,7 +57,6 @@ namespace UnityEngine.UI
         /// </summary>
         public void Init()
         {
-            m_pageView = GetComponent<PageView>();
             m_pageView.Init();
             if (pageIndicator)
             {

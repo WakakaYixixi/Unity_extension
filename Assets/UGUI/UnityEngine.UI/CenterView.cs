@@ -11,7 +11,7 @@ namespace UnityEngine.UI
     /// 居中显示.
     /// 说明：如果要调用此类中的属性和方法.
     /// </summary>
-    [AddComponentMenu("UI/Page View", 1351)]
+    [AddComponentMenu("UI/Center View", 1351)]
     [RequireComponent(typeof(RectTransform))]
     [RequireComponent(typeof(CenterViewController))]
     public class CenterView : ScrollRect, IPointerUpHandler
@@ -131,7 +131,7 @@ namespace UnityEngine.UI
             //遍历所有的，判断离哪个最近.
             if (horizontal)
             {
-				if (Time.realtimeSinceStartup - m_dragTime < 0.1f)
+				if (Time.realtimeSinceStartup - m_dragTime < 0.4f)
                 {
                     //时间很短.
                     m_end.x += (eventData.delta.x + content.anchoredPosition.x - m_contentPos.x)*2f;
@@ -172,7 +172,7 @@ namespace UnityEngine.UI
             }
             else if (vertical)
             {
-				if (Time.realtimeSinceStartup - m_dragTime < 0.1f)
+				if (Time.realtimeSinceStartup - m_dragTime < 0.4f)
                 {
                     //时间很短.
                     m_end.y += (eventData.delta.y + content.anchoredPosition.y - m_contentPos.y)*2f;

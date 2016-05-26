@@ -1,4 +1,6 @@
-﻿Shader "ZZL/UI/UI Default Gray" {
+﻿//author:zhouzhanglin
+//UI变灰
+Shader "ZZL/UGUI/UI Default Gray" {
 	Properties
 	{
 		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
@@ -34,7 +36,7 @@
 			WriteMask [_StencilWriteMask]
 		}
 
-		Cull Off
+		Cull back
 		Lighting Off
 		ZWrite Off
 		ZTest [unity_GUIZTestMode]

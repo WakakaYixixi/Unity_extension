@@ -14,7 +14,7 @@ namespace UnityEngine.UI
     [AddComponentMenu("UI/Page View",1350)]
     [RequireComponent(typeof(RectTransform))]
     [RequireComponent(typeof(PageViewController))]
-    public class PageView : ScrollRect, IPointerUpHandler
+	public class PageView : ScrollRect, IPointerUpHandler,IPointerExitHandler
     {
         //控制器.
         private PageViewController m_controller;
@@ -35,7 +35,6 @@ namespace UnityEngine.UI
         private bool _enableUpdate = false;
 
         private Vector2 m_contentPos = Vector2.zero;
-
 
         /// <summary>
         /// 初始化此控件.
@@ -67,6 +66,7 @@ namespace UnityEngine.UI
                 return;
             m_drag = true;
             _enableUpdate = true;
+			m_isIn = true;
             //记录开始拖动时内容的位置和开始拖动时的时间戳.
             m_contentPos = content.anchoredPosition;
 			m_dragTime = Time.realtimeSinceStartup;
@@ -76,9 +76,13 @@ namespace UnityEngine.UI
         public override void OnDrag(PointerEventData eventData)
         {
             if (Input.touchCount > 1) return;
+			if(!m_controller.dragEnableOutSide && !m_isIn){
+				return;
+			}
             if(controller.dragEnable)
                  base.OnDrag(eventData);
         }
+
 
         override public void OnEndDrag(PointerEventData eventData)
         {
@@ -90,7 +94,8 @@ namespace UnityEngine.UI
             m_drag = false;
             base.OnEndDrag(eventData);
 
-			if (Time.realtimeSinceStartup - m_dragTime < 0.2f  && Vector3.Distance(eventData.pressPosition,eventData.position)>50f )
+			float dis = horizontal? Mathf.Abs(eventData.pressPosition.x-eventData.position.x) : Mathf.Abs(eventData.pressPosition.y-eventData.position.y);
+			if (Time.realtimeSinceStartup - m_dragTime < 0.2f && dis>50f)
             {
                 //拖动的时间比较快时换页码.
                 if(horizontal){
@@ -164,7 +169,7 @@ namespace UnityEngine.UI
             {
                 base.LateUpdate();
             }
-            else if (_enableUpdate)
+			else if(_enableUpdate)
             {
                 if (horizontal )
                 {
@@ -242,6 +247,7 @@ namespace UnityEngine.UI
         /// <param name="anim">是否显示翻页动画.默认为true.</param>
         public void GotoPage(int pageIndex,bool anim=true)
         {
+			m_drag = false;
             if (m_currentPage != pageIndex)
             {
                 m_currentPage = pageIndex;
@@ -262,6 +268,13 @@ namespace UnityEngine.UI
             }
         }
 
+		#region 是否在区域内
+		private bool m_isIn = false;
+		public void OnPointerExit (PointerEventData eventData)
+		{
+			m_isIn = false;
+		}
+		#endregion
     }
 }
 

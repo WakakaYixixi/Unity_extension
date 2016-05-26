@@ -111,14 +111,19 @@ public class RenderTexturePainter : MonoBehaviour {
 
 			//canvas
 			if(paintType== PaintType.Scribble){
-				m_canvasMat = CreateMat(scribbleShader,canvasColor,BlendMode.One,BlendMode.OneMinusSrcAlpha,1f,0.02f);
+				m_canvasMat = CreateMat(scribbleShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
 				CreateQuad(m_canvasMat);
 				m_canvasMat.SetTexture("_SourceTex",sourceTex);
 				m_canvasMat.SetTexture("_RenderTex",m_rt);
 			}
+			else if(paintType== PaintType.DrawLine || paintType== PaintType.DrawColorfulLine){
+				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.One,BlendMode.OneMinusSrcAlpha);
+				CreateQuad(m_canvasMat);
+				m_canvasMat.mainTexture = m_rt;
+			}
 			else
 			{
-				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.One,BlendMode.OneMinusSrcAlpha,1f,0.02f);
+				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
 				CreateQuad(m_canvasMat);
 				m_canvasMat.mainTexture = m_rt;
 			}
@@ -134,12 +139,9 @@ public class RenderTexturePainter : MonoBehaviour {
 					canvasColor.a = 0f;
 					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.One);
 
-				}
-				else if(paintType== PaintType.DrawLine || paintType== PaintType.DrawColorfulLine)
-				{
+				}else if(paintType== PaintType.DrawLine || paintType== PaintType.DrawColorfulLine){
 					m_penMat = CreateMat(paintShader,penColor,BlendMode.One,BlendMode.OneMinusSrcAlpha,penColor.a);
-					m_penMat.SetFloat("_Cutoff",0.99f);
-
+					m_penMat.SetFloat("_Cutoff",1f);
 				}else if(paintType== PaintType.None){
 					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
 				}
@@ -152,7 +154,6 @@ public class RenderTexturePainter : MonoBehaviour {
 					RenderTexture.active = null;
 				}
 			}else{
-
 				ResetCanvas();
 			}
 
@@ -173,7 +174,7 @@ public class RenderTexturePainter : MonoBehaviour {
 			}else{
 				m_penMat.SetFloat("_BlendSrc",(int)BlendMode.SrcAlpha);
 				if(paintType== PaintType.DrawLine || paintType== PaintType.DrawColorfulLine){
-					m_penMat.SetFloat("_Cutoff",0.99f);
+					m_penMat.SetFloat("_Cutoff",1f);
 					m_penMat.SetFloat("_BlendDst",(int)BlendMode.OneMinusSrcAlpha);
 				}
 				else if(paintType== PaintType.None){
@@ -252,10 +253,6 @@ public class RenderTexturePainter : MonoBehaviour {
 			m_uv.height=canvasHeight;
 			if(Intersect(ref rect,ref m_uv))
 			{
-				if(paintType == PaintType.DrawLine || paintType== PaintType.DrawColorfulLine)
-				{
-					m_penMat.color=penColor;
-				}
 				GL.PushMatrix();
 				GL.LoadPixelMatrix(0, canvasWidth, canvasHeight, 0);
 				RenderTexture.active = rt;
@@ -294,8 +291,7 @@ public class RenderTexturePainter : MonoBehaviour {
 				}
 				m_penMat.color=penColor;
 			}
-			else if(paintType== PaintType.DrawLine)
-			{
+			else if(paintType== PaintType.DrawLine){
 				m_penMat.color=penColor;
 			}
 			GL.PushMatrix();
@@ -324,9 +320,13 @@ public class RenderTexturePainter : MonoBehaviour {
 			Graphics.SetRenderTarget (m_rt);
 			Color c = canvasColor ;
 			if(isEraser){
+				c.a = 1f;
 				GL.Clear(true,true,c);
 			}else{
-				c = new Color(0,0,0,0);
+				c.a = 0f;
+				if(paintType== PaintType.DrawLine||paintType== PaintType.DrawColorfulLine){
+					c = new Color(0,0,0,0);
+				}
 				GL.Clear(true,true,c);
 			}
 			RenderTexture.active = null;
@@ -397,7 +397,7 @@ public class RenderTexturePainter : MonoBehaviour {
 	/// <param name="dst">Dst.</param>
 	/// <param name="alpha">Alpha.</param>
 	/// <param name="cutoff">Cutoff.</param>
-	Material CreateMat(Shader shader ,Color c, BlendMode src , BlendMode dst , float alpha=1f,float cutoff=0f){
+	public Material CreateMat(Shader shader ,Color c, BlendMode src , BlendMode dst , float alpha=1f,float cutoff=0f){
 		Material m = new Material(shader);
 		m.SetFloat("_BlendSrc",(int)src);
 		m.SetFloat("_BlendDst",(int)dst);

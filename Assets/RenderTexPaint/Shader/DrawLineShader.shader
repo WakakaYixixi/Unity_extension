@@ -1,4 +1,4 @@
-﻿Shader "ZZL/Unlit/Painter/Paint Shader"
+﻿Shader "ZZL/Unlit/Painter/Draw Line Shader"
 {
 	Properties
 	{
@@ -60,7 +60,7 @@
 				// sample the texture
 				fixed4 col = tex2D(_MainTex, i.uv);
 				col.rgb*=_Color.rgb;
-				col.a*=_Alpha;
+				col*=_Alpha;
 
 				clip(col.a-_Cutoff);
 

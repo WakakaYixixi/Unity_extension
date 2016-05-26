@@ -18,6 +18,8 @@ namespace UnityEngine.UI
         private float m_PageItemWidth;
         private float m_PageItemHeight;
 
+		public Material material;
+
         private int m_prevPage=0;
         private RectTransform m_layer;
 
@@ -59,6 +61,9 @@ namespace UnityEngine.UI
                     {
                         img.sprite = selectedState;
                     }
+					if(material!=null){
+						img.material=material;
+					}
                     RectTransform rectTrans = (RectTransform)img.transform;
                     rectTrans.sizeDelta = new Vector2(m_PageItemWidth, m_PageItemHeight);
                     float size = m_PageItemWidth;
