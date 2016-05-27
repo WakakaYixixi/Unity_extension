@@ -111,19 +111,19 @@ public class RenderTexturePainter : MonoBehaviour {
 
 			//canvas
 			if(paintType== PaintType.Scribble){
-				m_canvasMat = CreateMat(scribbleShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
+				m_canvasMat = CreateMat(scribbleShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,1,0.02f);
 				CreateQuad(m_canvasMat);
 				m_canvasMat.SetTexture("_SourceTex",sourceTex);
 				m_canvasMat.SetTexture("_RenderTex",m_rt);
 			}
 			else if(paintType== PaintType.DrawLine || paintType== PaintType.DrawColorfulLine){
-				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.One,BlendMode.OneMinusSrcAlpha);
+				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.One,BlendMode.OneMinusSrcAlpha,1,0.02f);
 				CreateQuad(m_canvasMat);
 				m_canvasMat.mainTexture = m_rt;
 			}
 			else
 			{
-				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
+				m_canvasMat = CreateMat(paintShader,canvasColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,1,0.02f);
 				CreateQuad(m_canvasMat);
 				m_canvasMat.mainTexture = m_rt;
 			}
@@ -131,19 +131,19 @@ public class RenderTexturePainter : MonoBehaviour {
 			if(isEraser)
 			{
 				canvasColor.a = 1f;
-				m_penMat = CreateMat(paintShader,penColor,BlendMode.Zero,BlendMode.OneMinusSrcAlpha);
+				m_penMat = CreateMat(paintShader,penColor,BlendMode.Zero,BlendMode.OneMinusSrcAlpha,1,0.01f);
 			}
 			else
 			{
 				if(paintType== PaintType.Scribble){
 					canvasColor.a = 0f;
-					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.One);
+					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.One,1,0.01f);
 
 				}else if(paintType== PaintType.DrawLine || paintType== PaintType.DrawColorfulLine){
-					m_penMat = CreateMat(paintShader,penColor,BlendMode.One,BlendMode.OneMinusSrcAlpha,penColor.a);
+					m_penMat = CreateMat(paintShader,penColor,BlendMode.One,BlendMode.OneMinusSrcAlpha,penColor.a,0.01f);
 					m_penMat.SetFloat("_Cutoff",1f);
 				}else if(paintType== PaintType.None){
-					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha);
+					m_penMat = CreateMat(paintShader,penColor,BlendMode.SrcAlpha,BlendMode.OneMinusSrcAlpha,1,0.01f);
 				}
 			}
 
