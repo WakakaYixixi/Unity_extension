@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using UnityEditor;
 
 /// <summary>
@@ -15,9 +16,15 @@ public class TransformInspector : Editor {
 	SerializedProperty mPos;
 	SerializedProperty mScale;
 
+	private bool m_IsFist=true;
+
 	public void OnEnable(){
+
+	
+
 		mPos = serializedObject.FindProperty("m_LocalPosition");
-		mScale = serializedObject.FindProperty("m_LocalScale");
+		mScale = serializedObject.FindProperty("m_LocalScale");		
+	
 	}
 
 	public override void OnInspectorGUI()
@@ -57,6 +64,9 @@ public class TransformInspector : Editor {
 		{
 			bool reset = GUILayout.Button("P", GUILayout.Width(20f));
 			EditorGUILayout.LabelField("Position",GUILayout.Width(50f));
+
+			mPos.vector3Value = ConvertPosition (mPos.vector3Value);
+
 			EditorGUILayout.PropertyField(mPos.FindPropertyRelative("x"));
 			EditorGUILayout.PropertyField(mPos.FindPropertyRelative("y"));
 			EditorGUILayout.PropertyField(mPos.FindPropertyRelative("z"));
@@ -64,6 +74,19 @@ public class TransformInspector : Editor {
 		}
 		GUILayout.EndHorizontal();
 		Undo.RecordObject(target,"move");
+	}
+
+	Vector3 ConvertPosition(Vector3 pPoint)
+	{
+		pPoint.x = ConvertValue (pPoint.x);
+		pPoint.y = ConvertValue (pPoint.y);
+		pPoint.z = ConvertValue (pPoint.z);
+		return pPoint;
+	}
+
+	float ConvertValue(float pValue)
+	{
+		return (float)System.Convert.ToDouble(pValue.ToString("f2"));
 	}
 
 	void DrawGlobalPosition(){
@@ -123,17 +146,21 @@ public class TransformInspector : Editor {
 
 	private Vector3 pivot;
 	void OnSceneGUI(){
+
 		if(pivotMode){
 			Transform trans = target as Transform;
 			Handles.color = Color.red;
 			Handles.Label(pivot+Vector3.up*0.5f,"Change Children Pivot");
 			Vector3 tempPivot = Handles.DoPositionHandle(pivot,Quaternion.identity);
+
 			if(Vector3.Distance(tempPivot,pivot)<0.001f) {
 				SceneView.RepaintAll();
 				return;
 			}
-
+				
 			Vector3 movePivot = tempPivot-pivot;
+	
+
 			for(int i=0 ;i<trans.childCount;++i){
 				Transform child = trans.GetChild(i);
 				child.position-= new Vector3(movePivot.x,movePivot.y,0f);
@@ -145,6 +172,7 @@ public class TransformInspector : Editor {
 			Undo.RecordObject(target,"rotate");
 			SceneView.RepaintAll();
 		}
+        
 	}
 
 }
