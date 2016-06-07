@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 
 /// <summary>
@@ -16,22 +15,15 @@ public class TransformInspector : Editor {
 	SerializedProperty mPos;
 	SerializedProperty mScale;
 
-	private bool m_IsFist=true;
-
 	public void OnEnable(){
-
-	
-
 		mPos = serializedObject.FindProperty("m_LocalPosition");
 		mScale = serializedObject.FindProperty("m_LocalScale");		
-	
 	}
 
 	public override void OnInspectorGUI()
 	{
 		pivot = (target as Transform).position;
 		EditorGUIUtility.labelWidth = 15f;
-
 		DrawPosition();
 		DrawRotation();
 		DrawScale();
@@ -54,7 +46,6 @@ public class TransformInspector : Editor {
 		{
 			pivotMode = false;
 		}
-
 		serializedObject.ApplyModifiedProperties();
 	}
 
@@ -64,9 +55,7 @@ public class TransformInspector : Editor {
 		{
 			bool reset = GUILayout.Button("P", GUILayout.Width(20f));
 			EditorGUILayout.LabelField("Position",GUILayout.Width(50f));
-
 			mPos.vector3Value = ConvertPosition (mPos.vector3Value);
-
 			EditorGUILayout.PropertyField(mPos.FindPropertyRelative("x"));
 			EditorGUILayout.PropertyField(mPos.FindPropertyRelative("y"));
 			EditorGUILayout.PropertyField(mPos.FindPropertyRelative("z"));
@@ -93,10 +82,12 @@ public class TransformInspector : Editor {
 		GUILayout.BeginHorizontal();
 		{
 			Transform tran = target as Transform;
-			EditorGUILayout.LabelField("World Pos",GUILayout.Width(74f));
-			EditorGUILayout.LabelField("X  "+tran.position.x , GUILayout.Width(70f),GUILayout.ExpandWidth(true));
-			EditorGUILayout.LabelField("Y  "+tran.position.y , GUILayout.Width(70f),GUILayout.ExpandWidth(true));
-			EditorGUILayout.LabelField("Z  "+tran.position.z , GUILayout.Width(70f),GUILayout.ExpandWidth(true));
+			EditorGUILayout.LabelField("World Pos",GUILayout.Width(75f));
+			tran.position = EditorGUILayout.Vector3Field("", tran.position);
+			// EditorGUILayout.LabelField("World Pos",GUILayout.Width(74f));
+			// EditorGUILayout.LabelField("X  "+tran.position.x , GUILayout.Width(70f),GUILayout.ExpandWidth(true));
+			// EditorGUILayout.LabelField("Y  "+tran.position.y , GUILayout.Width(70f),GUILayout.ExpandWidth(true));
+			// EditorGUILayout.LabelField("Z  "+tran.position.z , GUILayout.Width(70f),GUILayout.ExpandWidth(true));
 		}
 		GUILayout.EndHorizontal();
 		Undo.RecordObject(target,"move");
@@ -133,7 +124,6 @@ public class TransformInspector : Editor {
 				(serializedObject.targetObject as Transform).localEulerAngles = ls;
 		}
 		GUILayout.EndHorizontal();
-
 		Undo.RecordObject(target,"rotate");
 	}
 
@@ -146,21 +136,12 @@ public class TransformInspector : Editor {
 
 	private Vector3 pivot;
 	void OnSceneGUI(){
-
 		if(pivotMode){
 			Transform trans = target as Transform;
 			Handles.color = Color.red;
-			Handles.Label(pivot+Vector3.up*0.5f,"Change Children Pivot");
+			Handles.Label(pivot,"Change Children Pivot");
 			Vector3 tempPivot = Handles.DoPositionHandle(pivot,Quaternion.identity);
-
-			if(Vector3.Distance(tempPivot,pivot)<0.001f) {
-				SceneView.RepaintAll();
-				return;
-			}
-				
 			Vector3 movePivot = tempPivot-pivot;
-	
-
 			for(int i=0 ;i<trans.childCount;++i){
 				Transform child = trans.GetChild(i);
 				child.position-= new Vector3(movePivot.x,movePivot.y,0f);
