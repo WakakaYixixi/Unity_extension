@@ -35,6 +35,7 @@ namespace UnityEngine.UI
         private bool _enableUpdate = false;
 
         private Vector2 m_contentPos = Vector2.zero;
+		private PointerEventData m_dragEventData;
 
         /// <summary>
         /// 初始化此控件.
@@ -79,10 +80,17 @@ namespace UnityEngine.UI
 			if(!m_controller.dragEnableOutSide && !m_isIn){
 				return;
 			}
+			m_dragEventData = eventData;
             if(controller.dragEnable)
                  base.OnDrag(eventData);
         }
 
+		void OnApplicationFocus(bool flag){
+			if(!flag){
+				m_isIn = false;
+				OnEndDrag(m_dragEventData);
+			}
+		}
 
         override public void OnEndDrag(PointerEventData eventData)
         {

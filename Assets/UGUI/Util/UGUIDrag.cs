@@ -165,6 +165,12 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		}
 	}
 
+	void OnApplicationFocus(bool flag){
+		if(!flag && m_canDrag && m_isDragging){
+			OnEndDrag(null);
+		}
+	}
+
 	public void OnEndDrag (PointerEventData eventData)
 	{
 		if(!this.enabled || !this.m_canDrag || !m_isDown) return;
