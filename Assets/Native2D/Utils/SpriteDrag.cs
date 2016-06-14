@@ -15,11 +15,39 @@ public class SpriteDrag : MonoBehaviour {
 
 	private Vector3 m_cachePosition;
 	private Vector3 m_cacheScale;
+	private Vector3 m_cacheRotation;
 	private Vector3 m_dragOffset;
 	private Vector3 m_screenPosition;
 	private Vector3 m_currentPosition;
+	private Vector3 m_mousePressPosition; //moues按下时的位置
+	private float m_downTime; //mouse按下时的Time.realtimeSinceStartup 时间 
 	private bool m_isDown;
+	private bool m_isDragging = false;
+	private bool m_canDrag = true;
 	private string m_sortLayerName;
+
+	#region getter/setter
+	public float mouseDownTime{
+		get { return m_downTime; }
+	}
+	public Vector3 mousePressPosition{
+		get { return m_mousePressPosition; }
+	}
+	public bool isDragging{
+		get { return m_isDragging && m_isDown; }
+	}
+	public bool canDrag{
+		get { return m_canDrag; }
+		set { 
+			m_canDrag = value; 
+			if(!value) {
+				m_isDragging = false;
+				m_isDown = false;
+			}
+
+		}
+	}
+	#endregion
 
 	[Tooltip("拖动的对象，默认为自己.")]
 	public Transform dragTarget = null;
@@ -43,9 +71,12 @@ public class SpriteDrag : MonoBehaviour {
 	[Tooltip("Drag时的变化的大小.")]
 	public float dragChangeScale = 1f;
 
+	[Tooltip("Drag时角度的变化值")]
+	public float dragChangeRotate = 0f;
+
 	[Tooltip("拖动时的缓动参数.")]
 	[Range(0f,1f)]
-	public float dragMoveDamp = 0.5f;
+	public float dragMoveDamp = 1f;
 
 	[Tooltip("拖动的时候在哪个层.没有设置的话为当前Sort Layer")]
 	public string dragSortLayerName;
@@ -57,6 +88,7 @@ public class SpriteDrag : MonoBehaviour {
 	[Header("Event")]
 	public bool sendHoverEvent = false;
 	public string onHoverMethodName = "OnHover";
+	public string onHoverOutMethodName = "OnHoverOut";
 	public string onDropMethodName = "OnDrop";
 
 	[Header("Back Effect")]
@@ -65,15 +97,17 @@ public class SpriteDrag : MonoBehaviour {
 	[Tooltip("返回时的效果")]
 	public DragBackEffect backEffect = DragBackEffect.None;
 	[Tooltip("效果时间")]
-	public float backDuring = 0.25f;
+	public float backDuring = 0.5f;
 	[Tooltip("Tween 的效果")]
 	public Ease tweenEase = Ease.Linear;
 
 
-	public event Action<SpriteDrag> OnMouseDownAction = null ;
-	public event Action<SpriteDrag> OnMouseDragAction = null ;
-	public event Action<SpriteDrag> OnMouseUpAction = null ;
+	public event Action<SpriteDrag> OnBeginDragAction = null ;
+	public event Action<SpriteDrag> OnDragAction = null ;
+	public event Action<SpriteDrag> OnEndDragAction = null ;
 	public event Action<SpriteDrag> OnTweenBackAction = null ;
+	public delegate bool DragValidCheck();
+	public event DragValidCheck DragValidCheckEvent;
 
 	// Use this for initialization
 	void Start () {
@@ -108,7 +142,8 @@ public class SpriteDrag : MonoBehaviour {
 					if (hit && hit.collider.gameObject == dragTarget.gameObject)
 					{
 						m_isDown = true;
-						OnMouseDownHandler();
+						m_downTime = Time.realtimeSinceStartup;
+						m_mousePressPosition = Input.mousePosition;
 					}
 				}
 			}
@@ -118,15 +153,32 @@ public class SpriteDrag : MonoBehaviour {
 			}
 			else if (m_isDown && Input.GetMouseButtonUp(0))
 			{
-				m_isDown = false;
 				OnMouseUpHandler();
 			}
 		}
 	}
 
-	void OnMouseDownHandler(){
+	void OnMouseBeginDrag(){
+		if(!this.enabled || !m_isDown) return;
+
+		if(DragValidCheckEvent!=null) {
+			if(!DragValidCheckEvent()){
+				m_canDrag = false;
+				return;
+			}
+		}
+		this.m_canDrag = true;
+		this.m_isDragging = true;
+
 		m_cachePosition = dragTarget.position;
 		m_cacheScale = dragTarget.localScale;
+		m_cacheRotation = dragTarget.localEulerAngles;
+		if(dragChangeScale!=0f){
+			dragTarget.DOScale(m_cacheScale*dragChangeScale,0.25f);
+		}
+		if(dragChangeRotate!=0f){
+			dragTarget.DOLocalRotate(m_cacheRotation +new Vector3(0f,0f,dragChangeRotate),0.4f,RotateMode.Fast);
+		}
 
 		dragTarget.position+=new Vector3(0,0,dragOffsetZ);
 		m_currentPosition = m_cachePosition;
@@ -136,22 +188,24 @@ public class SpriteDrag : MonoBehaviour {
 			render.sortingLayerName=dragSortLayerName;
 		}
 
-		if(dragChangeScale!=0f){
-			dragTarget.DOScale(m_cacheScale*dragChangeScale,0.25f);
-		}
-
 		m_screenPosition = rayCastCamera.WorldToScreenPoint(dragTarget.position);
 		if (!isDragOriginPoint)
 		{
 			m_dragOffset = dragTarget.position - rayCastCamera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, m_screenPosition.z));
 		}
-		if (OnMouseDownAction!=null)
+		if (OnBeginDragAction!=null)
 		{
-			OnMouseDownAction(this);
+			OnBeginDragAction(this);
 		}
 	}
 
 	void OnMouseDragHandler(){
+		if(this.enabled && !m_isDragging){
+			OnMouseBeginDrag();
+		}
+
+		if(!this.enabled  || !m_isDragging)  return;
+
 		m_screenPosition = rayCastCamera.WorldToScreenPoint(dragTarget.position);
 		Vector3 curScreenSpace = new Vector3(Input.mousePosition.x, Input.mousePosition.y, m_screenPosition.z);
 		m_currentPosition = rayCastCamera.ScreenToWorldPoint(curScreenSpace);
@@ -161,26 +215,46 @@ public class SpriteDrag : MonoBehaviour {
 			m_currentPosition += (Vector3)dragOffset;
 		}
 		dragTarget.position = Vector3.Lerp(dragTarget.position, m_currentPosition, dragMoveDamp);
-		if(sendHoverEvent&& !string.IsNullOrEmpty(onHoverMethodName)){
+		if(sendHoverEvent){
 			Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
 			if(cols.Length>0){
 				foreach(Collider2D col in cols){
 					if(col.gameObject!=gameObject)
 						col.SendMessage(onHoverMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
 				}
-				gameObject.SendMessage(onHoverMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
+				gameObject.SendMessage(onHoverMethodName, cols , SendMessageOptions.DontRequireReceiver);
+			}
+			else
+			{
+				gameObject.SendMessage(onHoverOutMethodName,SendMessageOptions.DontRequireReceiver);
 			}
 		}
-		if (OnMouseDragAction!=null)
+		if (OnDragAction!=null)
 		{
-			OnMouseDragAction(this);
+			OnDragAction(this);
+		}
+	}
+
+	void OnApplicationFocus(bool flag){
+		if(!flag && m_canDrag && m_isDragging){
+			OnMouseUpHandler();
 		}
 	}
 
 	void OnMouseUpHandler(){
+		m_isDown = false;
+
+		if(!this.enabled || !m_isDragging) return;
+		m_isDragging = false;
+
+		DOTween.Kill(dragTarget);
 		if(dragChangeScale!=0f){
 			dragTarget.DOScale(m_cacheScale,0.25f);
 		}
+		if(dragChangeRotate!=0f){
+			dragTarget.DOLocalRotate(m_cacheRotation,0.25f,RotateMode.Fast);
+		}
+
 
 		if(releaseAutoBack){
 			BackPosition();
@@ -198,13 +272,13 @@ public class SpriteDrag : MonoBehaviour {
 					if(col.gameObject!=gameObject)
 						col.SendMessage(onDropMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
 				}
-				gameObject.SendMessage(onDropMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
+				gameObject.SendMessage(onDropMethodName, cols , SendMessageOptions.DontRequireReceiver);
 			}
 		}
 
-		if (OnMouseUpAction!=null)
+		if (OnEndDragAction!=null)
 		{
-			OnMouseUpAction(this);
+			OnEndDragAction(this);
 		}
 	}
 
@@ -225,11 +299,13 @@ public class SpriteDrag : MonoBehaviour {
 			break;
 		case DragBackEffect.TweenPosition:
 			this.enabled = false;
+			this.m_canDrag = false;
 			dragTarget.DOMove(m_cachePosition,backDuring).SetEase(tweenEase).OnComplete(()=>{
+				this.enabled = true;
+				this.m_canDrag = true;
 				foreach(SpriteRenderer render in GetComponentsInChildren<SpriteRenderer>()){
 					render.sortingLayerName=m_sortLayerName;
 				}
-				this.enabled = true;
 				if(OnTweenBackAction!=null){
 					OnTweenBackAction(this);
 				}
@@ -237,6 +313,7 @@ public class SpriteDrag : MonoBehaviour {
 			break;
 		case DragBackEffect.TweenScale:
 			this.enabled = false;
+			this.m_canDrag = false;
 			foreach(SpriteRenderer render in GetComponentsInChildren<SpriteRenderer>()){
 				render.sortingLayerName=m_sortLayerName;
 			}
@@ -244,6 +321,7 @@ public class SpriteDrag : MonoBehaviour {
 			dragTarget.localScale = Vector3.zero;
 			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
+				this.m_canDrag = true;
 				if(OnTweenBackAction!=null){
 					OnTweenBackAction(this);
 				}
@@ -251,6 +329,7 @@ public class SpriteDrag : MonoBehaviour {
 			break;
 		case DragBackEffect.ScaleDestroy:
 			this.enabled = false;
+			this.m_canDrag = false;
 			dragTarget.DOScale(Vector3.zero,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);
 				if(OnTweenBackAction!=null){
@@ -260,6 +339,7 @@ public class SpriteDrag : MonoBehaviour {
 			break;
 		case DragBackEffect.FadeOutDestroy:
 			this.enabled = false;
+			this.m_canDrag = false;
 			CanvasGroup group = dragTarget.gameObject.AddComponent<CanvasGroup>();
 			group.DOFade(0f,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				Destroy(dragTarget.gameObject);

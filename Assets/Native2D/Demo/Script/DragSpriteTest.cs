@@ -9,7 +9,7 @@ public class DragSpriteTest : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		drag = GetComponent<SpriteDrag>();
-		drag.OnMouseDragAction += Drag_OnMouseDragAction;
+		drag.OnDragAction += Drag_OnMouseDragAction;
 	}
 
 	void Drag_OnMouseDragAction (SpriteDrag obj)
