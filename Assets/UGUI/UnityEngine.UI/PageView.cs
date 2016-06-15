@@ -88,7 +88,8 @@ namespace UnityEngine.UI
 		void OnApplicationFocus(bool flag){
 			if(!flag){
 				m_isIn = false;
-				OnEndDrag(m_dragEventData);
+				if(m_dragEventData!=null)
+                    OnEndDrag(m_dragEventData);
 			}
 		}
 
