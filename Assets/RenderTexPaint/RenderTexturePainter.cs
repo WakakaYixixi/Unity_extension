@@ -29,7 +29,7 @@ public class RenderTexturePainter : MonoBehaviour {
 
 	[Header("Paint Canvas Setting")]
 	//画布大小
-	public bool userSourceTexSize=true;
+	public bool useSourceTexSize=true;
 	public int canvasWidth=512;
 	public int canvasHeight=512;
 
@@ -51,6 +51,10 @@ public class RenderTexturePainter : MonoBehaviour {
 	//笔刷缩放值
 	[Range(0.1f,5f)]
 	public float brushScale = 1f;
+
+	//插值，越大性能越好，但是大了可能出现断层现象
+	[Range(0.01f,0.1f)]
+	public float drawLerpDamp = 0.02f;
 
 	//是否为擦除.
 	public bool isEraser = false;
@@ -101,7 +105,7 @@ public class RenderTexturePainter : MonoBehaviour {
 		if(!m_inited){
 			m_inited = true;
 
-			if(userSourceTexSize&&sourceTex){
+			if(useSourceTexSize&&sourceTex){
 				canvasWidth = sourceTex.width;
 				canvasHeight = sourceTex.height;
 			}
@@ -427,7 +431,7 @@ public class RenderTexturePainter : MonoBehaviour {
 			Vector2 pos;
 			float w = penTex.width*brushScale;
 			float h = penTex.height*brushScale;
-			float lerpDamp = Mathf.Min(w,h)*0.02f;
+			float lerpDamp = Mathf.Min(w,h)*drawLerpDamp;
 			m_uv.width = canvasWidth;
 			m_uv.height = canvasHeight;
 			for (float i = 0; i < distance; i += lerpDamp)
