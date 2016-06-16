@@ -8,9 +8,66 @@ using System.Collections.Generic;
 /// 解析texturepacker图集 , 转成Sprites
 /// Author:bingheliefeng
 /// </summary>
-public class TexturePackerEditor : Editor {
+public class TexturePackerEditor : ScriptableWizard {
 
-	[MenuItem("Tools/TexturePacker to Sprites")]
+	public Texture2D altasTexture;
+	public TextAsset altasTextAsset;
+	[MenuItem("Tools/TexturePacker to Sprites面板",false,2)]
+	static void CreateWizard () {
+		ScriptableWizard.DisplayWizard<TexturePackerEditor>("Create Sprites", "Create");
+	}
+
+	public void OnWizardCreate(){
+		if(altasTexture && altasTextAsset){
+			XmlDocument xmlDoc = new XmlDocument();
+			xmlDoc.LoadXml(altasTextAsset.ToString());
+			XmlNode root = xmlDoc.SelectSingleNode("TextureAtlas");
+			XmlElement rootEle = (XmlElement)root;
+			Texture2D t = altasTexture;
+			XmlNodeList nodeList =root.ChildNodes;
+			List<SpriteMetaData> metaDatas=new List<SpriteMetaData>();
+			//遍历所有子节点
+			foreach (XmlNode xn in nodeList)
+			{
+				XmlElement xe = (XmlElement)xn;
+				string name = xe.GetAttribute("name").Replace('/','_');
+				float x = float.Parse( xe.GetAttribute("x"));
+				float y = float.Parse( xe.GetAttribute("y"));
+				float w = float.Parse( xe.GetAttribute("width"));
+				float h = float.Parse( xe.GetAttribute("height"));
+				float fx = x;
+				float fy = y;
+				float fw = w;
+				float fh = h;
+				if(xe.HasAttribute("fx"))
+					fx = float.Parse( xe.GetAttribute("frameX"));
+				if(xe.HasAttribute("fy"))
+					fy = float.Parse( xe.GetAttribute("frameY"));
+				if(xe.HasAttribute("fw"))
+					fw = float.Parse( xe.GetAttribute("frameWidth"));
+				if(xe.HasAttribute("fh"))
+					fh = float.Parse( xe.GetAttribute("frameHeight"));
+
+				SpriteMetaData metaData = new SpriteMetaData();
+				metaData.name = name;
+				metaData.rect = new Rect(x,t.height-h-y,w,h);
+				metaDatas.Add(metaData);
+			}
+
+			if(metaDatas.Count>0){
+				string textureAtlasPath = AssetDatabase.GetAssetPath(t);
+				TextureImporter textureImporter = AssetImporter.GetAtPath(textureAtlasPath) as TextureImporter;
+				textureImporter.maxTextureSize = 2048;
+				textureImporter.spritesheet = metaDatas.ToArray();
+				textureImporter.textureType = TextureImporterType.Sprite;
+				textureImporter.spriteImportMode = SpriteImportMode.Multiple;
+				textureImporter.spritePixelsPerUnit = 100;
+				AssetDatabase.ImportAsset(textureAtlasPath, ImportAssetOptions.ForceUpdate);
+			}
+		}
+	}
+
+	[MenuItem("Tools/TexturePacker to Sprites(自动)",false,3)]
 	static void ParseXML(){
 		if(Selection.activeObject && Selection.activeObject is TextAsset)
 		{
