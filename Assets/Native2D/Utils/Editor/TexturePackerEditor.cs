@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using System.Xml;
-using System.Collections.Generic;
 using System.IO;
 
 /// <summary>
@@ -24,7 +23,6 @@ public class TexturePackerEditor : ScriptableWizard {
 			XmlDocument xmlDoc = new XmlDocument();
 			xmlDoc.LoadXml(altasTextAsset.ToString());
 			XmlNode root = xmlDoc.SelectSingleNode("TextureAtlas");
-			XmlElement rootEle = (XmlElement)root;
 			Texture2D t = altasTexture;
 			XmlNodeList nodeList =root.ChildNodes;
 			List<SpriteMetaData> metaDatas=new List<SpriteMetaData>();
@@ -37,18 +35,18 @@ public class TexturePackerEditor : ScriptableWizard {
 				float y = float.Parse( xe.GetAttribute("y"));
 				float w = float.Parse( xe.GetAttribute("width"));
 				float h = float.Parse( xe.GetAttribute("height"));
-				float fx = x;
-				float fy = y;
-				float fw = w;
-				float fh = h;
-				if(xe.HasAttribute("fx"))
-					fx = float.Parse( xe.GetAttribute("frameX"));
-				if(xe.HasAttribute("fy"))
-					fy = float.Parse( xe.GetAttribute("frameY"));
-				if(xe.HasAttribute("fw"))
-					fw = float.Parse( xe.GetAttribute("frameWidth"));
-				if(xe.HasAttribute("fh"))
-					fh = float.Parse( xe.GetAttribute("frameHeight"));
+//				float fx = x;
+//				float fy = y;
+//				float fw = w;
+//				float fh = h;
+//				if(xe.HasAttribute("fx"))
+//					fx = float.Parse( xe.GetAttribute("frameX"));
+//				if(xe.HasAttribute("fy"))
+//					fy = float.Parse( xe.GetAttribute("frameY"));
+//				if(xe.HasAttribute("fw"))
+//					fw = float.Parse( xe.GetAttribute("frameWidth"));
+//				if(xe.HasAttribute("fh"))
+//					fh = float.Parse( xe.GetAttribute("frameHeight"));
 
 				SpriteMetaData metaData = new SpriteMetaData();
 				metaData.name = name;
@@ -102,18 +100,18 @@ public class TexturePackerEditor : ScriptableWizard {
 				float y = float.Parse( xe.GetAttribute("y"));
 				float w = float.Parse( xe.GetAttribute("width"));
 				float h = float.Parse( xe.GetAttribute("height"));
-				float fx = x;
-				float fy = y;
-				float fw = w;
-				float fh = h;
-				if(xe.HasAttribute("fx"))
-					fx = float.Parse( xe.GetAttribute("frameX"));
-				if(xe.HasAttribute("fy"))
-					fy = float.Parse( xe.GetAttribute("frameY"));
-				if(xe.HasAttribute("fw"))
-					fw = float.Parse( xe.GetAttribute("frameWidth"));
-				if(xe.HasAttribute("fh"))
-					fh = float.Parse( xe.GetAttribute("frameHeight"));
+//				float fx = x;
+//				float fy = y;
+//				float fw = w;
+//				float fh = h;
+//				if(xe.HasAttribute("fx"))
+//					fx = float.Parse( xe.GetAttribute("frameX"));
+//				if(xe.HasAttribute("fy"))
+//					fy = float.Parse( xe.GetAttribute("frameY"));
+//				if(xe.HasAttribute("fw"))
+//					fw = float.Parse( xe.GetAttribute("frameWidth"));
+//				if(xe.HasAttribute("fh"))
+//					fh = float.Parse( xe.GetAttribute("frameHeight"));
 
 				SpriteMetaData metaData = new SpriteMetaData();
 				metaData.name = name;

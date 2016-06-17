@@ -423,7 +423,6 @@ public class Painter : MonoBehaviour {
 
 	void PaintByPen(int startX,int startY,int endI,int endJ)
 	{
-		int tempBrushSize = this.brushSize<<1;
 		if(paintType== PaintType.DrawColorfulLine && paintColorful.Length>1){
 			Color32 currC = paintColorful[m_colorfulIndex];
 			paintColor = Color32.Lerp(paintColor,currC,Time.deltaTime*colorChangeRate);
