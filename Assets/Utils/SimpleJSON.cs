@@ -295,8 +295,7 @@ namespace SimpleJSON
 			if (bool.TryParse (token, out flag)) {
 				return new JSONData (flag);
 			}
-			
-			throw new NotImplementedException (token);
+			return new JSONData (0);
 		}
 		
 		static void AddElement (JSONNode ctx, string token, string tokenName, bool tokenIsString)
@@ -823,6 +822,10 @@ namespace SimpleJSON
 				else
 					m_Dict.Add (aKey, value);
 			}
+		}
+
+		public bool ContainKey(string key){
+			return m_Dict.ContainsKey(key);
 		}
 		
 		public override JSONNode this [int aIndex]
