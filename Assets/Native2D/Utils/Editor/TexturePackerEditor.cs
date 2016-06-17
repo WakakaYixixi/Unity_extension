@@ -12,7 +12,7 @@ public class TexturePackerEditor : ScriptableWizard {
 
 	public Texture2D altasTexture;
 	public TextAsset altasTextAsset;
-	[MenuItem("Tools/TexturePacker to Sprites面板",false,2)]
+	[MenuItem("Tools/TexturePacker/生成Sprites(手动)")]
 	static void CreateWizard () {
 		ScriptableWizard.DisplayWizard<TexturePackerEditor>("Create Sprites", "Create");
 	}
@@ -67,7 +67,7 @@ public class TexturePackerEditor : ScriptableWizard {
 		}
 	}
 
-	[MenuItem("Tools/TexturePacker to Sprites(自动)",false,3)]
+	[MenuItem("Tools/TexturePacker/选中图集配置生成Sprites(自动)")]
 	static void ParseXML(){
 		if(Selection.activeObject && Selection.activeObject is TextAsset)
 		{

@@ -7,8 +7,16 @@ using System.IO;
 /// </summary>
 public class SplitAlpha {
 
-	[MenuItem("Tools/Split Alpha",false,2)]
-	static void Split(){
+	[MenuItem("Tools/Split Alpha/RGB+A可能会合并成一张图")]
+	static void SplitUseMerge(){
+		Split(true);
+	}
+	[MenuItem("Tools/Split Alpha/RGB+A两张图")]
+	static void SplitNonMerge(){
+		Split(false);
+	}
+
+	static void Split(bool merge){
 		if(Selection.activeObject && Selection.activeObject is Texture2D)
 		{
 			string name = (Selection.activeObject as Texture2D).name;
@@ -37,7 +45,7 @@ public class SplitAlpha {
 				}
 			}
 
-			if(t.width>t.height)
+			if(merge && t.width>t.height)
 			{
 				//两张图片合成一张
 				Texture2D atlasT = new Texture2D(t.width,t.width,TextureFormat.RGB24,false,true);
@@ -45,7 +53,7 @@ public class SplitAlpha {
 				atlasT.SetPixels(0,t.height,t.width,t.height,alphaT.GetPixels());
 				File.WriteAllBytes(folder+name+"_RGB_A.jpg",atlasT.EncodeToJPG(100));
 			}
-			else if(t.width<t.height)
+			else if(merge && t.width<t.height)
 			{
 				//两张图片合成一张
 				Texture2D atlasT = new Texture2D(t.height,t.height,TextureFormat.RGB24,false,true);

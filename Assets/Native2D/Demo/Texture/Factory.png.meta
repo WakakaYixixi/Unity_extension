@@ -54,10 +54,17 @@ TextureImporter:
   spritePixelsToUnits: 100
   alphaIsTransparency: 1
   textureType: 8
-  buildTargetSettings: []
+  buildTargetSettings:
+  - buildTarget: iPhone
+    maxTextureSize: 2048
+    textureFormat: -1
+    compressionQuality: 0
+    allowsAlphaSplitting: 0
   spriteSheet:
+    serializedVersion: 2
     sprites:
-    - name: yan
+    - serializedVersion: 2
+      name: yan
       rect:
         serializedVersion: 2
         x: 208
@@ -67,16 +74,9 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: -9.5, y: 16.5}
-        - {x: -17.5, y: 12.5}
-        - {x: -17.5, y: -11.5}
-        - {x: -14.5, y: -16.5}
-        - {x: 14.5, y: -16.5}
-        - {x: 17.5, y: -10.5}
-        - {x: 17.5, y: 13.5}
-        - {x: 15.5, y: 16.5}
-    - name: goods
+      outline: []
+    - serializedVersion: 2
+      name: goods
       rect:
         serializedVersion: 2
         x: 241
@@ -87,7 +87,8 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-    - name: wheel4.png
+    - serializedVersion: 2
+      name: wheel4.png
       rect:
         serializedVersion: 2
         x: 156
@@ -97,18 +98,9 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: 17, y: 26}
-        - {x: -21, y: 26}
-        - {x: -25, y: 17}
-        - {x: -25, y: -2}
-        - {x: -22, y: -17}
-        - {x: -2, y: -26}
-        - {x: 16, y: -26}
-        - {x: 25, y: -18}
-        - {x: 25, y: 1}
-        - {x: 23, y: 13}
-    - name: wheel3.png
+      outline: []
+    - serializedVersion: 2
+      name: wheel3.png
       rect:
         serializedVersion: 2
         x: 0
@@ -118,18 +110,9 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: -24, y: 26}
-        - {x: -25, y: 24}
-        - {x: -25, y: -6}
-        - {x: -20, y: -20}
-        - {x: -1, y: -26}
-        - {x: 11, y: -26}
-        - {x: 22, y: -23}
-        - {x: 25, y: -14}
-        - {x: 25, y: 22}
-        - {x: 14, y: 26}
-    - name: wheel2.png
+      outline: []
+    - serializedVersion: 2
+      name: wheel2.png
       rect:
         serializedVersion: 2
         x: 52
@@ -139,15 +122,9 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: -23, y: 26}
-        - {x: -25, y: 21}
-        - {x: -25, y: -13}
-        - {x: -22, y: -18}
-        - {x: -3, y: -26}
-        - {x: 25, y: -26}
-        - {x: 25, y: 26}
-    - name: wheel1.png
+      outline: []
+    - serializedVersion: 2
+      name: wheel1.png
       rect:
         serializedVersion: 2
         x: 104
@@ -157,18 +134,9 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: -19, y: 26}
-        - {x: -25, y: 17}
-        - {x: -25, y: 0}
-        - {x: -18, y: -14}
-        - {x: -10, y: -20}
-        - {x: -2, y: -25}
-        - {x: 9, y: -25}
-        - {x: 25, y: -20}
-        - {x: 25, y: 18}
-        - {x: 9, y: 26}
-    - name: bottom
+      outline: []
+    - serializedVersion: 2
+      name: bottom
       rect:
         serializedVersion: 2
         x: 0
@@ -178,23 +146,7 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: 17.5, y: 96}
-        - {x: -2.5, y: 96}
-        - {x: -3.5, y: 94}
-        - {x: -3.5, y: 83}
-        - {x: -3.5, y: 85}
-        - {x: -7.5, y: 91}
-        - {x: -24.5, y: 87}
-        - {x: -24.5, y: 69}
-        - {x: -78.5, y: 32}
-        - {x: -119.5, y: -32}
-        - {x: -119.5, y: -44}
-        - {x: -6.5, y: -96}
-        - {x: 14.5, y: -96}
-        - {x: 119.5, y: -46}
-        - {x: 119.5, y: -16}
-        - {x: 112.5, y: 7}
+      outline: []
     outline: []
   spritePackingTag: 
   userData: 
