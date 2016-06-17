@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEditor;
 using System.Xml;
 using System.Collections.Generic;
+using System.IO;
 
 /// <summary>
 /// 解析texturepacker图集 , 转成Sprites
@@ -12,7 +14,7 @@ public class TexturePackerEditor : ScriptableWizard {
 
 	public Texture2D altasTexture;
 	public TextAsset altasTextAsset;
-	[MenuItem("Tools/TexturePacker/生成Sprites(手动)")]
+	[MenuItem("Tools/TexturePacker/图集生成Sprites(手动)")]
 	static void CreateWizard () {
 		ScriptableWizard.DisplayWizard<TexturePackerEditor>("Create Sprites", "Create");
 	}
@@ -129,6 +131,56 @@ public class TexturePackerEditor : ScriptableWizard {
 				textureImporter.spritePixelsPerUnit = 100;
 				AssetDatabase.ImportAsset(textureAtlasPath, ImportAssetOptions.ForceUpdate);
 			}
+		}
+	}
+
+	[MenuItem("Tools/TexturePacker/选中Sprites合并成图集",false,0)]
+	static void PackSpriteToAtlas()
+	{
+		Object[] objs = Selection.GetFiltered(typeof(Texture2D),SelectionMode.DeepAssets);
+		if(objs!=null&&objs.Length>0)
+		{
+			string atlasPath = AssetDatabase.GetAssetPath(objs[0]);
+			atlasPath = atlasPath.Substring(0,atlasPath.LastIndexOf('/'));
+
+			Texture2D atlas = new Texture2D(2048,2048,TextureFormat.ARGB32,false,true);
+			List<Texture2D> textures = new List<Texture2D>();
+			foreach(Object o in objs)
+			{
+				if(o is Texture2D)
+				{
+					Texture2D t = o as Texture2D;
+					t = new Texture2D(1,1,TextureFormat.ARGB32,false,true);
+					t.name = o.name;
+					t.LoadImage(File.ReadAllBytes(Path.GetFullPath(AssetDatabase.GetAssetPath(o))));
+					textures.Add(t);
+				}
+			}
+			Rect[] rects = atlas.PackTextures(textures.ToArray(),2,2048);
+			string atlasFilePath = Application.dataPath.Substring(0,Application.dataPath.LastIndexOf('/'))+"/"+atlasPath+"/Atlas.png";
+			File.WriteAllBytes( atlasFilePath , atlas.EncodeToPNG());
+			AssetDatabase.Refresh();
+
+			List<SpriteMetaData> Sprites = new List<SpriteMetaData>();
+			for (int i = 0; i < rects.Length; i++) {
+				SpriteMetaData smd = new SpriteMetaData();
+				smd.name = textures[i].name;
+				smd.rect = new Rect(rects[i].xMin * atlas.width, rects[i].yMin * atlas.height, rects[i].width * atlas.width, rects[i].height * atlas.height);
+				smd.pivot = new Vector2(0.5f, 0.5f); 
+				smd.alignment = (int)SpriteAlignment.Center;
+				Sprites.Add(smd);
+			}
+			TextureImporter textureImporter = AssetImporter.GetAtPath(atlasPath+"/Atlas.png") as TextureImporter;
+			textureImporter.maxTextureSize = 2048;
+			textureImporter.spritesheet = Sprites.ToArray();
+			textureImporter.textureType = TextureImporterType.Sprite;
+			textureImporter.spriteImportMode = SpriteImportMode.Multiple;
+			textureImporter.spritePivot = new Vector2(0.5f, 0.5f);
+			textureImporter.spritePixelsPerUnit = 100;
+			textureImporter.mipmapEnabled=false;
+			AssetDatabase.ImportAsset(atlasPath+"/Atlas.png", ImportAssetOptions.ForceUpdate);
+
+			AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 		}
 	}
 }
