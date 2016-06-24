@@ -1,6 +1,36 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class MathUtil {
+
+	/// <summary>
+	/// 数组随机顺序
+	/// </summary>
+	/// <returns>The sort.</returns>
+	/// <param name="array">Array.</param>
+	/// <typeparam name="T">The 1st type parameter.</typeparam>
+	public static T[] RandomSort < T > (T[] array)
+	{
+		int len = array.Length;
+		List<int> list = new List<int>();
+		T[] ret=new T[len];
+		System.Random rand = new System.Random();
+		int i = 0;
+		while (list.Count < len)
+		{
+			int iter = rand.Next(0, len);
+			if (!list.Contains(iter))
+			{
+				list.Add(iter);
+				ret[i] = array[iter];
+				i++;
+			}
+
+		}
+		return ret;
+	} 
+
 
 	/// <summary>
 	/// 判断相交
@@ -27,6 +57,4 @@ public class MathUtil {
 		if( r.height < 0 )
 			r.y -= ( r.height *= -1 );
 	}
-
-
 }
