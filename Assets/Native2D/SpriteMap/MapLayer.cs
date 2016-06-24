@@ -7,7 +7,6 @@ public class MapLayer : MonoBehaviour {
 
 	[Header("Drag Setting")]
 	public bool dragEnable = true;//是否可拖动
-	public float mapMoveSpeed = 1f; //移动地图时的速度
 	public bool freezeX=false; //X方向上是否不准移动
 	public bool freezeY=false; //Y方向上是否不准移动
 
@@ -17,9 +16,10 @@ public class MapLayer : MonoBehaviour {
 	public float maxScale=1f;//最大scale
 
 	[Header("Init Center Position")]
-	public bool center = false;
+	public bool centerX;
 	public float centerOffsetX = 0f;
-	public float centeroffsetY = 0f;
+	public bool centerY;
+	public float centerOffsetY = 0f;
 
 	private SpriteMapViewport m_viewPort;
 	private Vector3 m_prevPos ;
@@ -28,6 +28,8 @@ public class MapLayer : MonoBehaviour {
 	private Vector3 m_initPos;
 	private bool m_reset = false;
 	private bool m_isAutoMoved = false;//是否在自动移动中.
+	private float m_moveDamp = 1f;
+	private bool m_isDown = false;
 
 	void Awake(){
 		m_viewPort = GetComponentInParent<SpriteMapViewport>();
@@ -35,101 +37,140 @@ public class MapLayer : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		m_endPos = transform.localPosition;
-		m_matrix = new Matrix2D();
-		m_initPos = transform.localPosition;
-
-		if(center){
-			MovePointToCenter(size*0.5f,centerOffsetX,centeroffsetY);
-			m_isAutoMoved = false;
-			transform.localPosition = m_endPos;
+		this.m_endPos = base.transform.localPosition;
+		this.m_matrix = new Matrix2D();
+		if (this.centerX || this.centerY)
+		{
+			Vector2 zero = Vector2.zero;
+			float offsetX = 0f;
+			float offsetY = 0f;
+			if (this.centerX)
+			{
+				zero.x = this.size.x * 0.5f;
+				offsetX = this.centerOffsetX;
+			}
+			if (this.centerY)
+			{
+				zero.y = (this.m_viewPort.viewPort.height - this.size.y) * 0.5f;
+				offsetY = this.centerOffsetY;
+			}
+			this.m_initPos = new Vector3(zero.x, zero.y, 0f);
+			this.MovePointToCenter(zero, offsetX, offsetY);
+			this.m_isAutoMoved = false;
+			base.transform.localPosition = this.m_endPos;
 		}
+		this.m_initPos = base.transform.localPosition;
 	}
 	
 	// Update is called once per frame
 	void Update () {
-
-		if(m_isAutoMoved){
-			transform.localPosition = Vector3.Lerp(transform.localPosition,m_endPos,mapMoveSpeed*5f*Time.deltaTime);
-			if(Vector3.Distance(transform.localPosition,m_endPos)<0.01f){
+		if (m_isAutoMoved)
+		{
+			transform.localPosition = Vector3.Lerp(transform.localPosition, m_endPos, 0.5f);
+			if (Vector3.Distance(transform.localPosition, m_endPos) < 0.01f)
+			{
 				m_isAutoMoved = false;
 			}
-			return;
 		}
-
-		if(!InputUtil.CheckMouseOnUGUI()){
-			if(Input.touchCount<2)
+		else
+		{
+			if (Input.touchCount < 2)
 			{
-				if(dragEnable){
-					if(Input.GetMouseButtonDown(0)){
+				if (dragEnable)
+				{
+					if (Input.GetMouseButtonDown(0) && !InputUtil.CheckMouseOnUGUI())
+					{
 						OnTouchDown();
 					}
-					if(Input.GetMouseButton(0)){
+					if (Input.GetMouseButton(0))
+					{
 						OnTouchMove();
+					}
+					if (Input.GetMouseButtonUp(0))
+					{
+						this.OnTouchUp();
 					}
 				}
 			}
-			else if(multiScaleEnable)
+			else if (multiScaleEnable && !InputUtil.CheckMouseOnUGUI())
 			{
 				m_reset = true;
-				Touch t1 = Input.touches[0];
-				Touch t2 = Input.touches[1];
-				Vector2 t1PrevPos = t1.deltaPosition+t1.position;
-				Vector2 t2PrevPos = t2.deltaPosition+t2.position;
-				float delta = Vector2.Distance(t1PrevPos,t2PrevPos)/Vector2.Distance(t1.position,t2.position);
-				delta*=delta;
-
-				Vector3 localPos = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-				FixScaleSize(delta,localPos.x,localPos.y);
+				Touch touch = Input.touches[0];
+				Touch touch2 = Input.touches[1];
+				Vector2 a = touch.deltaPosition + touch.position;
+				Vector2 b = touch2.deltaPosition + touch2.position;
+				float sizeDiff = Vector2.Distance(a, b) / Vector2.Distance(touch.position, touch2.position);
+				sizeDiff *= sizeDiff;
+				Vector3 vector3 = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+				FixScaleSize(sizeDiff, vector3.x, vector3.y);
 			}
-
-			if(dragEnable && Input.GetAxis("Mouse ScrollWheel") != 0)
-			{  
-				float delta = 1+Input.GetAxis("Mouse ScrollWheel");
-				Vector3 localPos = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-				FixScaleSize(delta,localPos.x,localPos.y);
+			if (dragEnable && (Input.GetAxis("Mouse ScrollWheel") != 0f))
+			{
+				float num2 = 1f + Input.GetAxis("Mouse ScrollWheel");
+				Vector3 vector4 = m_viewPort.transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+				FixScaleSize(num2, vector4.x, vector4.y);
 			}
-		}
-
-		float speed = mapMoveSpeed;
-		if(Application.platform== RuntimePlatform.Android || Application.platform== RuntimePlatform.IPhonePlayer){
-			if(Input.touchCount==0){
-				speed = mapMoveSpeed*0.5f;
-				m_endPos = Vector3.Lerp(m_endPos,transform.localPosition,speed*10f*Time.deltaTime);
+			if (m_endPos.x > 0f)
+			{
+				m_endPos.x = 0f;
 			}
+			else if (m_endPos.x < ((-size.x * transform.localScale.x) + (m_viewPort.viewPort.width / transform.root.localScale.x)))
+			{
+				m_endPos.x = (-size.x * transform.localScale.x) + (m_viewPort.viewPort.width / transform.root.localScale.x);
+			}
+			if (m_endPos.y > 0f)
+			{
+				m_endPos.y = 0f;
+			}
+			else if (m_endPos.y < ((-size.y * transform.localScale.y) + (m_viewPort.viewPort.height / transform.root.localScale.y)))
+			{
+				m_endPos.y = (-size.y * transform.localScale.y) + (m_viewPort.viewPort.height / transform.root.localScale.y);
+			}
+			if (freezeY)
+			{
+				m_endPos.y = m_initPos.y;
+			}
+			if (freezeX)
+			{
+				m_endPos.x = m_initPos.x;
+			}
+			transform.localPosition = Vector3.Lerp(transform.localPosition, m_endPos, m_moveDamp);
 		}
-
-		Vector3 resultPos = Vector3.Lerp(transform.localPosition,m_endPos,speed*Time.deltaTime);
-		if (resultPos.x>0) resultPos.x=0;
-		else if(resultPos.x<-size.x*transform.localScale.x+m_viewPort.viewPort.width/transform.root.localScale.x)
-			resultPos.x = -size.x*transform.localScale.x+m_viewPort.viewPort.width/transform.root.localScale.x;
-		
-		if (resultPos.y>0) resultPos.y=0;
-		else if(resultPos.y<-size.y*transform.localScale.y+m_viewPort.viewPort.height/transform.root.localScale.y)
-			resultPos.y = -size.y*transform.localScale.y+m_viewPort.viewPort.height/transform.root.localScale.y;
-
-		if(freezeY){
-			resultPos.y = m_initPos.y;
-		}
-		if(freezeX){
-			resultPos.x = m_initPos.x;
-		}
-		transform.localPosition = resultPos;
 	}
 
 	void OnTouchDown(){
-		m_prevPos = Input.mousePosition;
+		m_prevPos = transform.parent.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+		m_moveDamp = 1f;
 		m_reset = false;
+		m_isDown = true;
 	}
 
 	void OnTouchMove(){
-		if(m_reset){
-			m_prevPos = Input.mousePosition;
-			return;
+		if (m_isDown)
+		{
+			Vector3 vector = transform.parent.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+			if (m_reset)
+			{
+				m_prevPos = vector;
+			}
+			else
+			{
+				Vector3 vector2 = vector - m_prevPos;
+				m_endPos = transform.localPosition + vector2;
+				m_prevPos = vector;
+			}
 		}
-		Vector3 delta = Input.mousePosition-m_prevPos;
-		m_endPos = transform.localPosition + delta;
-		m_prevPos = Input.mousePosition;
+	}
+
+	void OnTouchUp()
+	{
+		if (m_isDown)
+		{
+			Vector3 vector2 = transform.parent.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)) - m_prevPos;
+			m_moveDamp = 0.1f;
+			m_endPos += (Vector3) (vector2 * 10f);
+		}
+		m_isDown = false;
 	}
 
 	void FixScaleSize(float sizeDiff,float middleX,float middleY){

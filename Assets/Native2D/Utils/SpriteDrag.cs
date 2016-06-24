@@ -56,7 +56,13 @@ public class SpriteDrag : MonoBehaviour {
 	public Camera rayCastCamera = null;
 
 	[Tooltip("射线检测的Layer")]
-	public LayerMask rayCastMask;
+	public LayerMask dragRayCastMask=-1;
+	public LayerMask dropRayCastMask=-1;
+
+	[Tooltip("判断drag时是否忽略上面")]
+	public bool dragIgnoreTop = true;
+	[Tooltip("判断drop时是否忽略下面")]
+	public bool dropIgnoreBottom = true;
 
 	[Header("Drag Setting")]
 	[Tooltip("在拖动时是否固定在拖动物的原点.")]
@@ -109,7 +115,7 @@ public class SpriteDrag : MonoBehaviour {
 	public delegate bool DragValidCheck();
 	public event DragValidCheck DragValidCheckEvent;
 
-	// Use this for initialization
+
 	void Start () {
 		if (!dragTarget){
 			dragTarget = transform;
@@ -138,12 +144,18 @@ public class SpriteDrag : MonoBehaviour {
 			{
 				if (!m_isDown)
 				{
-					RaycastHit2D hit = Physics2D.Raycast(rayCastCamera.ScreenToWorldPoint(Input.mousePosition),Vector2.zero, 0, rayCastMask);
-					if (hit && hit.collider.gameObject == dragTarget.gameObject)
-					{
-						m_isDown = true;
-						m_downTime = Time.realtimeSinceStartup;
-						m_mousePressPosition = Input.mousePosition;
+					RaycastHit2D[] hits = Physics2D.RaycastAll(rayCastCamera.ScreenToWorldPoint(Input.mousePosition),Vector2.zero, 0, dragRayCastMask);
+					if(hits!=null && hits.Length>0){
+						foreach(RaycastHit2D hit in hits){
+							if (hit.collider.gameObject == gameObject)
+							{
+								m_isDown = true;
+								m_downTime = Time.realtimeSinceStartup;
+								m_mousePressPosition = Input.mousePosition;
+								break;
+							}
+							if(dragIgnoreTop) break;
+						}
 					}
 				}
 			}
@@ -169,11 +181,12 @@ public class SpriteDrag : MonoBehaviour {
 		}
 		this.m_canDrag = true;
 		this.m_isDragging = true;
+		dragTarget.DOKill();
 
 		m_cachePosition = dragTarget.position;
 		m_cacheScale = dragTarget.localScale;
 		m_cacheRotation = dragTarget.localEulerAngles;
-		if(dragChangeScale!=0f){
+		if(dragChangeScale!=1f){
 			dragTarget.DOScale(m_cacheScale*dragChangeScale,0.25f);
 		}
 		if(dragChangeRotate!=0f){
@@ -184,7 +197,7 @@ public class SpriteDrag : MonoBehaviour {
 		m_currentPosition = m_cachePosition;
 		m_dragOffset = Vector3.zero;
 
-		foreach(SpriteRenderer render in GetComponentsInChildren<SpriteRenderer>()){
+		foreach(SpriteRenderer render in dragTarget.GetComponentsInChildren<SpriteRenderer>()){
 			render.sortingLayerName=dragSortLayerName;
 		}
 
@@ -216,11 +229,12 @@ public class SpriteDrag : MonoBehaviour {
 		}
 		dragTarget.position = Vector3.Lerp(dragTarget.position, m_currentPosition, dragMoveDamp);
 		if(sendHoverEvent){
-			Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
+			Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,dropRayCastMask,-100f,100f);
 			if(cols.Length>0){
 				foreach(Collider2D col in cols){
 					if(col.gameObject!=gameObject)
 						col.SendMessage(onHoverMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
+					if(dropIgnoreBottom) break;
 				}
 				gameObject.SendMessage(onHoverMethodName, cols , SendMessageOptions.DontRequireReceiver);
 			}
@@ -260,17 +274,18 @@ public class SpriteDrag : MonoBehaviour {
 			BackPosition();
 		}else{
 			dragTarget.position -=new Vector3(0,0,dragOffsetZ);
-			foreach(SpriteRenderer render in GetComponentsInChildren<SpriteRenderer>()){
+			foreach(SpriteRenderer render in dragTarget.GetComponentsInChildren<SpriteRenderer>()){
 				render.sortingLayerName=m_sortLayerName;
 			}
 		}
 
 		if(!string.IsNullOrEmpty(onDropMethodName)){
-			Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
+			Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,dropRayCastMask,-100f,100f);
 			if(cols.Length>0){
 				foreach(Collider2D col in cols){
 					if(col.gameObject!=gameObject)
 						col.SendMessage(onDropMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
+					if(dropIgnoreBottom) break;
 				}
 				gameObject.SendMessage(onDropMethodName, cols , SendMessageOptions.DontRequireReceiver);
 			}

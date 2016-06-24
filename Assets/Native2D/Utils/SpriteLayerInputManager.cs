@@ -17,15 +17,16 @@ void OnUp( SpriteLayerInputManager.TouchEvent evt){
 }
 */
 /// Sprite touch事件的分发和管理，Sprite上面需要添加Collider2D组件，触发顺序根据z
+/// messageReceiver或者SpriteLayerInputManager下面的Sprite会接收到的事件
 /// </summary>
 public class SpriteLayerInputManager : MonoBehaviour {
 
 	public class TouchEvent{
-		public Vector3 pressPosition;
-		public Vector3 position;
-		public Vector3 detal;
-		public GameObject pressObject = null ;
-		public GameObject pointerOnObject = null ;
+		public Vector3 pressPosition; //world position
+		public Vector3 position; //world position
+		public Vector3 detal; //world position detal
+		public GameObject pressObject = null ; //按下时的对象
+		public GameObject pointerOnObject = null ; //当前鼠标下面的对象
 	}
 
 	private TouchEvent m_event ;
@@ -33,6 +34,8 @@ public class SpriteLayerInputManager : MonoBehaviour {
 	private float m_touchTimeDelta = 0f;
 	private Collider2D m_touchTarget = null ;
 
+	//需不需要判断是否在UI上面
+	public bool isCheckOnUGUI = true;
 	//哪些层接受touch
 	public LayerMask layerMask = -1;
 	//计算使用的Camera , 默认为Camera.main
@@ -50,7 +53,11 @@ public class SpriteLayerInputManager : MonoBehaviour {
 
 	void Update()
 	{
-		if(!InputUtil.CheckMouseOnUI() && Input.touchCount<2){
+		bool flag = true;
+		if(isCheckOnUGUI && InputUtil.CheckMouseOnUI()){
+			flag = false; 
+		}
+		if( flag && Input.touchCount<2){
 			if(Input.GetMouseButtonDown(0)){
 				m_isTouchDown = true;
 				OnTouchDown();

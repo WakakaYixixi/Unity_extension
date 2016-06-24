@@ -5,18 +5,50 @@ using System;
 /// <summary>
 /// 简单的声音管理
 /// </summary>
-public class AudioManager {
+public class AudioManager:MonoBehaviour {
 	private static AudioManager m_instance;
-	public static AudioManager GetInstance(){
-		if(m_instance==null) m_instance = new AudioManager();
-		return m_instance;
+	public static AudioManager Instance{
+		get{
+			if(m_instance==null){
+				GameObject go = new GameObject("[Music]");
+				return go.AddComponent<AudioManager>();
+			}
+			return m_instance;
+		}
 	}
+
+	private AudioSource m_musicAS;
+
+	void Awake(){
+		if(m_instance!=null){
+			Destroy(gameObject);
+			return;
+		}
+		m_instance = this;
+		m_musicAS = GetComponent<AudioSource>();
+		if(m_musicAS==null){
+			m_musicAS = gameObject.AddComponent<AudioSource>();
+			m_musicAS.loop=true;
+			m_musicAS.playOnAwake = false;
+		}
+		DontDestroyOnLoad(gameObject);
+	}
+
 
 	//存储loop的music声音
 	private Dictionary<string,AudioSource> m_musicAudio = new Dictionary<string, AudioSource>();
-
+	private Dictionary<string,AudioSource> m_musicPathAudio = new Dictionary<string, AudioSource>();
+	private List<string> m_removeGuids = new List<string>();
 
 	#region Sound
+
+	public float volume{
+		get{return AudioListener.volume; }
+		set{
+			AudioListener.volume=value;
+		}
+	}
+
 	/// <summary>
 	/// 只播放一次的声音
 	/// </summary>
@@ -41,6 +73,22 @@ public class AudioManager {
 	#endregion
 
 
+	void FixedUpdate(){
+		if(m_musicAudio.Count>0){
+			m_removeGuids.Clear();
+			foreach(string guid in m_musicAudio.Keys){
+				AudioSource source = m_musicAudio[guid];
+				if(!source.loop && !source.isPlaying){
+					m_removeGuids.Add(guid);
+				}
+			}
+			for(int i=0;i<m_removeGuids.Count;++i){
+				StopMusicByGUID(m_removeGuids[i]);
+			}
+		}
+	}
+
+
 	#region Music
 	/// <summary>
 	/// 循环播放音效
@@ -49,10 +97,28 @@ public class AudioManager {
 	/// <param name="resourcePath">Resource path.</param>
 	/// <param name="volume">Volume.</param>
 	/// <param name="dontDestroy">dontDestroy.</param>
-	public string PlayMusic(string resourcePath , float volume = 1f ,bool dontDestroy=false){
-		AudioClip clip = Resources.Load<AudioClip>(resourcePath);
-		if(clip){
-			return PlayMusic(clip,volume,dontDestroy);
+	public string PlayMusic(string resourcePath , float volume = 1f ,bool isLoop = true,bool dontDestroy=false){
+		if(m_musicPathAudio.ContainsKey(resourcePath)){
+			AudioSource source = m_musicPathAudio[resourcePath];
+			if(!source.isPlaying){
+				source.loop = isLoop;
+				source.Play();
+			}
+			foreach(string key in m_musicAudio.Keys){
+				if(m_musicAudio[key]==source){
+					return key;
+				}
+			}
+		}
+		else
+		{
+			AudioClip clip = Resources.Load<AudioClip>(resourcePath);
+			if(clip){
+				string id = PlayMusic(clip,volume,isLoop,dontDestroy);
+				AudioSource source = m_musicAudio[id];
+				m_musicPathAudio[resourcePath] = source;
+				return id;
+			}
 		}
 		return null;
 	}
@@ -63,7 +129,7 @@ public class AudioManager {
 	/// <param name="clip">Clip.</param>
 	/// <param name="volume">Volume.</param>
 	/// <param name="dontDestroy">dontDestroy.</param>
-	public string PlayMusic(AudioClip clip, float volume = 1f,bool dontDestroy=false){
+	public string PlayMusic(AudioClip clip, float volume = 1f,bool isLoop = true,bool dontDestroy=false){
 		string guid = Guid.NewGuid().ToString();
 		GameObject go = new GameObject("Music_"+guid);
 		if(dontDestroy){
@@ -71,7 +137,7 @@ public class AudioManager {
 		}
 		go.transform.position = Camera.main.transform.position;
 		AudioSource audioSource = go.AddComponent<AudioSource>();
-		audioSource.loop=true;
+		audioSource.loop=isLoop;
 		audioSource.volume = volume;
 		audioSource.clip = clip;
 		audioSource.Play();
@@ -82,13 +148,47 @@ public class AudioManager {
 		if(m_musicAudio.ContainsKey(guid)){
 			AudioSource source = m_musicAudio[guid];
 			source.Stop();
-			GameObject.Destroy(source.gameObject);
+			string id=null;
+			foreach(String path in m_musicPathAudio.Keys){
+				if(m_musicPathAudio[path]== source){
+					id = path;
+					break;
+				}
+			}
+			if(!string.IsNullOrEmpty(id)){
+				m_musicPathAudio.Remove(id);
+			}
 			m_musicAudio.Remove(guid);
+			GameObject.Destroy(source.gameObject);
+		}
+	}
+	public void StopMusicByPath( string path){
+		if(m_musicPathAudio.ContainsKey(path)){
+			AudioSource source = m_musicPathAudio[path];
+			source.Stop();
+			string id=null;
+			foreach(String guid in m_musicAudio.Keys){
+				if(m_musicAudio[guid]== source){
+					id = guid;
+					break;
+				}
+			}
+			if(!string.IsNullOrEmpty(id)){
+				m_musicAudio.Remove(id);
+			}
+			m_musicPathAudio.Remove(path);
+			GameObject.Destroy(source.gameObject);
 		}
 	}
 	public AudioSource GetMusicByGUID( string guid ){
 		if(m_musicAudio.ContainsKey(guid)){
 			return m_musicAudio[guid];
+		}
+		return null;
+	}
+	public AudioSource GetMusicByPath( string path){
+		if(m_musicPathAudio.ContainsKey(path)){
+			return m_musicPathAudio[path];
 		}
 		return null;
 	}
@@ -100,15 +200,25 @@ public class AudioManager {
 			GameObject.Destroy(source.gameObject);
 		}
 		m_musicAudio.Clear();
+		m_musicPathAudio.Clear();
+		StopBgMusic();
+	}
+
+	/// <summary>
+	/// 播放背景音乐
+	/// </summary>
+	/// <param name="clip">Clip.</param>
+	/// <param name="volume">Volume.</param>
+	public void PlayBgMusic( AudioClip clip){
+		m_musicAS.clip = clip;
+		m_musicAS.Play();
+	}
+	/// <summary>
+	/// 停止背景音乐的播放
+	/// </summary>
+	public void StopBgMusic(){
+		m_musicAS.Stop();
 	}
 	#endregion
 
-
-	/// <summary>
-	/// 设置整体的音量，会影响所有的声音，开关音效可以用这个控制
-	/// </summary>
-	/// <param name="volume">Volume.</param>
-	public void SetListenerVolume( float volume){
-		AudioListener.volume = volume;
-	}
 }
