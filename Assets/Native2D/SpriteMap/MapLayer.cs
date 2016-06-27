@@ -73,8 +73,9 @@ public class MapLayer : MonoBehaviour {
 			{
 				m_isAutoMoved = false;
 				if(m_movedCallback!=null){
-					m_movedCallback();
+					System.Action action = m_movedCallback;
 					m_movedCallback = null;
+					action();
 				}
 			}
 		}
