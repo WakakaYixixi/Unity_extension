@@ -28,6 +28,8 @@ public class MapLayer : MonoBehaviour {
 	private Vector3 m_initPos;
 	private bool m_reset = false;
 	private bool m_isAutoMoved = false;//是否在自动移动中.
+	private float m_autoDamp = 5f;
+	private System.Action m_movedCallback = null;
 	private float m_moveDamp = 1f;
 	private bool m_isDown = false;
 
@@ -66,10 +68,14 @@ public class MapLayer : MonoBehaviour {
 	void Update () {
 		if (m_isAutoMoved)
 		{
-			transform.localPosition = Vector3.Lerp(transform.localPosition, m_endPos, 0.5f);
+			transform.localPosition = Vector3.Lerp(transform.localPosition, m_endPos, m_autoDamp*Time.deltaTime);
 			if (Vector3.Distance(transform.localPosition, m_endPos) < 0.01f)
 			{
 				m_isAutoMoved = false;
+				if(m_movedCallback!=null){
+					m_movedCallback();
+					m_movedCallback = null;
+				}
 			}
 		}
 		else
@@ -263,8 +269,11 @@ public class MapLayer : MonoBehaviour {
 	/// 移动到某一个点, point是MapLayer层的局部坐标
 	/// </summary>
 	/// <param name="point">Point.</param>
-	public void MoveTo(Vector2 point)
+	/// <param name="movedCallback">完成后的回调.</param>
+	public void MoveTo(Vector2 point , float speedDamp = 5f, System.Action movedCallback=null)
 	{
+		m_autoDamp = speedDamp;
+		m_movedCallback = movedCallback;
 		point.x = transform.localPosition.x+point.x*transform.localScale.x;
 		point.y = transform.localPosition.y+point.y*transform.localScale.y;
 		m_endPos.x = transform.localPosition.x-point.x;
