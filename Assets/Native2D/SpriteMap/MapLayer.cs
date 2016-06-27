@@ -63,7 +63,7 @@ public class MapLayer : MonoBehaviour {
 		}
 		this.m_initPos = base.transform.localPosition;
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 		if (m_isAutoMoved)
@@ -193,13 +193,13 @@ public class MapLayer : MonoBehaviour {
 		Gizmos.color = Color.green;
 		Gizmos.DrawLine(new Vector3(transform.position.x,transform.position.y,0),
 			new Vector3(transform.position.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0));
-		
+
 		Gizmos.DrawLine(new Vector3(transform.position.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0),
 			new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0));
-		
+
 		Gizmos.DrawLine(new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0),
 			new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,transform.position.y,0));
-		
+
 		Gizmos.DrawLine(new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,transform.position.y,0),
 			new Vector3(transform.position.x,transform.position.y,0));
 	}
@@ -299,5 +299,11 @@ public class MapLayer : MonoBehaviour {
 
 	}
 
+	/// <summary>
+	/// 停止移动
+	/// </summary>
+	public void StopMove(){
+		m_endPos = transform.localPosition ;
+	}
 	#endregion
 }

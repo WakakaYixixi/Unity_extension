@@ -6,6 +6,7 @@
 		_Color ("Tint", Color) = (1,1,1,1)
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
         _StencilVal ("Stencil Ref",Int) = 1
+		[Enum(UnityEngine.Rendering.CullMode)]_CullMode("Cull Mode",float)=0
 	}
 
 	SubShader
@@ -19,7 +20,7 @@
 			"CanUseSpriteAtlas"="True"
 		}
 
-		Cull Off
+		Cull [_CullMode]
 		Lighting Off
 		ZWrite Off
 		Blend One OneMinusSrcAlpha

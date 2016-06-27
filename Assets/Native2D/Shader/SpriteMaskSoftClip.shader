@@ -9,6 +9,7 @@
 
 		_ClipSoftX("Clip Soft X",Range(1,200))=20
 		_ClipSoftY("Clip Soft Y",Range(1,200))=20
+		[Enum(UnityEngine.Rendering.CullMode)]_CullMode("Cull Mode",float)=0
 	}
 
 	SubShader
@@ -22,7 +23,7 @@
 			"CanUseSpriteAtlas"="True"
 		}
 
-		Cull Off
+		Cull [_CullMode]
 		Lighting Off
 		ZWrite Off
 		Blend One OneMinusSrcAlpha

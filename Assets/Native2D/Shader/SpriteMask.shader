@@ -6,6 +6,9 @@
 		_Color ("Tint", Color) = (1,1,1,1)
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
         _StencilVal ("Stencil Ref",Int) = 1
+		[Enum(UnityEngine.Rendering.CullMode)]_CullMode("Cull Mode",float)=0
+		_ClipRect("Clip Rect",Vector) = (0,0,100,100)
+		[MaterialToggle] MaskInvert ("Mask Invert", Float) = 0
 	}
 
 	SubShader
@@ -19,7 +22,7 @@
 			"CanUseSpriteAtlas"="True"
 		}
 
-		Cull Off
+		Cull [_CullMode]
 		Lighting Off
 		ZWrite Off
 		Blend One OneMinusSrcAlpha
@@ -38,6 +41,7 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile _ PIXELSNAP_ON
+			#pragma multi_compile _ MASKINVERT_ON
 			#include "UnityCG.cginc"
 			#include "UnityUI.cginc"
 			
@@ -92,7 +96,11 @@
 				fixed4 c = SampleSpriteTexture (IN.texcoord) * IN.color;
 				c.rgb *= c.a;
 
+				#ifdef MASKINVERT_ON
+				c *= 1-UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
+				#else
 				c *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
+				#endif
 				
 				clip (c.a - 0.001);
 

@@ -7,6 +7,7 @@
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
 		_OutLine ("Outline", Range(0,2)) = 0
 		_OutlineColor("Outline Color", Color) = (1.0,1.0,1.0,1.0)
+		[Enum(UnityEngine.Rendering.CullMode)]_CullMode("Cull Mode",float)=0
 	}
 
 	SubShader
@@ -20,7 +21,7 @@
 			"CanUseSpriteAtlas"="True"
 		}
 
-		Cull Off
+		Cull [_CullMode]
 		Lighting Off
 		ZWrite Off
 		Blend One OneMinusSrcAlpha

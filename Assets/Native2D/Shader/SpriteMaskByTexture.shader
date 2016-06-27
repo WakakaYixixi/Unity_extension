@@ -8,6 +8,9 @@
         _StencilVal ("Stencil Ref",Int) = 1
 
 		_MaskTex("Mask Texture",2D)= "white" {}
+		[Enum(UnityEngine.Rendering.CullMode)]_CullMode("Cull Mode",float)=0
+		_ClipRect("Clip Rect",Vector) = (0,0,100,100)
+		[MaterialToggle] MaskInvert ("Mask Invert", Float) = 0
 	}
 
 	SubShader
@@ -21,7 +24,7 @@
 			"CanUseSpriteAtlas"="True"
 		}
 
-		Cull Off
+		Cull [_CullMode]
 		Lighting Off
 		ZWrite Off
 		Blend One OneMinusSrcAlpha
@@ -40,6 +43,7 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile _ PIXELSNAP_ON
+			#pragma multi_compile _ MASKINVERT_ON
 			#include "UnityCG.cginc"
 			
 			struct appdata_t
@@ -95,7 +99,11 @@
 				color.rgb *= color.a;
 
 				fixed4 mask = tex2D (_MaskTex,(IN.worldPosition.xy - _ClipRect.xy)/_ClipRect.zw );
+				#ifdef MASKINVERT_ON
+				color*=1-mask.a;
+				#else
 				color*=mask.a;
+				#endif
 
 				clip (color.a - 0.001);
 
