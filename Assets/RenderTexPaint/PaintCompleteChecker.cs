@@ -42,6 +42,7 @@ public class PaintCompleteChecker : MonoBehaviour {
 	private Vector2 m_lerpSize ;
 	private int m_totalCount;
 	private List<Vector2> m_checkPoints;
+	private List<Vector2> m_removePoints;
 
 	/// <summary>
 	/// 完成的进度 0-1
@@ -68,6 +69,7 @@ public class PaintCompleteChecker : MonoBehaviour {
 				m_checkPoints = new List<Vector2>();
 			else 
 				m_checkPoints = checkData.checkPoints;
+			m_removePoints = new List<Vector2>();
 
 			#if UNITY_EDITOR
 			gridsDic = new Dictionary<string,Rect>();
@@ -95,7 +97,7 @@ public class PaintCompleteChecker : MonoBehaviour {
 		}
 	}
 
-	public void ClickDraw(Vector3 screenPos , Camera camera=null){
+	public void ClickDraw(Vector3 screenPos , Camera camera=null , bool isReverse=false){
 		if (camera == null) camera = Camera.main;
 		Vector3 localPos= transform.InverseTransformPoint(camera.ScreenToWorldPoint(screenPos));
 
@@ -104,19 +106,42 @@ public class PaintCompleteChecker : MonoBehaviour {
 		float lerpDamp = Mathf.Min(w,h);
 		Rect brushSize = new Rect((localPos.x-w*0.5f),(localPos.y-h*0.5f),w,h);
 
-		for(int i=0;i<m_checkPoints.Count;++i){
-			Vector2 point = m_checkPoints[i];
-			if(Vector2.Distance(point,brushSize.center)<lerpDamp*0.75f){
-				m_checkPoints.RemoveAt(i);
-				--i;
+		if(isReverse)
+		{
+			for(int i=0;i<m_removePoints.Count;++i){
+				Vector2 point = m_removePoints[i];
+				if(Vector2.Distance(point,brushSize.center)<lerpDamp*0.75f){
+					m_checkPoints.Add(point);
+					m_removePoints.RemoveAt(i);
+					--i;
 
-				#if UNITY_EDITOR
-				string key = point.x+"-"+point.y;
-				gridsDic.Remove(key);
-				enablesDic.Remove(key);
-				#endif
+					#if UNITY_EDITOR
+					string key = point.x+"-"+point.y;
+					Rect rect = new Rect( point.x-checkData.gridSize.x*0.005f,point.y-checkData.gridSize.y*0.005f, checkData.gridSize.x*0.01f,checkData.gridSize.y*0.01f);
+					gridsDic[key]=rect;
+					enablesDic[key] = true;
+					#endif
+				}
 			}
 		}
+		else
+		{
+			for(int i=0;i<m_checkPoints.Count;++i){
+				Vector2 point = m_checkPoints[i];
+				if(Vector2.Distance(point,brushSize.center)<lerpDamp*0.75f){
+					m_removePoints.Add(point);
+					m_checkPoints.RemoveAt(i);
+					--i;
+
+					#if UNITY_EDITOR
+					string key = point.x+"-"+point.y;
+					gridsDic.Remove(key);
+					enablesDic.Remove(key);
+					#endif
+				}
+			}
+		}
+
 	}
 
 	/// <summary>
