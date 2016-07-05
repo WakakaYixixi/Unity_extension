@@ -54,6 +54,9 @@ public class PaintCompleteChecker : MonoBehaviour {
 
 	void Start(){
 		m_painter = GetComponent<RenderTexturePainter>();
+		#if UNITY_EDITOR
+		canResetData = true;
+		#endif
 		Reset();
 	}
 
