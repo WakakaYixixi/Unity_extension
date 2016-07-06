@@ -10,6 +10,7 @@ public class SpriteMask : MonoBehaviour {
 
 	//如果是Texture 遮罩，小心贴图边界的处理,图片的边界最好有1-2像素是透明的,mask图片不要设置mipmap
 	public bool isTextureMask = false;
+	private Vector4 m_rect;
 
 	// Use this for initialization
 	void Start () {
@@ -22,49 +23,44 @@ public class SpriteMask : MonoBehaviour {
 
 	void Clip(){
 		if(maskMaterials!=null){
-			Vector4 rect  = new Vector4(maskSize.x,maskSize.y,maskSize.width,maskSize.height);
-			rect.x+=transform.position.x;
-			rect.y+=transform.position.y;
 			if(isTextureMask){
-				rect.z+=maskSize.x;
-				rect.w+=maskSize.y;
+				Vector3 pos = new Vector3(transform.position.x,transform.position.y,transform.position.z);
+				Matrix4x4 matrix = Matrix4x4.TRS(pos, transform.rotation, transform.lossyScale);
+				pos = Vector3.zero;
+				pos = matrix.MultiplyPoint3x4(pos);
+				m_rect.x = pos.x;
+				m_rect.y = pos.y;
+				pos = new Vector3(maskSize.x+maskSize.width*1.5f,maskSize.y+maskSize.height*1.5f,0f);
+				pos = matrix.MultiplyPoint3x4(pos);
+				m_rect.z = pos.x;
+				m_rect.w = pos.y;
 			}
 			else{
-				rect.z+=transform.position.x+maskSize.x;
-				rect.w+=transform.position.y+maskSize.y;
+				Vector3 pos = new Vector3(transform.position.x,transform.position.y,transform.position.z);
+				Matrix4x4 matrix = Matrix4x4.TRS(pos, transform.rotation, transform.lossyScale);
+				pos = new Vector3(maskSize.x,maskSize.y,0f);
+				pos = matrix.MultiplyPoint3x4(pos);
+				m_rect.x = pos.x;
+				m_rect.y = pos.y;
+				pos = new Vector3(maskSize.x+maskSize.width,maskSize.y+maskSize.height,0f);
+				pos = matrix.MultiplyPoint3x4(pos);
+				m_rect.z = pos.x;
+				m_rect.w = pos.y;
 			}
 			for(int i=0;i<maskMaterials.Length;++i){
 				if(maskMaterials[i])
-					maskMaterials[i].SetVector("_ClipRect",rect);
+					maskMaterials[i].SetVector("_ClipRect",m_rect);
 			}
 		}
 	}
 
 	void OnDrawGizmos(){
-		if(!isTextureMask){
-			Gizmos.color = Color.red;
-
-			Vector3 pos = new Vector3(maskSize.x+transform.position.x,maskSize.y+transform.position.y,transform.position.z);
-			Vector3 pos1 = pos+new Vector3(maskSize.width,0,0);
-			Gizmos.DrawLine( pos,pos1);
-			pos = pos1+new Vector3(0,maskSize.height,0);
-			Gizmos.DrawLine( pos,pos1);
-			pos1 = pos-new Vector3(maskSize.width,0,0);
-			Gizmos.DrawLine( pos,pos1);
-			pos=new Vector3(maskSize.x+transform.position.x,maskSize.y+transform.position.y,transform.position.z);
-			Gizmos.DrawLine( pos,pos1);
-		}else{
-			Gizmos.color = Color.green;
-
-			Vector3 pos = new Vector3(maskSize.x+transform.position.x,maskSize.y+transform.position.y,transform.position.z);
-			Vector3 pos1 = pos+new Vector3(maskSize.width,0,0);
-			Gizmos.DrawLine( pos,pos1);
-			pos = pos1+new Vector3(0,maskSize.height,0);
-			Gizmos.DrawLine( pos,pos1);
-			pos1 = pos-new Vector3(maskSize.width,0,0);
-			Gizmos.DrawLine( pos,pos1);
-			pos=new Vector3(maskSize.x+transform.position.x,maskSize.y+transform.position.y,transform.position.z);
-			Gizmos.DrawLine( pos,pos1);
-		}
+		Gizmos.color = Color.red;
+		Vector3 pos = new Vector3(transform.position.x,transform.position.y,transform.position.z);
+		Matrix4x4 cubeTransform = Matrix4x4.TRS(pos, transform.rotation, transform.lossyScale);
+		Matrix4x4 oldGizmosMatrix = Gizmos.matrix;
+		Gizmos.matrix *= cubeTransform;
+		Gizmos.DrawWireCube(new Vector3(maskSize.x,maskSize.y,0f)+new Vector3(maskSize.width*0.5f,maskSize.height*0.5f,0f),new Vector3(maskSize.width,maskSize.height,0.1f));
+		Gizmos.matrix = oldGizmosMatrix;
 	}
 }
