@@ -24,9 +24,12 @@ public class Native2dAnchor : MonoBehaviour {
 	public Position position=Position.CENTER;
 	public bool updateAlways = false;
 	
-	void Start()
+	IEnumerator Start()
 	{
 		SetPosition();
+		yield return new WaitForEndOfFrame();
+		if(!updateAlways)
+			SetPosition();
 	}
 	
 	void LateUpdate()
