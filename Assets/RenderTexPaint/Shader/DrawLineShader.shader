@@ -1,4 +1,4 @@
-﻿Shader "_Game/Unlit/Painter/Draw Line Shader"
+﻿Shader "ZZL/Unlit/Painter/Draw Line Shader"
 {
 	Properties
 	{

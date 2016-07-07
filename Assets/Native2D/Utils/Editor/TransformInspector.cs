@@ -5,7 +5,6 @@ using UnityEditor;
 /// 扩展Transform面板，显示世界坐标，更改原点
 /// author:zhouzhanglin
 /// </summary>
-[CanEditMultipleObjects]
 [CustomEditor(typeof(Transform))]
 public class TransformInspector : Editor {
 

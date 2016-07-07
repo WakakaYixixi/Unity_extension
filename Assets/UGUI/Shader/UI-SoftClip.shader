@@ -1,7 +1,7 @@
 ﻿//author:zhouzhanglin
 //UI 2d mask软边
 //此shader应该放在mask下面的子元素上，而不是Mask上
-Shader "_Game/UGUI/UI Soft Mask"
+Shader "ZZL/UGUI/UI Soft Mask"
 {
 	Properties
 	{
