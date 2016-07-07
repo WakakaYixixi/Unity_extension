@@ -16,7 +16,7 @@ public class SpriteMask : MonoBehaviour {
 	void Start () {
 		Clip();
 	}
-	
+
 	void Update () {
 		Clip();
 	}
@@ -24,16 +24,10 @@ public class SpriteMask : MonoBehaviour {
 	void Clip(){
 		if(maskMaterials!=null){
 			if(isTextureMask){
-				Vector3 pos = new Vector3(transform.position.x,transform.position.y,transform.position.z);
-				Matrix4x4 matrix = Matrix4x4.TRS(pos, transform.rotation, transform.lossyScale);
-				pos = Vector3.zero;
-				pos = matrix.MultiplyPoint3x4(pos);
-				m_rect.x = pos.x;
-				m_rect.y = pos.y;
-				pos = new Vector3(maskSize.x+maskSize.width*1.5f,maskSize.y+maskSize.height*1.5f,0f);
-				pos = matrix.MultiplyPoint3x4(pos);
-				m_rect.z = pos.x;
-				m_rect.w = pos.y;
+				m_rect.x = maskSize.x*transform.lossyScale.x+transform.position.x;
+				m_rect.y = maskSize.y*transform.lossyScale.y+transform.position.y;
+				m_rect.z = maskSize.width*transform.lossyScale.x;
+				m_rect.w = maskSize.height*transform.lossyScale.y;
 			}
 			else{
 				Vector3 pos = new Vector3(transform.position.x,transform.position.y,transform.position.z);

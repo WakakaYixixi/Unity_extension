@@ -1,4 +1,5 @@
-﻿Shader "ZZL/Native2D/Sprite Mask"
+﻿//结合SpriteMask.cs使用
+Shader "ZZL/Native2D/Sprite Mask"
 {
 	Properties
 	{

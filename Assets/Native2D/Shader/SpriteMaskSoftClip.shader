@@ -1,4 +1,5 @@
-﻿Shader "ZZL/Native2D/Sprite Mask Soft Clip"
+﻿//结合SpriteMask.cs使用
+Shader "ZZL/Native2D/Sprite Mask Soft Clip"
 {
 	Properties
 	{
@@ -10,6 +11,7 @@
 		_ClipSoftX("Clip Soft X",Range(1,200))=20
 		_ClipSoftY("Clip Soft Y",Range(1,200))=20
 		[Enum(UnityEngine.Rendering.CullMode)]_CullMode("Cull Mode",float)=0
+		[MaterialToggle] MaskInvert ("Mask Invert", Float) = 0
 	}
 
 	SubShader
@@ -42,6 +44,7 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile _ PIXELSNAP_ON
+			#pragma multi_compile _ MASKINVERT_ON
 			#include "UnityCG.cginc"
 			
 			struct appdata_t
@@ -104,8 +107,14 @@
 				factor = max(factor,tempXY);
 				float2 tempZW = (_ClipRect.zw-IN.worldPosition.xy)/float2(_ClipSoftX*0.01,_ClipSoftY*0.01)*step(IN.worldPosition.xy,_ClipRect.zw);
 				factor = min(factor,tempZW);
-				color*= clamp(min(factor.x,factor.y),0.0,1.0);
-				
+				fixed alpha= clamp(min(factor.x,factor.y),0.0,1.0);
+
+				#ifdef MASKINVERT_ON
+				color*=1-alpha;
+				#else
+				color*=alpha;
+				#endif
+
 				clip (color.a - 0.001);
 
 				return color;

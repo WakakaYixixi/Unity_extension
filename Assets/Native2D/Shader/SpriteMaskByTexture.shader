@@ -1,4 +1,5 @@
-﻿Shader "ZZL/Native2D/Sprite Mask By Texture"
+﻿//结合SpriteMask.cs使用
+Shader "ZZL/Native2D/Sprite Mask By Texture"
 {
 	Properties
 	{
@@ -68,7 +69,7 @@
 			v2f vert(appdata_t IN)
 			{
 				v2f OUT;
-				OUT.worldPosition = IN.vertex;//mul(_Object2World,IN.vertex);
+				OUT.worldPosition = mul(_Object2World,IN.vertex);
 				OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
 				OUT.texcoord = IN.texcoord;
 				OUT.color = IN.color * _Color;
