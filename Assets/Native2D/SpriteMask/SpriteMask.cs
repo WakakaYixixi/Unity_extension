@@ -17,7 +17,7 @@ public class SpriteMask : MonoBehaviour {
 		Clip();
 	}
 
-	void Update () {
+	void LateUpdate () {
 		Clip();
 	}
 
