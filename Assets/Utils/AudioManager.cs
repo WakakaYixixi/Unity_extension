@@ -209,7 +209,10 @@ public class AudioManager:MonoBehaviour {
 	/// </summary>
 	/// <param name="clip">Clip.</param>
 	/// <param name="volume">Volume.</param>
-	public void PlayBgMusic( AudioClip clip){
+	/// <param name="isContinue">是否继续，false将重新开始播放.</param>
+	public void PlayBgMusic( AudioClip clip , bool isContinue=true){
+		if(isContinue && clip==m_musicAS.clip && m_musicAS.isPlaying) return;
+
 		m_musicAS.clip = clip;
 		m_musicAS.Play();
 	}
@@ -218,6 +221,17 @@ public class AudioManager:MonoBehaviour {
 	/// </summary>
 	public void StopBgMusic(){
 		m_musicAS.Stop();
+	}
+
+	/// <summary>
+	/// 背景音乐的音量
+	/// </summary>
+	/// <value>The background music volume.</value>
+	public float bgMusicVolume{
+		get{ return m_musicAS.volume ; }
+		set{
+			m_musicAS.volume = value;
+		}
 	}
 	#endregion
 
