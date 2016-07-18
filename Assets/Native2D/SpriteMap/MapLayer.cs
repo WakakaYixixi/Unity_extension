@@ -63,13 +63,13 @@ public class MapLayer : MonoBehaviour {
 		}
 		this.m_initPos = base.transform.localPosition;
 	}
-
+	
 	// Update is called once per frame
 	void Update () {
 		if (m_isAutoMoved)
 		{
 			transform.localPosition = Vector3.Lerp(transform.localPosition, m_endPos, m_autoDamp*Time.deltaTime);
-			if (Vector3.Distance(transform.localPosition, m_endPos) < 0.01f)
+			if (Vector3.Distance(transform.localPosition, m_endPos) < 0.02f)
 			{
 				m_isAutoMoved = false;
 				if(m_movedCallback!=null){
@@ -85,7 +85,7 @@ public class MapLayer : MonoBehaviour {
 			{
 				if (dragEnable)
 				{
-					if (Input.GetMouseButtonDown(0) && !InputUtil.CheckMouseOnUGUI())
+					if (Input.GetMouseButtonDown(0) && !InputUtil.CheckMouseOnUI())
 					{
 						OnTouchDown();
 					}
@@ -99,7 +99,7 @@ public class MapLayer : MonoBehaviour {
 					}
 				}
 			}
-			else if (multiScaleEnable && !InputUtil.CheckMouseOnUGUI())
+			else if (multiScaleEnable && !InputUtil.CheckMouseOnUI())
 			{
 				m_reset = true;
 				Touch touch = Input.touches[0];
@@ -193,13 +193,13 @@ public class MapLayer : MonoBehaviour {
 		Gizmos.color = Color.green;
 		Gizmos.DrawLine(new Vector3(transform.position.x,transform.position.y,0),
 			new Vector3(transform.position.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0));
-
+		
 		Gizmos.DrawLine(new Vector3(transform.position.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0),
 			new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0));
-
+		
 		Gizmos.DrawLine(new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,size.y*transform.localScale.y*transform.root.localScale.y+transform.position.y,0),
 			new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,transform.position.y,0));
-
+		
 		Gizmos.DrawLine(new Vector3(transform.position.x+size.x*transform.localScale.x*transform.root.localScale.x,transform.position.y,0),
 			new Vector3(transform.position.x,transform.position.y,0));
 	}

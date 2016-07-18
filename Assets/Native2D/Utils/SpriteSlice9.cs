@@ -11,6 +11,7 @@ public class SpriteSlice9 : MonoBehaviour {
 	[SerializeField]
 	private Color m_color = Color.white;
 	public Vector2 size;
+	public Vector2 pivot = new Vector2(0.5f,0.5f);
 	[SerializeField]
 	private string m_sortLayerName = "Default";
 	[SerializeField]
@@ -82,7 +83,7 @@ public class SpriteSlice9 : MonoBehaviour {
 
 		UpdateMesh();
 	}
-	
+
 	#if UNITY_EDITOR
 	void LateUpdate () {
 		if(!Application.isPlaying){
@@ -166,8 +167,8 @@ public class SpriteSlice9 : MonoBehaviour {
 
 			//colors
 			for(int i=0;i<16;++i){
-				m_vertex[i].x-=w*0.5f;
-				m_vertex[i].y-=h*0.5f;
+				m_vertex[i].x-=w*pivot.x;
+				m_vertex[i].y-=h*pivot.y;
 				m_colors[i] = m_color;
 			}
 

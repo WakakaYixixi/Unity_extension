@@ -58,6 +58,7 @@ public class SpriteDrag : MonoBehaviour {
 	[Tooltip("射线检测的Layer")]
 	public LayerMask dragRayCastMask=-1;
 	public LayerMask dropRayCastMask=-1;
+	public bool dragCheckUGUI = false;//drag时是否判断在ugui上
 
 	[Tooltip("判断drag时是否忽略上面")]
 	public bool dragIgnoreTop = true;
@@ -115,7 +116,7 @@ public class SpriteDrag : MonoBehaviour {
 	public delegate bool DragValidCheck();
 	public event DragValidCheck DragValidCheckEvent;
 
-
+	// Use this for initialization
 	void Start () {
 		if (!dragTarget){
 			dragTarget = transform;
@@ -134,7 +135,7 @@ public class SpriteDrag : MonoBehaviour {
 			dragSortLayerName = m_sortLayerName;
 		}
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 		if(!this.isActiveAndEnabled) return;
@@ -142,8 +143,10 @@ public class SpriteDrag : MonoBehaviour {
 		{
 			if (Input.GetMouseButtonDown(0))
 			{
-				if (!m_isDown)
+				if (!m_isDown && !InputUtil.isOnUI)
 				{
+					if(dragCheckUGUI && InputUtil.CheckMouseOnUI()) return;
+
 					RaycastHit2D[] hits = Physics2D.RaycastAll(rayCastCamera.ScreenToWorldPoint(Input.mousePosition),Vector2.zero, 0, dragRayCastMask);
 					if(hits!=null && hits.Length>0){
 						foreach(RaycastHit2D hit in hits){

@@ -24,7 +24,7 @@ public class InputUtil {
 	/// 判断是否在ugui上面
 	/// </summary>
 	/// <returns><c>true</c>, if mouse on UGU was checked, <c>false</c> otherwise.</returns>
-	public static bool CheckMouseOnUGUI(){
+	static bool CheckMouseOnUGUI(){
 		if(EventSystem.current){
 			if(Input.touchSupported && Input.touchCount>0){
 				return EventSystem.current.IsPointerOverGameObject (Input.GetTouch(0).fingerId);

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System;
 
@@ -54,21 +55,39 @@ public class AudioManager:MonoBehaviour {
 	/// </summary>
 	/// <param name="resourcePath">Resource path.</param>
 	/// <param name="volume">Volume.</param>
-	public void PlaySoundEffect( string resourcePath , float volume = 1f){
+	/// <param name="delay">delay.</param>
+	public void PlaySoundEffect( string resourcePath , float volume = 1f , float delay=0f){
 		if(AudioListener.volume<0.01f) return ;
 		AudioClip clip = Resources.Load<AudioClip>(resourcePath);
 		if(clip){
-			PlaySoundEffect(clip,volume);
+			if(delay>0){
+				StartCoroutine(DelayPlaySoundEffect(clip,volume,delay));
+			}else{
+				PlaySoundEffect(clip,volume);
+			}
 		}
+		else
+		{
+			Debug.LogWarning("Sound not found: "+resourcePath);
+		}
+	}
+	IEnumerator DelayPlaySoundEffect(AudioClip clip , float volume, float delay ){
+		yield return new WaitForSeconds(delay);
+		AudioSource.PlayClipAtPoint(clip,Camera.main.transform.position);
 	}
 	/// <summary>
 	/// 只播放一次的声音
 	/// </summary>
 	/// <param name="clip">Clip.</param>
 	/// <param name="volume">Volume.</param>
-	public void PlaySoundEffect( AudioClip clip , float volume = 1f){
+	/// <param name="delay">delay.</param>
+	public void PlaySoundEffect( AudioClip clip , float volume = 1f, float delay=0f){
 		if(AudioListener.volume<0.01f) return ;
-		AudioSource.PlayClipAtPoint(clip,Camera.main.transform.position);
+		if(delay>0){
+			StartCoroutine(DelayPlaySoundEffect(clip,volume,delay));
+		}else{
+			AudioSource.PlayClipAtPoint(clip,Camera.main.transform.position);
+		}
 	}
 	#endregion
 
