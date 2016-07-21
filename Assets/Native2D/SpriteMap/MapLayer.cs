@@ -6,7 +6,17 @@ public class MapLayer : MonoBehaviour {
 	public Vector2 size;//地图的大小
 
 	[Header("Drag Setting")]
-	public bool dragEnable = true;//是否可拖动
+	[SerializeField]
+	private bool m_dragEnable = true;//是否可拖动
+	public bool dragEnable{
+		get { return m_dragEnable;}
+		set{
+			m_dragEnable = value;
+			if(!m_dragEnable) {
+				m_isDown = false;
+			}
+		}
+	}
 	public bool freezeX=false; //X方向上是否不准移动
 	public bool freezeY=false; //Y方向上是否不准移动
 
