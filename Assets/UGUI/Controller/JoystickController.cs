@@ -20,6 +20,11 @@ namespace UnityEngine.UI
 		
 		private bool _returnHandle;
 		private RectTransform _canvas;
+		private bool _isDragging;
+
+		public bool IsDragging{
+			get{ return _isDragging; }
+		}
 		
 		public Vector2 Coordinates
 		{
@@ -28,6 +33,11 @@ namespace UnityEngine.UI
 				if (handle.anchoredPosition.magnitude < radius)
 					return handle.anchoredPosition / radius;
 				return handle.anchoredPosition.normalized;
+			}
+		}
+		public float MoveValue{
+			get{
+				return Coordinates.magnitude; 
 			}
 		}
 		
@@ -46,6 +56,7 @@ namespace UnityEngine.UI
 		{
 			var handleOffset = GetJoystickOffset(eventData);
 			handle.anchoredPosition = handleOffset;
+			_isDragging = true;
 			if (OnJoystickMovement != null)
 				OnJoystickMovement(this, Coordinates);
 		}
@@ -55,6 +66,7 @@ namespace UnityEngine.UI
 			handle.GetComponent<Image>().color = Color.white;
 			handle.localScale = Vector2.one;
 			_returnHandle = true;
+			_isDragging = false;
 			if (OnEndJoystickMovement != null)
 				OnEndJoystickMovement(this);
 		}
