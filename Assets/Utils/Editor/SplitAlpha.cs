@@ -54,13 +54,17 @@ public class SplitAlpha {
 				{
 					Color c = t.GetPixel(i,j);
 					jpg.SetPixel(i,j,c);
-
-					if(i>0 && t.GetPixel(i-1,j).a>0) jpg.SetPixel(i,j,t.GetPixel(i-1,j));
-					else if(i<t.width-1 && t.GetPixel(i+1,j).a>0 ) jpg.SetPixel(i,j,t.GetPixel(i+1,j));
-					else if(j>0 && t.GetPixel(i,j-1).a>0 ) jpg.SetPixel(i,j,t.GetPixel(i,j-1));
-					else if(j<t.height-1 && t.GetPixel(i,j+1).a>0  ) jpg.SetPixel(i,j,t.GetPixel(i,j+1));
-
 					alphaT.SetPixel(i,j,new Color(c.a,c.a,c.a));
+					if(c.a==0){
+						if(i>0 && t.GetPixel(i-1,j).a>0) jpg.SetPixel(i,j,t.GetPixel(i-1,j));
+						else if(i<t.width-1 && t.GetPixel(i+1,j).a>0) jpg.SetPixel(i,j,t.GetPixel(i+1,j));
+						else if(j>0 && t.GetPixel(i,j-1).a>0 ) jpg.SetPixel(i,j,t.GetPixel(i,j-1));
+						else if(j<t.height-1 && t.GetPixel(i,j+1).a>0) jpg.SetPixel(i,j,t.GetPixel(i,j+1));
+						else if(i>0 && j>0 && t.GetPixel(i-1,j-1).a>0) jpg.SetPixel(i,j,t.GetPixel(i-1,j-1));//左上
+						else if(i>0 && j<t.height-1 && t.GetPixel(i-1,j+1).a>0) jpg.SetPixel(i,j,t.GetPixel(i-1,j+1));//左下
+						else if(i<t.width-1 && j>0 && t.GetPixel(i+1,j-1).a>0) jpg.SetPixel(i,j,t.GetPixel(i+1,j-1));//右上
+						else if(i<t.width-1 && j<t.height-1 && t.GetPixel(i+1,j+1).a>0) jpg.SetPixel(i,j,t.GetPixel(i+1,j+1));//右下
+					}
 				}
 			}
 
