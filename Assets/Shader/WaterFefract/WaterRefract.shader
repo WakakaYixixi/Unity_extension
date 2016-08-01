@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
 Shader "ZZL/Water/Water Refract" { 
 	Properties {
 		_WaveScale ("Wave scale", Range (0.02,0.15)) = 0.063
@@ -38,7 +40,7 @@ Shader "ZZL/Water/Water Refract" {
 					v2f o;
 					o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 					float4 temp;
-					float4 wpos = mul (_Object2World, v.vertex);
+					float4 wpos = mul (unity_ObjectToWorld, v.vertex);
 					temp.xyzw = wpos.xzxz * _WaveScale4 + _WaveOffset;
 					o.bumpuv = temp;
 					

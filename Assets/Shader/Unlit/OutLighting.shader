@@ -1,4 +1,7 @@
-﻿Shader "ZZL/Unlit/Outlighting" {  
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
+
+Shader "ZZL/Unlit/Outlighting" {  
     Properties {  
         _Color ("Main Color", Color) = (.5,.5,.5,1)  
         _OutlineColor ("Outline Color", Color) = (0,0,0,1)  
@@ -40,8 +43,8 @@
 	            o.color = _OutlineColor;
 	            
 	            
-	            float4x4 modelMatrix        = _Object2World;
-				float3x3 modelMatrixInverse = (float3x3)_World2Object;
+	            float4x4 modelMatrix        = unity_ObjectToWorld;
+				float3x3 modelMatrixInverse = (float3x3)unity_WorldToObject;
                 float3 normalDirection = normalize(mul(v.normal, modelMatrixInverse)).xyz;
                 float3 viewDirection = normalize(_WorldSpaceCameraPos - mul(modelMatrix, v.vertex).xyz);
                 float strength = abs(dot(viewDirection, normalDirection));
