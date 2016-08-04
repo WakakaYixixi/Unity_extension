@@ -9,6 +9,7 @@ void OnClick(SpriteLayerInputManager.TouchEvent evt){
 }
 
 void OnDown( SpriteLayerInputManager.TouchEvent evt){
+	print(evt.pressObject.name);
 	transform.DOScale(m_localScale*1.1f,0.1f);
 }
 
@@ -83,9 +84,8 @@ public class SpriteLayerInputManager : MonoBehaviour {
 
 		if(m_touchTarget){
 			m_event.pressObject = m_touchTarget.gameObject;
+			SendTouchMessage("OnDown");
 		}
-
-		SendTouchMessage("OnDown");
 	}
 
 	void OnTouchUp(){
