@@ -124,11 +124,12 @@ public class SplitAlpha {
 				{
 					Sprite s = o as Sprite;
 					if(metaDataKV.ContainsKey(s.name)){
+						SpriteMetaData defaultData = metaDataKV[s.name];
 						SpriteMetaData metaData = new SpriteMetaData();
 						Vector2 pivot = new Vector2(s.pivot.x/s.rect.width,s.pivot.y/s.rect.height);
 						metaData.border = s.border;
 						metaData.name = s.name;
-						metaData.rect = s.rect;
+						metaData.rect = defaultData.rect;
 						metaData.alignment=(int)GetSpriteAlignment(pivot);
 						if(metaData.alignment==(int)SpriteAlignment.Custom){
 							metaData.pivot = pivot;
