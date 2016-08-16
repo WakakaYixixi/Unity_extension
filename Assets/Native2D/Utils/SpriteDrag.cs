@@ -135,7 +135,7 @@ public class SpriteDrag : MonoBehaviour {
 			dragSortLayerName = m_sortLayerName;
 		}
 	}
-
+	
 	// Update is called once per frame
 	void Update () {
 		if(!this.isActiveAndEnabled) return;
@@ -318,9 +318,10 @@ public class SpriteDrag : MonoBehaviour {
 		case DragBackEffect.TweenPosition:
 			this.enabled = false;
 			this.m_canDrag = false;
-			dragTarget.DOMove(m_cachePosition,backDuring).SetEase(tweenEase).OnComplete(()=>{
+			dragTarget.DOMove(new Vector3(m_cachePosition.x,m_cachePosition.y,dragTarget.position.z),backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
 				this.m_canDrag = true;
+				dragTarget.position=m_cachePosition;
 				foreach(SpriteRenderer render in GetComponentsInChildren<SpriteRenderer>()){
 					render.sortingLayerName=m_sortLayerName;
 				}
