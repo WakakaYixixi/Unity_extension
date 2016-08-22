@@ -14,8 +14,11 @@ public class SpriteDrag : MonoBehaviour {
 	}
 
 	private Vector3 m_cachePosition;
+	private Vector3 m_defaultPosition;
 	private Vector3 m_cacheScale;
+	private Vector3 m_defaultScale;
 	private Vector3 m_cacheRotation;
+	private Vector3 m_defaultRotation;
 	private Vector3 m_dragOffset;
 	private Vector3 m_screenPosition;
 	private Vector3 m_currentPosition;
@@ -128,7 +131,9 @@ public class SpriteDrag : MonoBehaviour {
 		{
 			rayCastCamera = Camera.main;
 		}
-
+		m_defaultScale = dragTarget.localScale;
+		m_defaultPosition = dragTarget.localPosition;
+		m_defaultRotation = dragTarget.localEulerAngles;
 		SpriteRenderer spriteRender = dragTarget.GetComponentInChildren<SpriteRenderer>();
 		m_sortLayerName = spriteRender.sortingLayerName;
 		if(string.IsNullOrEmpty(dragSortLayerName)){
@@ -186,9 +191,9 @@ public class SpriteDrag : MonoBehaviour {
 		this.m_isDragging = true;
 		dragTarget.DOKill();
 
-		m_cachePosition = dragTarget.position;
-		m_cacheScale = dragTarget.localScale;
-		m_cacheRotation = dragTarget.localEulerAngles;
+		m_cachePosition = m_defaultPosition;
+		m_cacheScale = m_defaultScale;
+		m_cacheRotation = m_defaultRotation;
 		if(dragChangeScale!=1f){
 			dragTarget.DOScale(m_cacheScale*dragChangeScale,0.25f);
 		}
