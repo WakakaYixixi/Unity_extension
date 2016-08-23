@@ -14,7 +14,6 @@ public class SpriteDrag : MonoBehaviour {
 	}
 
 	private Vector3 m_cachePosition;
-	private Vector3 m_defaultPosition;
 	private Vector3 m_cacheScale;
 	private Vector3 m_defaultScale;
 	private Vector3 m_cacheRotation;
@@ -111,7 +110,7 @@ public class SpriteDrag : MonoBehaviour {
 	[Tooltip("Tween 的效果")]
 	public Ease tweenEase = Ease.Linear;
 
-
+	public event Action<SpriteDrag> OnPrevBeginDragAction = null ;
 	public event Action<SpriteDrag> OnBeginDragAction = null ;
 	public event Action<SpriteDrag> OnDragAction = null ;
 	public event Action<SpriteDrag> OnEndDragAction = null ;
@@ -132,7 +131,6 @@ public class SpriteDrag : MonoBehaviour {
 			rayCastCamera = Camera.main;
 		}
 		m_defaultScale = dragTarget.localScale;
-		m_defaultPosition = dragTarget.localPosition;
 		m_defaultRotation = dragTarget.localEulerAngles;
 		SpriteRenderer spriteRender = dragTarget.GetComponentInChildren<SpriteRenderer>();
 		m_sortLayerName = spriteRender.sortingLayerName;
@@ -187,13 +185,17 @@ public class SpriteDrag : MonoBehaviour {
 				return;
 			}
 		}
+		if(OnPrevBeginDragAction!=null){
+			OnPrevBeginDragAction(this);
+		}
+
 		this.m_canDrag = true;
 		this.m_isDragging = true;
 		dragTarget.DOKill();
 
-		m_cachePosition = m_defaultPosition;
-		m_cacheScale = m_defaultScale;
-		m_cacheRotation = m_defaultRotation;
+		m_cachePosition = dragTarget.localPosition;
+		m_cacheScale = dragTarget.localScale;
+		m_cacheRotation = dragTarget.localEulerAngles;
 		if(dragChangeScale!=1f){
 			dragTarget.DOScale(m_cacheScale*dragChangeScale,0.25f);
 		}
