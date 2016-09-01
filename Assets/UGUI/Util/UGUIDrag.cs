@@ -17,6 +17,11 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	private Vector3 m_cachePosition;
 	private Vector3 m_cacheScale;
 	private Vector3 m_cacheRotation;
+
+	private Vector3 m_defaultPosition; //局部坐标
+	private Vector3 m_defaultScale;
+	private Vector3 m_defaultRotation;
+
 	private Vector3 m_worldPos;
 	private Vector3 m_touchDownTargetOffset ;
 	private Transform m_parent;
@@ -94,6 +99,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	[Tooltip("Tween 的效果")]
 	public Ease tweenEase = Ease.Linear;
 
+	public event Action<UGUIDrag,PointerEventData> OnPrevBeginDragAction = null ;
 	public event Action<UGUIDrag,PointerEventData> OnBeginDragAction = null ;
 	public event Action<UGUIDrag,PointerEventData> OnDragAction = null ;
 	public event Action<UGUIDrag,PointerEventData> OnEndDragAction = null ;
@@ -101,12 +107,21 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	public delegate bool DragValidCheck(PointerEventData eventData);
 	public event DragValidCheck DragValidCheckEvent;
 
+	void OnDisable(){
+		m_isDown =false;
+		m_isDragging = false;
+	}
 
 	// Use this for initialization
 	void Start () {
 		if(!dragTarget){
 			dragTarget =  transform as RectTransform;;
 		}
+
+		m_defaultScale = dragTarget.localScale;
+		m_defaultRotation = dragTarget.localEulerAngles;
+		m_defaultPosition = dragTarget.localPosition;
+
 		if(!triggerPos){
 			triggerPos = dragTarget;
 		}
@@ -115,6 +130,17 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			rayCastCamera = Camera.main;
 		}
 	}
+
+	public void SetDefaultPosition(){
+		if(dragTarget) dragTarget.localPosition = m_defaultPosition;
+	}
+	public void SetDefaultRotation(){
+		if(dragTarget) dragTarget.localEulerAngles = m_defaultScale;
+	}
+	public void SetDefaultScale(){
+		if(dragTarget) dragTarget.localScale = m_defaultScale;
+	}
+
 
 	public void OnBeginDrag (PointerEventData eventData)
 	{
@@ -126,6 +152,10 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 				return;
 			}
 		}
+		if(OnPrevBeginDragAction!=null){
+			OnPrevBeginDragAction(this,eventData);
+		}
+
 		m_isDown = true;
 		m_canDrag = true;
 		dragTarget.DOKill();

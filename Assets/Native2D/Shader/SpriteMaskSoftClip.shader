@@ -1,6 +1,4 @@
-﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
-//结合SpriteMask.cs使用
+﻿//结合SpriteMask.cs使用
 Shader "ZZL/Native2D/Sprite Mask Soft Clip"
 {
 	Properties
@@ -71,7 +69,7 @@ Shader "ZZL/Native2D/Sprite Mask Soft Clip"
 			v2f vert(appdata_t IN)
 			{
 				v2f OUT;
-				OUT.worldPosition = mul(unity_ObjectToWorld,IN.vertex);
+				OUT.worldPosition = mul(_Object2World,IN.vertex);
 				OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
 				OUT.texcoord = IN.texcoord;
 				OUT.color = IN.color * _Color;

@@ -13,10 +13,11 @@ public class SpriteDrag : MonoBehaviour {
 		None,Immediately, TweenPosition, TweenScale , ScaleDestroy , FadeOutDestroy , Destroy
 	}
 
-	private Vector3 m_cachePosition;
+	private Vector3 m_cachePosition; //全局坐标
 	private Vector3 m_cacheScale;
-	private Vector3 m_defaultScale;
 	private Vector3 m_cacheRotation;
+	private Vector3 m_defaultPosition; //全局坐标
+	private Vector3 m_defaultScale;
 	private Vector3 m_defaultRotation;
 	private Vector3 m_dragOffset;
 	private Vector3 m_screenPosition;
@@ -118,6 +119,11 @@ public class SpriteDrag : MonoBehaviour {
 	public delegate bool DragValidCheck();
 	public event DragValidCheck DragValidCheckEvent;
 
+	void OnDisable(){
+		m_isDown = false;
+		m_isDragging = false;
+	}
+
 	// Use this for initialization
 	void Start () {
 		if (!dragTarget){
@@ -132,11 +138,22 @@ public class SpriteDrag : MonoBehaviour {
 		}
 		m_defaultScale = dragTarget.localScale;
 		m_defaultRotation = dragTarget.localEulerAngles;
+		m_defaultPosition = dragTarget.position;
 		SpriteRenderer spriteRender = dragTarget.GetComponentInChildren<SpriteRenderer>();
 		m_sortLayerName = spriteRender.sortingLayerName;
 		if(string.IsNullOrEmpty(dragSortLayerName)){
 			dragSortLayerName = m_sortLayerName;
 		}
+	}
+
+	public void SetDefaultPosition(){
+		if(dragTarget) dragTarget.position = m_defaultPosition;
+	}
+	public void SetDefaultRotation(){
+		if(dragTarget) dragTarget.localEulerAngles = m_defaultScale;
+	}
+	public void SetDefaultScale(){
+		if(dragTarget) dragTarget.localScale = m_defaultScale;
 	}
 	
 	// Update is called once per frame
