@@ -193,7 +193,7 @@ public class SpriteDrag : MonoBehaviour {
 		this.m_isDragging = true;
 		dragTarget.DOKill();
 
-		m_cachePosition = dragTarget.localPosition;
+		m_cachePosition = dragTarget.position;
 		m_cacheScale = dragTarget.localScale;
 		m_cacheRotation = dragTarget.localEulerAngles;
 		if(dragChangeScale!=1f){
