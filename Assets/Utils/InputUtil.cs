@@ -16,7 +16,6 @@ public class InputUtil {
 	public static bool CheckMouseOnUI(){
 		if(isOnUI) return true;
 		return CheckMouseOnUGUI();
-		return false;
 	}
 
 

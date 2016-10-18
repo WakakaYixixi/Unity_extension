@@ -7,9 +7,10 @@ using UnityEngine.EventSystems;
 void OnClick(SpriteLayerInputManager.TouchEvent evt){
 	print(evt.pointerOnObject.name);
 }
-
+void OnClickNone(SpriteLayerInputManager.TouchEvent evt){
+	
+}
 void OnDown( SpriteLayerInputManager.TouchEvent evt){
-	print(evt.pressObject.name);
 	transform.DOScale(m_localScale*1.1f,0.1f);
 }
 
@@ -100,6 +101,7 @@ public class SpriteLayerInputManager : MonoBehaviour {
 		}
 		else
 		{
+			SendTouchMessage("OnClickNone");
 			m_event.pointerOnObject = null;
 			SendTouchMessage("OnUp");
 		}

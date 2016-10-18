@@ -150,7 +150,7 @@ public class SpriteDrag : MonoBehaviour {
 		if(dragTarget) dragTarget.position = m_defaultPosition;
 	}
 	public void SetDefaultRotation(){
-		if(dragTarget) dragTarget.localEulerAngles = m_defaultScale;
+		if(dragTarget) dragTarget.localEulerAngles = m_defaultRotation;
 	}
 	public void SetDefaultScale(){
 		if(dragTarget) dragTarget.localScale = m_defaultScale;
