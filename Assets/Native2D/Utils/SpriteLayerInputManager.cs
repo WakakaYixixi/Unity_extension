@@ -101,7 +101,9 @@ public class SpriteLayerInputManager : MonoBehaviour {
 		}
 		else
 		{
-			SendTouchMessage("OnClickNone");
+			if(Time.realtimeSinceStartup-m_touchTimeDelta<clickDelta){
+				SendTouchMessage("OnClickNone");
+			}
 			m_event.pointerOnObject = null;
 			SendTouchMessage("OnUp");
 		}
