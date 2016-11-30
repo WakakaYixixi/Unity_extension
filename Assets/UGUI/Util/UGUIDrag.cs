@@ -107,8 +107,13 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	public delegate bool DragValidCheck(PointerEventData eventData);
 	public event DragValidCheck DragValidCheckEvent;
 
+	void OnEnable(){
+		m_isDown = false;
+		m_isDragging = false;
+	}
+
 	void OnDisable(){
-		m_isDown =false;
+		m_isDown = false;
 		m_isDragging = false;
 	}
 

@@ -119,6 +119,11 @@ public class SpriteDrag : MonoBehaviour {
 	public delegate bool DragValidCheck();
 	public event DragValidCheck DragValidCheckEvent;
 
+	void OnEnable(){
+		m_isDown = false;
+		m_isDragging = false;
+	}
+
 	void OnDisable(){
 		m_isDown = false;
 		m_isDragging = false;
