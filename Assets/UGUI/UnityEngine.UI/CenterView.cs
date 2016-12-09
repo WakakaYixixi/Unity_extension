@@ -79,6 +79,9 @@ namespace UnityEngine.UI
             {
                 CenterViewItem item = m_all[i] as CenterViewItem;
                 ((RectTransform)item.transform).SetSiblingIndex(i);
+				Vector3 v = item.transform.localPosition;
+				v.z = i;
+				item.transform.localPosition = v;
             }
             m_all.Clear();
 
@@ -254,6 +257,10 @@ namespace UnityEngine.UI
             {
                 Comp comp = m_all[i] as Comp;
                 comp.rect.SetSiblingIndex(i);
+
+				Vector3 v = comp.rect.transform.localPosition;
+				v.z = i;
+				comp.rect.transform.localPosition = v;
             }
             m_all.Clear();
         }
@@ -266,7 +273,7 @@ namespace UnityEngine.UI
             {
                 var posY = child.anchoredPosition.y + content.anchoredPosition.y;
                 float sc = Mathf.Abs(Mathf.Sin((child.sizeDelta.y * 4f - Mathf.Abs(posY)) / child.sizeDelta.y / 4f) * controller.maxScale);
-                if (posY > viewRect.sizeDelta.y / 2f || posY < -viewRect.sizeDelta.y / 2f)
+                if (posY > viewRect.sizeDelta.y || posY < -viewRect.sizeDelta.y)
                 {
                     sc = controller.minScale;
                 }
@@ -280,6 +287,10 @@ namespace UnityEngine.UI
             {
                 Comp comp = m_all[i] as Comp;
                 comp.rect.SetSiblingIndex(i);
+
+				Vector3 v = comp.rect.transform.localPosition;
+				v.z = i;
+				comp.rect.transform.localPosition = v;
             }
             m_all.Clear();
         }

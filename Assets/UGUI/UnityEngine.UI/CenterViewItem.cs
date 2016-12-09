@@ -15,7 +15,7 @@ namespace UnityEngine.UI
         /// <summary>
         /// 用于排序.
         /// </summary>
-        public int index;
+		protected internal int index;
 
         /// <summary>
         /// 点击后显示在中间.
