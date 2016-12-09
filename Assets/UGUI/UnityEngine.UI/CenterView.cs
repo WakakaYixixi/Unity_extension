@@ -240,7 +240,7 @@ namespace UnityEngine.UI
             {
                 var posX = child.anchoredPosition.x + content.anchoredPosition.x;
                 float sc =Mathf.Abs( Mathf.Sin((child.sizeDelta.x * 4f - Mathf.Abs(posX)) / child.sizeDelta.x / 4f) * controller.maxScale);
-                if (posX > viewRect.sizeDelta.x / 2f || posX < -viewRect.sizeDelta.x / 2f)
+                if (posX > viewRect.sizeDelta.x  || posX < -viewRect.sizeDelta.x )
                 {
                     sc = controller.minScale;
                 }
