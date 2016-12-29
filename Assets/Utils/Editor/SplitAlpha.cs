@@ -71,7 +71,7 @@ public class SplitAlpha {
 			string atlasPath = "";
 			if(merge && t.width>t.height)
 			{
-				atlasPath = folder+name+"_RGB_A.jpg";
+				atlasPath = folder+name+"_RGB.jpg";
 				LoadExistAltas(metaDataKV, atlasPath);
 				//两张图片合成一张
 				Texture2D atlasT = new Texture2D(t.width,t.width,TextureFormat.RGB24,false,true);
@@ -81,13 +81,13 @@ public class SplitAlpha {
 			}
 			else if(merge && t.width<t.height)
 			{
-				atlasPath = folder+name+"_RGB_A.jpg";
+				atlasPath = folder+name+"_RGB.jpg";
 				LoadExistAltas(metaDataKV, atlasPath);
 				//两张图片合成一张
 				Texture2D atlasT = new Texture2D(t.height,t.height,TextureFormat.RGB24,false,true);
 				atlasT.SetPixels(0,0,t.width,t.height,jpg.GetPixels());
 				atlasT.SetPixels(t.width,0,t.width,t.height,alphaT.GetPixels());
-				File.WriteAllBytes(folder+name+"_RGB_A.jpg",atlasT.EncodeToJPG(100));
+				File.WriteAllBytes(folder+name+"_RGB.jpg",atlasT.EncodeToJPG(100));
 
 			}else{
 
