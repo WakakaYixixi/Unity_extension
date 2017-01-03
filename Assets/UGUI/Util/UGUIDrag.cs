@@ -22,6 +22,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	private Vector3 m_defaultScale;
 	private Vector3 m_defaultRotation;
 
+	private float m_dragMoveDamp;
 	private Vector3 m_worldPos;
 	private Vector3 m_touchDownTargetOffset ;
 	private Transform m_parent;
@@ -72,10 +73,6 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	[Tooltip("Drag时角度的变化值")]
 	public float dragChangeRotate = 0f;
 
-	[Tooltip("拖动时的缓动参数.")]
-	[Range(0f,1f)]
-	public float dragMoveDamp = 1f;
-
 	[Tooltip("拖动时的所在的父窗器，用于拖动时在UI最上层，如果不填，则在当前层.")]
 	public string dragingParent = "Canvas";
 
@@ -95,7 +92,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	[Tooltip("返回时的效果")]
 	public DragBackEffect backEffect = DragBackEffect.None;
 	[Tooltip("效果时间")]
-	public float backDuring = 0.25f;
+	public float backDuring = 0.5f;
 	[Tooltip("Tween 的效果")]
 	public Ease tweenEase = Ease.Linear;
 
@@ -161,6 +158,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			OnPrevBeginDragAction(this,eventData);
 		}
 
+		m_dragMoveDamp = 0.3f;
 		m_isDown = true;
 		m_canDrag = true;
 		dragTarget.DOKill();
@@ -288,7 +286,8 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	void Update(){
 		if(!this.enabled) return;
 		if(m_canDrag && m_isDragging){
-			dragTarget.position = Vector3.Lerp(dragTarget.position,m_worldPos,dragMoveDamp);
+			if(m_dragMoveDamp<1f) m_dragMoveDamp+=0.01f;
+			dragTarget.position = Vector3.Lerp(dragTarget.position,m_worldPos,m_dragMoveDamp);
 		}
 	}
 
@@ -311,6 +310,8 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			this.enabled = false;
 			this.m_canDrag = false;
 			dragTarget.SetParent(m_parent);
+			dragTarget.DOLocalRotate(m_cacheRotation,backDuring).SetEase(tweenEase);
+			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase);
 			dragTarget.DOLocalMove(m_cachePosition,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
 				this.m_canDrag = true;
@@ -325,6 +326,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			dragTarget.SetParent(m_parent);
 			dragTarget.localPosition=m_cachePosition;
 			dragTarget.localScale = Vector3.zero;
+			dragTarget.localEulerAngles = m_cacheRotation;
 			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
 				this.m_canDrag = true;

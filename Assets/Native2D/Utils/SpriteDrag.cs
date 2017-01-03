@@ -13,6 +13,7 @@ public class SpriteDrag : MonoBehaviour {
 		None,Immediately, TweenPosition, TweenScale , ScaleDestroy , FadeOutDestroy , Destroy
 	}
 
+	private float m_dragMoveDamp = 0f;
 	private Vector3 m_cachePosition; //全局坐标
 	private Vector3 m_cacheScale;
 	private Vector3 m_cacheRotation;
@@ -83,10 +84,6 @@ public class SpriteDrag : MonoBehaviour {
 
 	[Tooltip("Drag时角度的变化值")]
 	public float dragChangeRotate = 0f;
-
-	[Tooltip("拖动时的缓动参数.")]
-	[Range(0f,1f)]
-	public float dragMoveDamp = 1f;
 
 	[Tooltip("拖动的时候在哪个层.没有设置的话为当前Sort Layer")]
 	public string dragSortLayerName;
@@ -211,6 +208,7 @@ public class SpriteDrag : MonoBehaviour {
 			OnPrevBeginDragAction(this);
 		}
 
+		m_dragMoveDamp = 0.3f;
 		this.m_canDrag = true;
 		this.m_isDragging = true;
 		dragTarget.DOKill();
@@ -250,6 +248,7 @@ public class SpriteDrag : MonoBehaviour {
 		}
 
 		if(!this.enabled  || !m_isDragging)  return;
+		if(m_dragMoveDamp<1f) m_dragMoveDamp+=0.01f;
 
 		m_screenPosition = rayCastCamera.WorldToScreenPoint(dragTarget.position);
 		Vector3 curScreenSpace = new Vector3(Input.mousePosition.x, Input.mousePosition.y, m_screenPosition.z);
@@ -259,7 +258,7 @@ public class SpriteDrag : MonoBehaviour {
 		}else{
 			m_currentPosition += (Vector3)dragOffset;
 		}
-		dragTarget.position = Vector3.Lerp(dragTarget.position, m_currentPosition, dragMoveDamp);
+		dragTarget.position = Vector3.Lerp(dragTarget.position, m_currentPosition, m_dragMoveDamp);
 		if(sendHoverEvent){
 			Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,dropRayCastMask,-100f,100f);
 			if(cols.Length>0){
@@ -340,6 +339,8 @@ public class SpriteDrag : MonoBehaviour {
 				render.sortingLayerName=m_sortLayerName;
 			}
 			dragTarget.position=m_cachePosition;
+			dragTarget.localEulerAngles=m_cacheRotation;
+			dragTarget.localScale=m_cacheScale;
 			break;
 		case DragBackEffect.Destroy:
 			Destroy(dragTarget.gameObject);
@@ -347,6 +348,8 @@ public class SpriteDrag : MonoBehaviour {
 		case DragBackEffect.TweenPosition:
 			this.enabled = false;
 			this.m_canDrag = false;
+			dragTarget.DOLocalRotate(m_cacheRotation,backDuring).SetEase(tweenEase);
+			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase);
 			dragTarget.DOMove(new Vector3(m_cachePosition.x,m_cachePosition.y,dragTarget.position.z),backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
 				this.m_canDrag = true;
@@ -367,6 +370,7 @@ public class SpriteDrag : MonoBehaviour {
 			}
 			dragTarget.position=m_cachePosition;
 			dragTarget.localScale = Vector3.zero;
+			dragTarget.localEulerAngles=m_cacheRotation;
 			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
 				this.m_canDrag = true;
