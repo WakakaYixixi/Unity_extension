@@ -8,7 +8,7 @@ using DG.Tweening;
 /// <summary>
 /// 用于拖动UGUI控件
 /// </summary>
-public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHandler{
+public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHandler,IPointerDownHandler,IPointerUpHandler{
 	
 	public enum DragBackEffect{
 		None,Immediately, TweenPosition, TweenScale , ScaleDestroy , FadeOutDestroy , Destroy
@@ -75,6 +75,9 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 
 	[Tooltip("拖动时的所在的父窗器，用于拖动时在UI最上层，如果不填，则在当前层.")]
 	public string dragingParent = "Canvas";
+
+	[Tooltip("当按下时就开始执行拖动.")]
+	public bool dragOnPointDown = true;
 
 	[Tooltip("触发坐标，默认为当前对象")]
 	public Transform triggerPos ;
@@ -143,6 +146,18 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		if(dragTarget) dragTarget.localScale = m_defaultScale;
 	}
 
+	public void OnPointerDown(PointerEventData eventData)
+	{
+		if(dragOnPointDown){
+			OnBeginDrag (eventData);
+			eventData.dragging = true;
+			OnDrag (eventData);
+		}
+	}
+	public void OnPointerUp(PointerEventData eventData)
+	{
+		OnEndDrag (eventData);
+	}
 
 	public void OnBeginDrag (PointerEventData eventData)
 	{
