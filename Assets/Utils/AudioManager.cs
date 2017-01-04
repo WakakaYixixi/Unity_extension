@@ -11,7 +11,7 @@ public class AudioManager:MonoBehaviour {
 	public static AudioManager Instance{
 		get{
 			if(m_instance==null){
-				GameObject go = new GameObject("[Music]");
+				GameObject go = new GameObject("[AudioManager]");
 				return go.AddComponent<AudioManager>();
 			}
 			return m_instance;
@@ -73,7 +73,7 @@ public class AudioManager:MonoBehaviour {
 	}
 	IEnumerator DelayPlaySoundEffect(AudioClip clip , float volume, float delay ){
 		yield return new WaitForSeconds(delay);
-		AudioSource.PlayClipAtPoint(clip,Camera.main.transform.position);
+		PlaySoundClip(clip,volume);
 	}
 	/// <summary>
 	/// 只播放一次的声音
@@ -86,7 +86,22 @@ public class AudioManager:MonoBehaviour {
 		if(delay>0){
 			StartCoroutine(DelayPlaySoundEffect(clip,volume,delay));
 		}else{
+			PlaySoundClip(clip,volume);
+		}
+	}
+
+	void PlaySoundClip(AudioClip clip, float volume){
+		if(volume>0.98f){
 			AudioSource.PlayClipAtPoint(clip,Camera.main.transform.position);
+		}else{
+			GameObject go = new GameObject(clip.name);
+			go.transform.position = Camera.main.transform.position;
+			AudioSource audioSource = go.AddComponent<AudioSource>();
+			audioSource.loop=false;
+			audioSource.volume = volume;
+			audioSource.clip = clip;
+			audioSource.Play();
+			Destroy(go,clip.length);
 		}
 	}
 	#endregion
