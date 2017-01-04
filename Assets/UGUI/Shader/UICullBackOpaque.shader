@@ -20,6 +20,7 @@ Shader "ZZL/UGUI/Cull Back Opaque" {
 			"CanUseSpriteAtlas"="True"
 		}
 
+		ZWrite on
 		Cull back
 		Lighting Off
 		ColorMask [_ColorMask]
