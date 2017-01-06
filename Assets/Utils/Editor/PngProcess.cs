@@ -45,7 +45,7 @@ public class PngProcess : Editor {
 						}
 						t.SetPixels32(colors);
 						byte[] bytes = t.EncodeToPNG();
-						SavePNG(Application.dataPath+fileName+".png",bytes);
+						SavePNG(Application.dataPath+path,bytes);
 					}
 
 				}
