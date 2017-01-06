@@ -60,8 +60,6 @@ public class PngProcess : Editor {
 		{
 			string dirPath = AssetDatabase.GetAssetOrScenePath(Selection.activeObject);
 			if(File.Exists(dirPath) && dirPath.LastIndexOf(".meta")==-1 && System.IO.Path.GetExtension(dirPath) == ".png"){
-				int start = dirPath.LastIndexOf("/")+1;
-				int end = dirPath.LastIndexOf(".png");
 				string path = dirPath.Substring(6);
 
 				Texture2D t = LoadPNG(Application.dataPath+path);
