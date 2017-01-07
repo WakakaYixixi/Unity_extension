@@ -2,6 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Sprite mask.
+/// Note: The mask's global position must be zero If mask is rotated.
+/// </summary>
 [ExecuteInEditMode]
 public class SpriteMask : MonoBehaviour {
 
@@ -30,8 +34,8 @@ public class SpriteMask : MonoBehaviour {
 				m_rect.w = maskSize.height*transform.lossyScale.y;
 			}
 			else{
-				Vector3 pos = new Vector3(transform.position.x,transform.position.y,transform.position.z);
-				Matrix4x4 matrix = Matrix4x4.TRS(pos, transform.rotation, transform.lossyScale);
+				Vector3 pos = transform.position;
+				Matrix4x4 matrix = Matrix4x4.TRS(pos ,Quaternion.identity, transform.lossyScale);
 				pos = new Vector3(maskSize.x,maskSize.y,0f);
 				pos = matrix.MultiplyPoint3x4(pos);
 				m_rect.x = pos.x;
@@ -41,9 +45,12 @@ public class SpriteMask : MonoBehaviour {
 				m_rect.z = pos.x;
 				m_rect.w = pos.y;
 			}
+			Matrix4x4 rotateMatrix = Matrix4x4.TRS(Vector3.zero,Quaternion.Euler(0,0,-transform.rotation.eulerAngles.z),Vector3.one);
 			for(int i=0;i<maskMaterials.Length;++i){
-				if(maskMaterials[i])
+				if(maskMaterials[i]){
+					maskMaterials[i].SetMatrix("_RotateMatrix",rotateMatrix);
 					maskMaterials[i].SetVector("_ClipRect",m_rect);
+				}
 			}
 		}
 	}

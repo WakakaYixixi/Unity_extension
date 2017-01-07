@@ -58,17 +58,18 @@ Shader "ZZL/Native2D/Sprite Mask"
 				float4 vertex   : SV_POSITION;
 				fixed4 color    : COLOR;
 				half2 texcoord  : TEXCOORD0;
-				float4 worldPosition : TEXCOORD1;
+				float2 worldPosition : TEXCOORD1;
 			};
 			
 			fixed4 _Color;
 
 			float4 _ClipRect;
+			float4x4 _RotateMatrix;
 
 			v2f vert(appdata_t IN)
 			{
 				v2f OUT;
-				OUT.worldPosition = mul(_Object2World,IN.vertex);
+				OUT.worldPosition = mul(mul(_RotateMatrix,_Object2World),IN.vertex);
 				OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
 				OUT.texcoord = IN.texcoord;
 				OUT.color = IN.color * _Color;
