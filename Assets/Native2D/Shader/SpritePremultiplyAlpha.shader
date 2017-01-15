@@ -62,6 +62,7 @@ Shader "ZZL/Native2D/Sprite Premultiply Alpha"
 			fixed4 frag (v2f i) : SV_Target
 			{
 				fixed4 col = tex2D (_MainTex, i.uv)*i.color;
+				col*=col.a;
 				return col;
 			}
 			ENDCG
