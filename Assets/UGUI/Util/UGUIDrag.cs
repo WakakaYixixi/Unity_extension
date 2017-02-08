@@ -102,6 +102,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	public event Action<UGUIDrag,PointerEventData> OnPrevBeginDragAction = null ;
 	public event Action<UGUIDrag,PointerEventData> OnBeginDragAction = null ;
 	public event Action<UGUIDrag,PointerEventData> OnDragAction = null ;
+	public event Action<UGUIDrag> OnDragTargetMoveAction = null ;
 	public event Action<UGUIDrag,PointerEventData> OnEndDragAction = null ;
 	public event Action<UGUIDrag> OnTweenOverAction = null ;
 	public delegate bool DragValidCheck(PointerEventData eventData);
@@ -303,6 +304,11 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		if(m_canDrag && m_isDragging){
 			if(m_dragMoveDamp<1f) m_dragMoveDamp+=0.01f;
 			dragTarget.position = Vector3.Lerp(dragTarget.position,m_worldPos,m_dragMoveDamp);
+			if(Vector2.Distance((Vector2)dragTarget.position,(Vector2)m_worldPos)>0.001f){
+				if(OnDragTargetMoveAction!=null){
+					OnDragTargetMoveAction(this);
+				}
+			}
 		}
 	}
 
