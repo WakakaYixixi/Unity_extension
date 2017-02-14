@@ -69,8 +69,8 @@ namespace UnityEngine.UI
                 if (item == null)
                 {
                     item = child.gameObject.AddComponent<CenterViewItem>();
-                    item.index = child.GetSiblingIndex();
-                }
+				}
+				item.index = child.GetSiblingIndex();
                 item.clickToCenter = controller.clickItemToCenter;
                 m_all.Add(item);
             }
