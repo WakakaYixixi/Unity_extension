@@ -249,6 +249,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		}else{
 			dragTarget.position -= new Vector3(0,0,dragOffsetZ);
 			dragTarget.SetParent(m_parent);
+			this.m_canDrag = true;
 		}
 
 		if(OnEndDragAction!=null){
@@ -323,6 +324,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			dragTarget.localPosition=m_cachePosition;
 			dragTarget.localScale = m_cacheScale;
 			dragTarget.localEulerAngles = m_cacheRotation;
+			this.m_canDrag = true;
 			break;
 		case DragBackEffect.Destroy:
 			Destroy(dragTarget.gameObject);
@@ -377,6 +379,13 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 					OnTweenOverAction(this);
 				}
 			});
+			break;
+		default:
+			dragTarget.SetParent(m_parent);
+			dragTarget.localPosition=m_cachePosition;
+			dragTarget.localScale = m_cacheScale;
+			dragTarget.localEulerAngles = m_cacheRotation;
+			this.m_canDrag = true;
 			break;
 		}
 	}

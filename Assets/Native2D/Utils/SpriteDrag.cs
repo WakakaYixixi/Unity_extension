@@ -62,7 +62,7 @@ public class SpriteDrag : MonoBehaviour {
 	[Tooltip("射线检测的Layer")]
 	public LayerMask dragRayCastMask=-1;
 	public LayerMask dropRayCastMask=-1;
-	public bool dragCheckUGUI = false;//drag时是否判断在ugui上
+	public bool dragCheckUGUI = true;//drag时是否判断在ugui上
 
 	[Tooltip("判断drag时是否忽略上面")]
 	public bool dragIgnoreTop = true;
@@ -87,6 +87,9 @@ public class SpriteDrag : MonoBehaviour {
 
 	[Tooltip("拖动的时候在哪个层.没有设置的话为当前Sort Layer")]
 	public string dragSortLayerName;
+
+	[Tooltip("拖动时变化的层级数")]
+	public int dragChangeOrder = 0;
 
 	[Tooltip("触发坐标，默认为当前对象")]
 	public Transform triggerPos ;
@@ -229,6 +232,7 @@ public class SpriteDrag : MonoBehaviour {
 
 		foreach(SpriteRenderer render in dragTarget.GetComponentsInChildren<SpriteRenderer>()){
 			render.sortingLayerName=dragSortLayerName;
+			render.sortingOrder += dragChangeOrder;
 		}
 
 		m_screenPosition = rayCastCamera.WorldToScreenPoint(dragTarget.position);
@@ -307,6 +311,7 @@ public class SpriteDrag : MonoBehaviour {
 			dragTarget.position -=new Vector3(0,0,dragOffsetZ);
 			foreach(SpriteRenderer render in dragTarget.GetComponentsInChildren<SpriteRenderer>()){
 				render.sortingLayerName=m_sortLayerName;
+				render.sortingOrder -= dragChangeOrder;
 			}
 		}
 
@@ -337,6 +342,7 @@ public class SpriteDrag : MonoBehaviour {
 		case DragBackEffect.Immediately:
 			foreach(SpriteRenderer render in GetComponentsInChildren<SpriteRenderer>()){
 				render.sortingLayerName=m_sortLayerName;
+				render.sortingOrder -= dragChangeOrder;
 			}
 			dragTarget.position=m_cachePosition;
 			dragTarget.localEulerAngles=m_cacheRotation;
@@ -356,6 +362,7 @@ public class SpriteDrag : MonoBehaviour {
 				dragTarget.position=m_cachePosition;
 				foreach(SpriteRenderer render in GetComponentsInChildren<SpriteRenderer>()){
 					render.sortingLayerName=m_sortLayerName;
+					render.sortingOrder -= dragChangeOrder;
 				}
 				if(OnTweenBackAction!=null){
 					OnTweenBackAction(this);
@@ -367,6 +374,7 @@ public class SpriteDrag : MonoBehaviour {
 			this.m_canDrag = false;
 			foreach(SpriteRenderer render in GetComponentsInChildren<SpriteRenderer>()){
 				render.sortingLayerName=m_sortLayerName;
+				render.sortingOrder -= dragChangeOrder;
 			}
 			dragTarget.position=m_cachePosition;
 			dragTarget.localScale = Vector3.zero;
@@ -399,6 +407,15 @@ public class SpriteDrag : MonoBehaviour {
 					OnTweenBackAction(this);
 				}
 			});
+			break;
+		default:
+			foreach(SpriteRenderer render in GetComponentsInChildren<SpriteRenderer>()){
+				render.sortingLayerName=m_sortLayerName;
+				render.sortingOrder -= dragChangeOrder;
+			}
+			dragTarget.position=m_cachePosition;
+			dragTarget.localEulerAngles=m_cacheRotation;
+			dragTarget.localScale=m_cacheScale;
 			break;
 		}
 	}
