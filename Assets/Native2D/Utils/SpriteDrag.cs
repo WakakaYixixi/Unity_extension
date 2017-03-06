@@ -104,7 +104,7 @@ public class SpriteDrag : MonoBehaviour {
 	public float triggerRadius=0.5f;
 
 	[Tooltip("当触发类型为范围时,设置宽高")]
-	public Vector2 triggerRange = Vector2.one;
+	public Vector2 triggerRange = new Vector2(0.5f,0.5f);
 
 	//要发送的事件名字
 	[Header("Event")]
@@ -282,8 +282,11 @@ public class SpriteDrag : MonoBehaviour {
 			}else if(triggerType== TriggerType.Circle){
 				cols = Physics2D.OverlapCircleAll(triggerPos.position,triggerRadius,dropRayCastMask,-100f,100f);
 			}else if(triggerType== TriggerType.Range){
-				Vector2 pa = new Vector2(triggerPos.position.x-triggerRange.x*0.5f,triggerPos.position.y+triggerRange.y*0.5f);
-				Vector2 pb = new Vector2(triggerPos.position.x+triggerRange.x*0.5f,triggerPos.position.y-triggerRange.y*0.5f);
+				Vector2 pa = new Vector2(-triggerRange.x,triggerRange.y);
+				Vector2 pb = new Vector2(triggerRange.x,-triggerRange.y);
+				Matrix4x4 mat = Matrix4x4.TRS(triggerPos.position,triggerPos.rotation,Vector3.one);
+				pa = mat.MultiplyPoint(pa);
+				pb = mat.MultiplyPoint(pb);
 				cols = Physics2D.OverlapAreaAll(pa,pb,dropRayCastMask,-100f,100f);
 			}
 			if(cols!=null && cols.Length>0){
@@ -343,8 +346,11 @@ public class SpriteDrag : MonoBehaviour {
 			}else if(triggerType== TriggerType.Circle){
 				cols = Physics2D.OverlapCircleAll(triggerPos.position,triggerRadius,dropRayCastMask,-100f,100f);
 			}else if(triggerType== TriggerType.Range){
-				Vector2 pa = new Vector2(triggerPos.position.x-triggerRange.x*0.5f,triggerPos.position.y+triggerRange.y*0.5f);
-				Vector2 pb = new Vector2(triggerPos.position.x+triggerRange.x*0.5f,triggerPos.position.y-triggerRange.y*0.5f);
+				Vector2 pa = new Vector2(-triggerRange.x,triggerRange.y);
+				Vector2 pb = new Vector2(triggerRange.x,-triggerRange.y);
+				Matrix4x4 mat = Matrix4x4.TRS(triggerPos.position,triggerPos.rotation,Vector3.one);
+				pa = mat.MultiplyPoint(pa);
+				pb = mat.MultiplyPoint(pb);
 				cols = Physics2D.OverlapAreaAll(pa,pb,dropRayCastMask,-100f,100f);
 			}
 			if(cols != null && cols.Length>0){
@@ -465,7 +471,10 @@ public class SpriteDrag : MonoBehaviour {
 		}
 		else if(triggerType== TriggerType.Range)
 		{
-			Gizmos.DrawWireCube(origin.position,(Vector3)triggerRange);
+			Matrix4x4 mat = Gizmos.matrix;
+			Gizmos.matrix = Matrix4x4.TRS(origin.position,origin.rotation,Vector3.one);
+			Gizmos.DrawWireCube(Vector3.zero,(Vector3)triggerRange*2f);
+			Gizmos.matrix = mat;
 		}
 	}
 	#endif 
