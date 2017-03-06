@@ -13,6 +13,9 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	public enum DragBackEffect{
 		None,Immediately, TweenPosition, TweenScale , ScaleDestroy , FadeOutDestroy , Destroy
 	}
+	public enum TriggerType{
+		Point,Circle,Range
+	}
 
 	private Vector3 m_cachePosition;
 	private Vector3 m_cacheScale;
@@ -79,8 +82,17 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	[Tooltip("当按下时就开始执行拖动.")]
 	public bool dragOnPointDown = true;
 
-	[Tooltip("触发坐标，默认为当前对象")]
+	[Tooltip("触发的原点，默认为当前对象")]
 	public Transform triggerPos ;
+
+	[Tooltip("触发的类型")]
+	public TriggerType triggerType=TriggerType.Point;
+
+	[Tooltip("当触发类型为圆时,设置半径")]
+	public float triggerRadius=1f;
+
+	[Tooltip("当触发类型为范围时,设置宽高")]
+	public Vector2 triggerRange = new Vector2(2f,2f);
 
 	//要发送的事件名字
 	[Header("Event")]
@@ -235,8 +247,17 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		}
 
 		if(!string.IsNullOrEmpty(onDropMethodName)){
-			Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
-			if(cols.Length>0){
+			Collider2D[] cols = null;
+			if(triggerType== TriggerType.Point){
+				cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
+			}else if(triggerType== TriggerType.Circle){
+				cols = Physics2D.OverlapCircleAll(triggerPos.position,triggerRadius,rayCastMask,-100f,100f);
+			}else if(triggerType== TriggerType.Range){
+				Vector2 pa = new Vector2(triggerPos.position.x-triggerRange.x*0.5f,triggerPos.position.y+triggerRange.y*0.5f);
+				Vector2 pb = new Vector2(triggerPos.position.x+triggerRange.x*0.5f,triggerPos.position.y-triggerRange.y*0.5f);
+				cols = Physics2D.OverlapAreaAll(pa,pb,rayCastMask,-100f,100f);
+			}
+			if(cols!=null && cols.Length>0){
 				foreach(Collider2D col in cols){
 					if(col.gameObject!=gameObject)
 						col.SendMessage(onDropMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
@@ -279,8 +300,17 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			}
 			m_worldPos += (Vector3)dragOffset*0.01f;
 			if(sendHoverEvent){
-				Collider2D[] cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
-				if(cols.Length>0){
+				Collider2D[] cols = null;
+				if(triggerType== TriggerType.Point){
+					cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
+				}else if(triggerType== TriggerType.Circle){
+					cols = Physics2D.OverlapCircleAll(triggerPos.position,triggerRadius,rayCastMask,-100f,100f);
+				}else if(triggerType== TriggerType.Range){
+					Vector2 pa = new Vector2(triggerPos.position.x-triggerRange.x*0.5f,triggerPos.position.y+triggerRange.y*0.5f);
+					Vector2 pb = new Vector2(triggerPos.position.x+triggerRange.x*0.5f,triggerPos.position.y-triggerRange.y*0.5f);
+					cols = Physics2D.OverlapAreaAll(pa,pb,rayCastMask,-100f,100f);
+				}
+				if(cols!=null && cols.Length>0){
 					foreach(Collider2D col in cols){
 						if(col.gameObject!=gameObject)
 							col.SendMessage(onHoverMethodName, dragTarget.gameObject , SendMessageOptions.DontRequireReceiver);
@@ -390,4 +420,22 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		}
 	}
 
+	#if UNITY_EDITOR
+	void OnDrawGizmos() {
+		Gizmos.color = Color.yellow;
+		Transform origin = triggerPos == null ? transform : triggerPos;
+		if(triggerType == TriggerType.Point)
+		{
+			Gizmos.DrawSphere(origin.position,0.2f);
+		}
+		else if(triggerType == TriggerType.Circle)
+		{
+			Gizmos.DrawWireSphere(origin.position,triggerRadius);
+		}
+		else if(triggerType== TriggerType.Range)
+		{
+			Gizmos.DrawWireCube(origin.position,(Vector3)triggerRange);
+		}
+	}
+	#endif 
 }
