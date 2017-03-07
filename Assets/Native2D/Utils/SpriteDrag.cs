@@ -339,7 +339,7 @@ public class SpriteDrag : MonoBehaviour {
 			}
 		}
 
-		if(!string.IsNullOrEmpty(onDropMethodName)){
+		if(sendHoverEvent){
 			Collider2D[] cols = null;
 			if(triggerType== TriggerType.Point){
 				cols = Physics2D.OverlapPointAll(triggerPos.position,dropRayCastMask,-100f,100f);

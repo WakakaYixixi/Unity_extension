@@ -246,7 +246,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			dragTarget.DOLocalRotate(m_cacheRotation,0.25f,RotateMode.Fast);
 		}
 
-		if(!string.IsNullOrEmpty(onDropMethodName)){
+		if(sendHoverEvent){
 			Collider2D[] cols = null;
 			if(triggerType== TriggerType.Point){
 				cols = Physics2D.OverlapPointAll(triggerPos.position,rayCastMask,-100f,100f);
