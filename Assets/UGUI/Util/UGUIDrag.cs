@@ -20,10 +20,12 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	private Vector3 m_cachePosition;
 	private Vector3 m_cacheScale;
 	private Vector3 m_cacheRotation;
+	private int m_cacheIndex;
 
 	private Vector3 m_defaultPosition; //局部坐标
 	private Vector3 m_defaultScale;
 	private Vector3 m_defaultRotation;
+	private int m_defaultIndex;
 
 	private float m_dragMoveDamp;
 	private Vector3 m_worldPos;
@@ -139,6 +141,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		m_defaultScale = dragTarget.localScale;
 		m_defaultRotation = dragTarget.localEulerAngles;
 		m_defaultPosition = dragTarget.localPosition;
+		m_defaultIndex = dragTarget.GetSiblingIndex();
 
 		if(!triggerPos){
 			triggerPos = dragTarget;
@@ -157,6 +160,9 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	}
 	public void SetDefaultScale(){
 		if(dragTarget) dragTarget.localScale = m_defaultScale;
+	}
+	public void SetDefaultIndex(){
+		if(dragTarget) dragTarget.SetSiblingIndex(m_defaultIndex);
 	}
 
 	public void OnPointerDown(PointerEventData eventData)
@@ -196,6 +202,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		m_cachePosition = dragTarget.localPosition;
 		m_cacheScale = dragTarget.localScale;
 		m_cacheRotation = dragTarget.localEulerAngles;
+		m_cacheIndex = dragTarget.GetSiblingIndex();
 		if(dragChangeScale!=0f){
 			dragTarget.DOScale(m_cacheScale*dragChangeScale,0.4f);
 		}
@@ -273,6 +280,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		}else{
 			dragTarget.position -= new Vector3(0,0,dragOffsetZ);
 			dragTarget.SetParent(m_parent);
+			dragTarget.SetSiblingIndex(m_cacheIndex);
 			this.m_canDrag = true;
 		}
 
@@ -355,13 +363,6 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	public void BackPosition(){
 		switch(backEffect)
 		{
-		case DragBackEffect.Immediately:
-			dragTarget.SetParent(m_parent);
-			dragTarget.localPosition=m_cachePosition;
-			dragTarget.localScale = m_cacheScale;
-			dragTarget.localEulerAngles = m_cacheRotation;
-			this.m_canDrag = true;
-			break;
 		case DragBackEffect.Destroy:
 			Destroy(dragTarget.gameObject);
 			break;
@@ -374,6 +375,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			dragTarget.DOLocalMove(m_cachePosition,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
 				this.m_canDrag = true;
+				dragTarget.SetSiblingIndex(m_cacheIndex);
 				if(OnTweenOverAction!=null){
 					OnTweenOverAction(this);
 				}
@@ -389,6 +391,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			dragTarget.DOScale(m_cacheScale,backDuring).SetEase(tweenEase).OnComplete(()=>{
 				this.enabled = true;
 				this.m_canDrag = true;
+				dragTarget.SetSiblingIndex(m_cacheIndex);
 				if(OnTweenOverAction!=null){
 					OnTweenOverAction(this);
 				}
@@ -421,6 +424,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 			dragTarget.localPosition=m_cachePosition;
 			dragTarget.localScale = m_cacheScale;
 			dragTarget.localEulerAngles = m_cacheRotation;
+			dragTarget.SetSiblingIndex(m_cacheIndex);
 			this.m_canDrag = true;
 			break;
 		}
