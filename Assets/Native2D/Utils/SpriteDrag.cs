@@ -464,7 +464,7 @@ public class SpriteDrag : MonoBehaviour {
 	#if UNITY_EDITOR
 	void OnDrawGizmos() {
 		Gizmos.color = Color.yellow;
-		Transform origin = triggerPos == null ? transform : triggerPos;
+		Transform origin = triggerPos == null ? (dragTarget==null ? transform : dragTarget) : triggerPos;
 		if(triggerType == TriggerType.Point)
 		{
 			Gizmos.DrawSphere(origin.position,0.05f);
