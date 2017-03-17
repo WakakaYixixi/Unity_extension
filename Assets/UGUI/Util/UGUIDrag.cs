@@ -53,6 +53,11 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		set { m_worldPos = value; }
 	}
 
+	//world
+	public Vector3 orginToTriggerOffset{
+		get{ return dragTarget.position-triggerPos.position; }
+	}
+
 	[Tooltip("拖动的对象，默认为自己.")]
 	public RectTransform dragTarget;
 
@@ -168,6 +173,11 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	public void OnPointerDown(PointerEventData eventData)
 	{
 		if(dragOnPointDown){
+			if(DragValidCheckEvent!=null) {
+				if(!DragValidCheckEvent(eventData)){
+					return;
+				}
+			}
 			OnBeginDrag (eventData);
 			eventData.dragging = true;
 			OnDrag (eventData);

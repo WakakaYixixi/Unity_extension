@@ -54,6 +54,10 @@ public class SpriteDrag : MonoBehaviour {
 
 		}
 	}
+	//world
+	public Vector3 orginToTriggerOffset{
+		get{ return dragTarget.position-triggerPos.position; }
+	}
 	#endregion
 
 	[Tooltip("拖动的对象，默认为自己.")]
