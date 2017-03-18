@@ -39,11 +39,6 @@ namespace UnityEngine.UI
                 m_PageItemWidth = defaultState.bounds.size.x * 100f;
                 m_PageItemHeight = defaultState.bounds.size.y * 100f;
 
-                foreach (Transform child in transform)
-                {
-                    Destroy(child.gameObject);
-                }
-
                 float total_width = (m_PageItemWidth + space) * (count -1);
 
                 for (int i = 0; i < count; i++)

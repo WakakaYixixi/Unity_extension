@@ -446,7 +446,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		Transform origin = triggerPos == null ? (dragTarget==null ? transform : dragTarget) : triggerPos;
 		if(triggerType == TriggerType.Point)
 		{
-			Gizmos.DrawSphere(origin.position,0.2f);
+			Gizmos.DrawSphere(origin.position,0.02f);
 		}
 		else if(triggerType == TriggerType.Circle)
 		{

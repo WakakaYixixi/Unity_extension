@@ -31,6 +31,7 @@ namespace UnityEngine.UI
         {
             if (Input.touchCount > 1) return;
             CenterView centerView = GetComponentInParent<CenterView>();
+
             if (clickToCenter)
             {
                 if (centerView.CenterItem.GetComponent<CenterViewItem>().index != this.index)
@@ -39,12 +40,12 @@ namespace UnityEngine.UI
                 }
                 else
                 {
-                    centerView.controller.onSelect.Invoke();
+                    centerView.onSelect.Invoke();
                 }
             }
             else if (centerView.CenterItem.GetComponent<CenterViewItem>().index == this.index)
             {
-                centerView.controller.onSelect.Invoke();
+                centerView.onSelect.Invoke();
             }
         }
 

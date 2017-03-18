@@ -13,13 +13,9 @@ namespace UnityEngine.UI
     /// </summary>
     [AddComponentMenu("UI/Center View", 1351)]
     [RequireComponent(typeof(RectTransform))]
-    [RequireComponent(typeof(CenterViewController))]
-    public class CenterView : ScrollRect, IPointerUpHandler
+	public class CenterView : ScrollRect, IPointerUpHandler,IPage
     {
-        //控制器.
-        private CenterViewController m_controller;
-        public CenterViewController controller { get { return m_controller; } }
-
+      
         private bool m_drag = false;
         private Vector2 m_end = Vector2.zero;
 
@@ -44,6 +40,46 @@ namespace UnityEngine.UI
             get { return m_centerItem; }
         }
 
+
+
+
+		public PageIndicator pageIndicator;
+		//缓动.
+		public float pageDamp = 0.2f;
+
+		public float maxScale = 1f;
+		public float minScale = 0.2f;
+
+		//是否点击后显示在中间.
+		public bool clickItemToCenter = false;
+
+		//是否自动初始化 .
+		public bool autoInit = true;
+
+		public UnityEvent onScrollOver;
+		public UnityEvent onPageChange;
+		public UnityEvent onSelect;
+
+		/// <summary>
+		/// 用于点击PageIndicator时改变页码.
+		/// </summary>
+		/// <param name="index"></param>
+		public void ShowPage(int index)
+		{
+			GotoPage(index);
+		}
+
+		public override void Rebuild(CanvasUpdate executing)
+		{
+			if (executing != CanvasUpdate.PostLayout)
+				return;
+			base.Rebuild(executing);
+
+			if(Application.isPlaying && autoInit){
+				Init();
+			}
+		}
+
         /// <summary>
         /// 初始化此控件.
         /// </summary>
@@ -61,7 +97,6 @@ namespace UnityEngine.UI
 
             m_end = -((RectTransform)content.GetChild(0).transform).anchoredPosition;
             SetContentAnchoredPosition(m_end);
-            m_controller = GetComponent<CenterViewController>();
 
             foreach (RectTransform child in content)
             {
@@ -71,7 +106,7 @@ namespace UnityEngine.UI
                     item = child.gameObject.AddComponent<CenterViewItem>();
 				}
 				item.index = child.GetSiblingIndex();
-                item.clickToCenter = controller.clickItemToCenter;
+                item.clickToCenter = clickItemToCenter;
                 m_all.Add(item);
             }
             m_all.Sort();
@@ -98,13 +133,21 @@ namespace UnityEngine.UI
 			if(group){
 				group.enabled = false;
 			}
+
+			if (pageIndicator)
+			{
+				pageIndicator.iPage = this;
+				pageIndicator.Build(totalPage + 1);
+			}
             return this;
         }
 
         public override void OnBeginDrag(PointerEventData eventData)
         {
             if (Input.touchCount > 1) return;
-            if (!controller.dragEnable) return;
+			Graphic g = GetComponent<Graphic>();
+			if (g==null || g.raycastTarget==false) return;
+
             if (eventData.button != PointerEventData.InputButton.Left)
                 return;
             m_drag = true;
@@ -118,14 +161,17 @@ namespace UnityEngine.UI
         public override void OnDrag(PointerEventData eventData)
         {
             if (Input.touchCount > 1) return;
-            if (controller.dragEnable)
+			Graphic g = GetComponent<Graphic>();
+			if (g && g.raycastTarget)
                 base.OnDrag(eventData);
         }
 
         override public void OnEndDrag(PointerEventData eventData)
         {
             if (Input.touchCount > 1) return;
-            if (!controller.dragEnable) return;
+			Graphic g = GetComponent<Graphic>();
+			if (g==null || g.raycastTarget==false) return;
+
             if (eventData.button != PointerEventData.InputButton.Left)
                 return;
             m_drag = false;
@@ -166,9 +212,9 @@ namespace UnityEngine.UI
                     {
                         _enableUpdate = true;
                         m_currentPage = m_centerItem.GetComponent<CenterViewItem>().index;
-                        m_controller.onPageChange.Invoke();
-                        if (m_controller.pageIndicator)
-                            m_controller.pageIndicator.ShowPage(m_currentPage);
+                        onPageChange.Invoke();
+                        if (pageIndicator)
+                            pageIndicator.ShowPage(m_currentPage);
                     }
                 }
                 
@@ -207,9 +253,9 @@ namespace UnityEngine.UI
                     {
                         _enableUpdate = true;
                         m_currentPage = m_centerItem.GetComponent<CenterViewItem>().index;
-                        m_controller.onPageChange.Invoke();
-                        if (m_controller.pageIndicator)
-                            m_controller.pageIndicator.ShowPage(m_currentPage);
+                        onPageChange.Invoke();
+                        if (pageIndicator)
+                            pageIndicator.ShowPage(m_currentPage);
                     }
                 }
             }
@@ -242,10 +288,10 @@ namespace UnityEngine.UI
             foreach (RectTransform child in content)
             {
                 var posX = child.anchoredPosition.x + content.anchoredPosition.x;
-                float sc =Mathf.Abs( Mathf.Sin((child.sizeDelta.x * 4f - Mathf.Abs(posX)) / child.sizeDelta.x / 4f) * controller.maxScale);
+                float sc =Mathf.Abs( Mathf.Sin((child.sizeDelta.x * 4f - Mathf.Abs(posX)) / child.sizeDelta.x / 4f) * maxScale);
                 if (posX > viewRect.sizeDelta.x  || posX < -viewRect.sizeDelta.x )
                 {
-                    sc = controller.minScale;
+                    sc = minScale;
                 }
                 child.localScale = new Vector2(sc, sc);
                 Comp comp = new Comp();
@@ -272,10 +318,10 @@ namespace UnityEngine.UI
             foreach (RectTransform child in content)
             {
                 var posY = child.anchoredPosition.y + content.anchoredPosition.y;
-                float sc = Mathf.Abs(Mathf.Sin((child.sizeDelta.y * 4f - Mathf.Abs(posY)) / child.sizeDelta.y / 4f) * controller.maxScale);
+                float sc = Mathf.Abs(Mathf.Sin((child.sizeDelta.y * 4f - Mathf.Abs(posY)) / child.sizeDelta.y / 4f) * maxScale);
                 if (posY > viewRect.sizeDelta.y || posY < -viewRect.sizeDelta.y)
                 {
-                    sc = controller.minScale;
+                    sc = minScale;
                 }
                 child.localScale = new Vector2(sc, sc);
                 Comp comp = new Comp();
@@ -316,14 +362,14 @@ namespace UnityEngine.UI
                 {
                     if (Mathf.Abs(content.anchoredPosition.x - m_end.x) > 1f)
                     {
-                        Vector2 pos = Vector2.Lerp(content.anchoredPosition, m_end, m_controller.pageDamp);
+                        Vector2 pos = Vector2.Lerp(content.anchoredPosition, m_end, pageDamp);
                         SetContentAnchoredPosition(pos);
                     }
                     else
                     {
                         SetContentAnchoredPosition(m_end);
                         _enableUpdate = false;
-                        m_controller.onScrollOver.Invoke();
+                        onScrollOver.Invoke();
                     }
                     _scaleXRenders();
                 }
@@ -331,14 +377,14 @@ namespace UnityEngine.UI
                 {
                     if (Mathf.Abs(content.anchoredPosition.y - m_end.y) > 1f)
                     {
-                        Vector2 pos = Vector2.Lerp(content.anchoredPosition, m_end, m_controller.pageDamp);
+                        Vector2 pos = Vector2.Lerp(content.anchoredPosition, m_end, pageDamp);
                         SetContentAnchoredPosition(pos);
                     }
                     else
                     {
                         SetContentAnchoredPosition(m_end);
                         _enableUpdate = false;
-                        m_controller.onScrollOver.Invoke();
+                        onScrollOver.Invoke();
                     }
                     _scaleYRenders();
                 }
@@ -400,9 +446,9 @@ namespace UnityEngine.UI
                     Vector2 endPos = -item.anchoredPosition;
                     m_end = endPos;
                     _enableUpdate = true;
-                    m_controller.onPageChange.Invoke();
-                    if (m_controller.pageIndicator)
-                        m_controller.pageIndicator.ShowPage(m_currentPage);
+                    onPageChange.Invoke();
+                    if (pageIndicator)
+                        pageIndicator.ShowPage(m_currentPage);
 
                     if (!anim)
                     {

@@ -9,17 +9,11 @@ namespace UnityEngine.UI
     /// <summary>
     /// author:zhouzhanglin
     /// 分页显示.
-    /// 说明：如果要调用此类中的属性和方法 ，需要至少在1次yield return new WaitForEndOfFrame();后调用.
     /// </summary>
     [AddComponentMenu("UI/Page View",1350)]
     [RequireComponent(typeof(RectTransform))]
-    [RequireComponent(typeof(PageViewController))]
-	public class PageView : ScrollRect, IPointerUpHandler,IPointerExitHandler
+	public class PageView : ScrollRect, IPointerUpHandler,IPointerExitHandler,IPage
     {
-        //控制器.
-        private PageViewController m_controller;
-        public PageViewController controller { get { return m_controller;  } }
-
 		private float m_dragTime = 0 ;
         private bool m_drag = false;
         private Vector2 m_end = Vector2.zero;
@@ -37,10 +31,42 @@ namespace UnityEngine.UI
         private Vector2 m_contentPos = Vector2.zero;
 		private PointerEventData m_dragEventData;
 
+		public PageIndicator pageIndicator;
+		//缓动.
+		public float pageDamp = 0.2f;
+		//在区域外时是否还可以拖动
+		public bool dragEnableOutSide = true;
+		//是否自动初始化.
+		public bool autoInit = true;
+
+		//事件
+		public UnityEvent onScrollOver;
+		public UnityEvent onPageChange ;
+
+		/// <summary>
+		/// 用于点击PageIndicator时改变页码.
+		/// </summary>
+		/// <param name="index"></param>
+		public void ShowPage(int index)
+		{
+			GotoPage(index);
+		}
+
+		public override void Rebuild(CanvasUpdate executing)
+		{
+			if (executing != CanvasUpdate.PostLayout)
+				return;
+			base.Rebuild(executing);
+	
+			if(Application.isPlaying && autoInit){
+				Init();
+			}
+		}
+
         /// <summary>
         /// 初始化此控件.
         /// </summary>
-        public PageView Init(int page = 0)
+		public PageView Init(int page = 0)
         {
             if (horizontal)
             {
@@ -55,14 +81,21 @@ namespace UnityEngine.UI
             m_end = -((RectTransform)content.GetChild(0).transform).anchoredPosition;
             SetContentAnchoredPosition(m_end);
 
-            m_controller = GetComponent<PageViewController>();
+			if (pageIndicator)
+			{
+				pageIndicator.iPage = this;
+				pageIndicator.Build(totalPage + 1);
+			}
             return this;
         }
 
         public override void OnBeginDrag(PointerEventData eventData)
         {
             if (Input.touchCount > 1) return;
-            if (!controller.dragEnable) return;
+
+			Graphic g = GetComponent<Graphic>();
+			if (g==null || g.raycastTarget==false) return;
+
             if (eventData.button != PointerEventData.InputButton.Left)
                 return;
             m_drag = true;
@@ -77,11 +110,13 @@ namespace UnityEngine.UI
         public override void OnDrag(PointerEventData eventData)
         {
             if (Input.touchCount > 1) return;
-			if(!m_controller.dragEnableOutSide && !m_isIn){
+			if(!dragEnableOutSide && !m_isIn){
 				return;
 			}
 			m_dragEventData = eventData;
-            if(controller.dragEnable)
+
+			Graphic g = GetComponent<Graphic>();
+			if (g && g.raycastTarget)
                  base.OnDrag(eventData);
         }
 
@@ -95,8 +130,12 @@ namespace UnityEngine.UI
 
         override public void OnEndDrag(PointerEventData eventData)
         {
-            if (Input.touchCount > 1) return;
-            if (!controller.dragEnable) return;
+			Graphic g = GetComponent<Graphic>();
+			if (g==null || g.raycastTarget==false) return;
+            
+			if (eventData.button != PointerEventData.InputButton.Left)
+				return;
+			
             if (eventData.button != PointerEventData.InputButton.Left)
                 return;
 			if(!m_drag) return;
@@ -184,28 +223,28 @@ namespace UnityEngine.UI
                 {
                     if (Mathf.Abs(content.anchoredPosition.x - m_end.x) > 1f)
                     {
-                        Vector2 pos = Vector2.Lerp(content.anchoredPosition, m_end, m_controller.pageDamp);
+                        Vector2 pos = Vector2.Lerp(content.anchoredPosition, m_end, pageDamp);
                         SetContentAnchoredPosition(pos);
                     }
                     else
                     {
                         SetContentAnchoredPosition(m_end);
                         _enableUpdate = false;
-                        m_controller.onScrollOver.Invoke();
+                        onScrollOver.Invoke();
                     }
                 }
                 else if (vertical)
                 {
                     if (Mathf.Abs(content.anchoredPosition.y - m_end.y) > 1f)
                     {
-                        Vector2 pos = Vector2.Lerp(content.anchoredPosition, m_end, m_controller.pageDamp);
+                        Vector2 pos = Vector2.Lerp(content.anchoredPosition, m_end, pageDamp);
                         SetContentAnchoredPosition(pos);
                     }
                     else
                     {
                         SetContentAnchoredPosition(m_end);
                         _enableUpdate = false;
-                        m_controller.onScrollOver.Invoke();
+                        onScrollOver.Invoke();
                     }
                 }
             }
@@ -263,10 +302,10 @@ namespace UnityEngine.UI
                 Vector2 endPos = -((RectTransform)content.GetChild(m_currentPage).transform).anchoredPosition;
                 m_end = endPos;
                 _enableUpdate = true;
-                m_controller.onPageChange.Invoke();
-                if (m_controller.pageIndicator)
+                onPageChange.Invoke();
+                if (pageIndicator)
                 {
-                    m_controller.pageIndicator.ShowPage(m_currentPage);
+                    pageIndicator.ShowPage(m_currentPage);
                 }
 
                 if (!anim)

@@ -9,18 +9,18 @@ public class CenterViewPanel : MonoBehaviour {
     /// </summary>
     public int initPageIndex = 0;
 
-    private CenterViewController _centerViewController;
+    private CenterView _centerView;
 
 	// Use this for initialization
 	IEnumerator Start () {
         yield return new WaitForEndOfFrame();
-        _centerViewController = GetComponentInChildren<CenterViewController>();
-        _centerViewController.Init();
-        _centerViewController.centerView.GotoPage(initPageIndex);
+		_centerView = GetComponentInChildren<CenterView>();
+		_centerView.Init();
+		_centerView.GotoPage(initPageIndex);
 	}
 
     public void OnSelectItem()
     {
-        print("Center View 选择了：" + _centerViewController.centerView.CenterItem.name);
+        print("Center View 选择了：" + _centerView.CenterItem.name);
     }
 }
