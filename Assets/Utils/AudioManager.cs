@@ -11,7 +11,7 @@ public class AudioManager:MonoBehaviour {
 	public static AudioManager Instance{
 		get{
 			if(m_instance==null){
-				GameObject go = new GameObject("[AudioManager]");
+				GameObject go = new GameObject();
 				return go.AddComponent<AudioManager>();
 			}
 			return m_instance;
@@ -25,6 +25,7 @@ public class AudioManager:MonoBehaviour {
 			Destroy(gameObject);
 			return;
 		}
+		name = "[AudioManager]";
 		m_instance = this;
 		m_musicAS = GetComponent<AudioSource>();
 		if(m_musicAS==null){
@@ -60,21 +61,15 @@ public class AudioManager:MonoBehaviour {
 		if(AudioListener.volume<0.01f) return ;
 		AudioClip clip = Resources.Load<AudioClip>(resourcePath);
 		if(clip){
-			if(delay>0){
-				StartCoroutine(DelayPlaySoundEffect(clip,volume,delay));
-			}else{
-				PlaySoundEffect(clip,volume);
-			}
+			clip.name = resourcePath;
+			PlaySoundEffect(clip,volume,delay);
 		}
 		else
 		{
 			Debug.LogWarning("Sound not found: "+resourcePath);
 		}
 	}
-	IEnumerator DelayPlaySoundEffect(AudioClip clip , float volume, float delay ){
-		yield return new WaitForSeconds(delay);
-		PlaySoundClip(clip,volume);
-	}
+
 	/// <summary>
 	/// 只播放一次的声音
 	/// </summary>
@@ -83,26 +78,34 @@ public class AudioManager:MonoBehaviour {
 	/// <param name="delay">delay.</param>
 	public void PlaySoundEffect( AudioClip clip , float volume = 1f, float delay=0f){
 		if(AudioListener.volume<0.01f) return ;
-		if(delay>0){
-			StartCoroutine(DelayPlaySoundEffect(clip,volume,delay));
-		}else{
-			PlaySoundClip(clip,volume);
-		}
-	}
-
-	void PlaySoundClip(AudioClip clip, float volume){
-		if(volume>0.98f){
-			AudioSource.PlayClipAtPoint(clip,Camera.main.transform.position);
-		}else{
-			GameObject go = new GameObject(clip.name);
-			go.transform.position = Camera.main.transform.position;
-			AudioSource audioSource = go.AddComponent<AudioSource>();
-			audioSource.loop=false;
-			audioSource.volume = volume;
-			audioSource.clip = clip;
+		GameObject go = new GameObject(clip.name);
+		go.transform.parent = transform;
+		go.transform.position = Camera.main.transform.position;
+		AudioSource audioSource = go.AddComponent<AudioSource>();
+		audioSource.loop=false;
+		audioSource.volume = volume;
+		audioSource.clip = clip;
+		if(delay<=0){
 			audioSource.Play();
 			Destroy(go,clip.length);
+		}else{
+			audioSource.PlayDelayed(delay);
+			Destroy(go,clip.length+delay);
 		}
+	}
+	/// <summary>
+	/// Stops the sound effect.
+	/// </summary>
+	/// <param name="resourcePath">Resource path or AudioClip name.</param>
+	public void StopSoundEffect(string resourcePath){
+		AudioSource audio = null;
+		foreach(AudioSource s in GetComponentsInChildren<AudioSource>()){
+			if(s.transform!=transform && s.loop==false && s.name.LastIndexOf(resourcePath)>-1){
+				audio = s;
+				break;
+			}
+		}
+		if(audio) Destroy(audio.gameObject);
 	}
 	#endregion
 
@@ -169,6 +172,7 @@ public class AudioManager:MonoBehaviour {
 		if(dontDestroy){
 			GameObject.DontDestroyOnLoad(go);
 		}
+		go.transform.parent = transform;
 		go.transform.position = Camera.main.transform.position;
 		AudioSource audioSource = go.AddComponent<AudioSource>();
 		audioSource.loop=isLoop;
@@ -227,16 +231,6 @@ public class AudioManager:MonoBehaviour {
 		return null;
 	}
 
-	public void StopAllMusic(){
-		foreach(var item in m_musicAudio){
-			AudioSource source = item.Value;
-			source.Stop();
-			GameObject.Destroy(source.gameObject);
-		}
-		m_musicAudio.Clear();
-		m_musicPathAudio.Clear();
-		StopBgMusic();
-	}
 
 	/// <summary>
 	/// 播放背景音乐
@@ -269,4 +263,32 @@ public class AudioManager:MonoBehaviour {
 	}
 	#endregion
 
+
+
+
+	/// <summary>
+	/// Stop All music and sounds effect
+	/// </summary>
+	/// <param name="stopBgMusic">If set to <c>true</c> contain background music.</param>
+	public void StopAll(bool stopBgMusic = false){
+		foreach(var item in m_musicAudio){
+			AudioSource source = item.Value;
+			source.Stop();
+			GameObject.Destroy(source.gameObject);
+		}
+		m_musicAudio.Clear();
+		m_musicPathAudio.Clear();
+
+		System.Collections.Generic.List<AudioSource> sounds = new List<AudioSource>();
+		foreach(AudioSource s in transform.GetComponentsInChildren<AudioSource>(true)){
+			if(s.transform!=transform) sounds.Add(s);
+		}
+		for(int i=0;i<sounds.Count;++i){
+			Destroy(sounds[i].gameObject);
+		}
+
+		if(stopBgMusic){
+			StopBgMusic();
+		}
+	}
 }
