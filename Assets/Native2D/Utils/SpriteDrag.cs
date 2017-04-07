@@ -131,7 +131,7 @@ public class SpriteDrag : MonoBehaviour {
 	public event Action<SpriteDrag> OnBeginDragAction = null ;
 	public event Action<SpriteDrag> OnDragAction = null ;
 	public event Action<SpriteDrag> OnEndDragAction = null ;
-	public event Action<SpriteDrag> OnTweenBackAction = null ;
+	public event Action<SpriteDrag> OnTweenStartAction=null,OnTweenBackAction = null ;
 	public delegate bool DragValidCheck();
 	public event DragValidCheck DragValidCheckEvent;
 
@@ -377,6 +377,9 @@ public class SpriteDrag : MonoBehaviour {
 	/// 返回原来位置
 	/// </summary>
 	public void BackPosition(){
+		if(OnTweenStartAction!=null){
+			OnTweenStartAction(this);
+		}
 		switch(backEffect)
 		{
 		case DragBackEffect.Immediately:
@@ -464,7 +467,7 @@ public class SpriteDrag : MonoBehaviour {
 	#if UNITY_EDITOR
 	void OnDrawGizmos() {
 		Gizmos.color = Color.yellow;
-		Transform origin = triggerPos == null ? (dragTarget==null ? transform : dragTarget) : triggerPos;
+		Transform origin = triggerPos == null ?  (dragTarget==null ? transform : dragTarget) : triggerPos;
 		if(triggerType == TriggerType.Point)
 		{
 			Gizmos.DrawSphere(origin.position,0.05f);
