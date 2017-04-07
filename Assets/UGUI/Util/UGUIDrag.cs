@@ -9,7 +9,7 @@ using DG.Tweening;
 /// 用于拖动UGUI控件
 /// </summary>
 public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHandler,IPointerDownHandler,IPointerUpHandler{
-	
+
 	public enum DragBackEffect{
 		None,Immediately, TweenPosition, TweenScale , ScaleDestroy , FadeOutDestroy , Destroy
 	}
@@ -31,6 +31,9 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	private Vector3 m_worldPos;
 	private Vector3 m_touchDownTargetOffset ;
 	private Transform m_parent;
+	public Transform prevParent{ //之前的parent
+		get { return m_parent; }
+	}
 	private bool m_isDown = false;
 	private bool m_isDragging = false;
 	public bool isDragging{
@@ -83,8 +86,9 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	[Tooltip("Drag时角度的变化值")]
 	public float dragChangeRotate = 0f;
 
-	[Tooltip("拖动时的所在的父窗器，用于拖动时在UI最上层，如果不填，则在当前层.")]
-	public string dragingParent = "Canvas";
+	[Tooltip("拖动时的所在的父窗器，用于拖动时在UI最上层")]
+	public Transform dragingParentNode = null;//优先这个
+	public string dragingParent = "Canvas";//其次这个
 
 	[Tooltip("当按下时就开始执行拖动.")]
 	public bool dragOnPointDown = true;
@@ -123,7 +127,7 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	public event Action<UGUIDrag,PointerEventData> OnDragAction = null ;
 	public event Action<UGUIDrag> OnDragTargetMoveAction = null ;
 	public event Action<UGUIDrag,PointerEventData> OnEndDragAction = null ;
-	public event Action<UGUIDrag> OnTweenOverAction = null ;
+	public event Action<UGUIDrag> OnTweenStartAction=null,OnTweenOverAction = null ;
 	public delegate bool DragValidCheck(PointerEventData eventData);
 	public event DragValidCheck DragValidCheckEvent;
 
@@ -231,12 +235,16 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 		m_worldPos += (Vector3)dragOffset*0.01f;
 
 		m_parent = dragTarget.parent;
-		if(!string.IsNullOrEmpty(dragingParent)){
+
+		if(dragingParentNode){
+			dragTarget.SetParent(dragingParentNode);
+		}
+		else if(!string.IsNullOrEmpty(dragingParent)){
 			GameObject go = GameObject.Find(dragingParent);
 			if(go){
 				dragTarget.SetParent(go.transform);
 			}
-		}
+		} 
 
 		if(OnBeginDragAction!=null){
 			OnBeginDragAction(this,eventData);
@@ -305,12 +313,18 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	{
 		if(!this.enabled  || !m_canDrag || !m_isDown)  return;
 
-		if(!string.IsNullOrEmpty(dragingParent) && !dragTarget.parent.name.Equals(dragingParent)){
+		if(dragingParentNode){
+			if(dragTarget.parent!=dragingParentNode){
+				dragTarget.SetParent(dragingParentNode);
+			}
+		}
+		else if(!string.IsNullOrEmpty(dragingParent) && !dragTarget.parent.name.Equals(dragingParent)){
 			GameObject go = GameObject.Find(dragingParent);
 			if(go){
 				dragTarget.SetParent(go.transform);
 			}
 		}
+
 
 		if (eventData.dragging)
 		{
@@ -371,6 +385,9 @@ public class UGUIDrag: MonoBehaviour,IBeginDragHandler,IEndDragHandler,IDragHand
 	/// 返回到最初位置
 	/// </summary>
 	public void BackPosition(){
+		if(OnTweenStartAction!=null){
+			OnTweenStartAction(this);
+		}
 		switch(backEffect)
 		{
 		case DragBackEffect.Destroy:
