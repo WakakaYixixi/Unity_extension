@@ -29,6 +29,8 @@ public class TexturePackerEditor : ScriptableWizard {
 			//遍历所有子节点
 			foreach (XmlNode xn in nodeList)
 			{
+				if (!(xn is XmlElement))
+					continue;
 				XmlElement xe = (XmlElement)xn;
 				string name = xe.GetAttribute("name").Replace('/','_');
 				float x = float.Parse( xe.GetAttribute("x"));
@@ -94,6 +96,8 @@ public class TexturePackerEditor : ScriptableWizard {
 			//遍历所有子节点
 			foreach (XmlNode xn in nodeList)
 			{
+				if (!(xn is XmlElement))
+					continue;
 				XmlElement xe = (XmlElement)xn;
 				string name = xe.GetAttribute("name").Replace('/','_');
 				float x = float.Parse( xe.GetAttribute("x"));

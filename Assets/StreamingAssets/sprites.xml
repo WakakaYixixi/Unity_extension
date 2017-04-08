@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TextureAtlas imagePath="sprites.png">
+	<!--
+	Created with ShoeBox
+	http://renderhjs.net/shoebox/
+	-->
+	<SubTexture name="a_arm_down_l.png"	x="678"	y="770"	width="208"	height="129" frameX="-0" frameY="-0" frameWidth="208" frameHeight="129"/>
+	<SubTexture name="a_arm_down_r.png"	x="0"	y="869"	width="209"	height="128" frameX="-0" frameY="-0" frameWidth="209" frameHeight="128"/>
+	<SubTexture name="a_arm_up_l.png"	x="631"	y="252"	width="284"	height="254" frameX="-0" frameY="-0" frameWidth="284" frameHeight="254"/>
+	<SubTexture name="a_arm_up_r.png"	x="631"	y="0"	width="291"	height="251" frameX="-0" frameY="-0" frameWidth="291" frameHeight="251"/>
+	<SubTexture name="a_body.png"	x="0"	y="583"	width="354"	height="285" frameX="-0" frameY="-0" frameWidth="354" frameHeight="285"/>
+	<SubTexture name="a_eyeclose.png"	x="832"	y="900"	width="71"	height="119" frameX="-0" frameY="-0" frameWidth="71" frameHeight="119"/>
+	<SubTexture name="a_hand_l.png"	x="210"	y="911"	width="151"	height="88" frameX="-0" frameY="-0" frameWidth="151" frameHeight="88"/>
+	<SubTexture name="a_hand_r.png"	x="678"	y="900"	width="153"	height="115" frameX="-0" frameY="-0" frameWidth="153" frameHeight="115"/>
+	<SubTexture name="a_head.png"	x="0"	y="0"	width="630"	height="582" frameX="-0" frameY="-0" frameWidth="630" frameHeight="582"/>
+	<SubTexture name="a_hip.png"	x="355"	y="583"	width="322"	height="327" frameX="-0" frameY="-0" frameWidth="322" frameHeight="327"/>
+	<SubTexture name="a_leg_down_l.png"	x="678"	y="507"	width="257"	height="262" frameX="-0" frameY="-0" frameWidth="257" frameHeight="262"/>
+	<SubTexture name="a_leg_down_r.png"	x="923"	y="0"	width="214"	height="294" frameX="-0" frameY="-0" frameWidth="214" frameHeight="294"/>
+</TextureAtlas>
