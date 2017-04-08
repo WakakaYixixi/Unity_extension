@@ -7,7 +7,6 @@ using System.Xml;
 /// 图片资源加载 (图集支持Starling/Sparrow格式)
 /// author: zhouzhanglin
 /*
- * 
 SpriteRenderer sr = null;
 void Start () {
 	sr = GetComponent<SpriteRenderer>();
@@ -28,7 +27,6 @@ IEnumerator ChangeImg(){
 	//dispose
 	ResManager.Instance.DisposeAsset("sprites.xml");
 }
- * 
  */
 /// </summary>
 public class ResManager : MonoBehaviour
@@ -84,26 +82,28 @@ public class ResManager : MonoBehaviour
 		Resources
 	}
 
+	[System.Serializable]
 	public class Asset
 	{
 		public string url;
 		public AssetType type;
 		public AssetPath path;
-		public bool cached = false;
-
+		[HideInInspector]
 		public Dictionary<string,Sprite> sprites;
-		//result
+		[HideInInspector]
 		public Sprite sprite;
-		//result
+		[HideInInspector]
 		public Texture2D texture;
-		//result
 
-		public SpriteMeshType meshType = SpriteMeshType.FullRect;
 		//for sprite
+		public SpriteMeshType meshType = SpriteMeshType.FullRect;
+		//for texture2d
 		public bool textureReadonly = true;
 		//for texture2d
 		public TextureWrapMode warpMode = TextureWrapMode.Clamp;
-		// for texture2d
+		
+		
+		public bool cached = false;
 
 		public Asset ()
 		{
