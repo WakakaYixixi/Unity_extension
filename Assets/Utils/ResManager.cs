@@ -105,9 +105,7 @@ public class ResManager : MonoBehaviour
 		
 		public bool cached = false;
 
-		public Asset ()
-		{
-		}
+		public Asset (){}
 
 		public Asset (string url, AssetType type, AssetPath path=AssetPath.StreamingAssets, bool cached = false)
 		{
@@ -118,9 +116,34 @@ public class ResManager : MonoBehaviour
 		}
 	}
 
-
+	public int maxCount = int.MaxValue;
 	public bool debug = true;
 	private static Dictionary<string,Asset> loadedKV = new Dictionary<string, Asset> ();
+	private int m_CurrentCount;
+
+	/// <summary>
+	/// Loads the group.
+	/// </summary>
+	/// <param name="assetGroup">Asset group.</param>
+	/// <param name="onLoaded">On loaded.</param>
+	/// <param name="onProgress">On progress.</param>
+	public void LoadGroup(Asset[] assetGroup , System.Action<Asset[]> onLoaded , System.Action<Asset[],float> onProgress = null){
+		int count = assetGroup.Length;
+		for(int i=0;i<assetGroup.Length;++i){
+			LoadAsset(assetGroup[i],delegate(Asset asset) {
+				count--;
+
+				if(onProgress!=null){
+					onProgress(assetGroup,1f-(float)count/assetGroup.Length);
+				}
+
+				if(count==0){
+					if(onLoaded!=null)
+						onLoaded(assetGroup);
+				}
+			});
+		}
+	}
 
 	/// <summary>
 	/// Loads the asset.
@@ -206,6 +229,8 @@ public class ResManager : MonoBehaviour
 	/// <param name="containCache">If set to <c>true</c> contain cache.</param>
 	public void DisposeAll (bool containCache = false)
 	{
+		StopAllCoroutines();
+		m_CurrentCount = 0;
 		List<Asset> assets = new List<Asset> ();
 		foreach (Asset asset in loadedKV.Values) {
 			if (containCache) {
@@ -217,13 +242,17 @@ public class ResManager : MonoBehaviour
 		for (int i = 0; i < assets.Count; ++i) {
 			DisposeAsset (assets [i]);
 		}
-
 	}
 
 
 
 	IEnumerator LoadingAsset (Asset asset, System.Action<Asset> onLoaded)
 	{
+		while(m_CurrentCount>=maxCount) {
+			yield return 0;
+		}
+		++m_CurrentCount;
+
 		if (asset.path == AssetPath.StreamingAssets) {
 			WWW www = new WWW (streamingAssetPath + asset.url);
 			while (!www.isDone) {
@@ -303,6 +332,7 @@ public class ResManager : MonoBehaviour
 				}
 			}
 		}
+		--m_CurrentCount;
 	}
 
 	IEnumerator LoadingSpritesByXML (string config, Asset asset, System.Action<Asset> onLoaded)
