@@ -15,6 +15,30 @@ public class ResManagerTest : MonoBehaviour {
 			}
 		);
 
+		//load group
+		ResManager.Instance.maxCount = 3;
+		ResManager.Instance.LoadGroup(new ResManager.Asset[]{
+			new ResManager.Asset("sprites.xml",ResManager.AssetType.Sprites),
+			new ResManager.Asset("sprites.png",ResManager.AssetType.Sprite),
+			new ResManager.Asset("sprites.xml",ResManager.AssetType.Sprites),
+			new ResManager.Asset("sprites.png",ResManager.AssetType.Sprite),
+			new ResManager.Asset("sprites.xml",ResManager.AssetType.Sprites),
+			new ResManager.Asset("sprites.png",ResManager.AssetType.Sprite),
+			new ResManager.Asset("sprites.xml",ResManager.AssetType.Sprites),
+			new ResManager.Asset("sprites.png",ResManager.AssetType.Sprite),
+			new ResManager.Asset("sprites.xml",ResManager.AssetType.Sprites),
+			new ResManager.Asset("sprites.png",ResManager.AssetType.Sprite),
+			new ResManager.Asset("sprites.xml",ResManager.AssetType.Sprites),
+			new ResManager.Asset("sprites.png",ResManager.AssetType.Sprite),
+			new ResManager.Asset("sprites.xml",ResManager.AssetType.Sprites),
+			new ResManager.Asset("sprites.png",ResManager.AssetType.Sprite),
+			new ResManager.Asset("sprites.xml",ResManager.AssetType.Sprites)
+		},delegate(ResManager.Asset[] assets) {
+			print("Load group complete");
+		},delegate(ResManager.Asset[] assets, float progress) {
+			print("Load group :"+progress);
+		});
+
 	}
 
 	IEnumerator ChangeImg(){
