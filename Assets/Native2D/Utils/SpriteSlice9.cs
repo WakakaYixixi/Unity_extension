@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 /// <summary>
-/// sprite2D 九宫格
-/// Author:zhouzhanglin
+/// sprite2D 九宫格，如果通过代码改变设置，需要调用一次UpdateMesh
 /// </summary>
 [ExecuteInEditMode]
 public class SpriteSlice9 : MonoBehaviour {
@@ -24,9 +23,10 @@ public class SpriteSlice9 : MonoBehaviour {
 	private Vector2[] m_uvs;
 	private Color[] m_colors;
 	private int[] m_tris;
-
+	#if UNITY_EDITOR
 	private Sprite m_sp;
 	private Vector3 m_size;
+	#endif
 
 	public Color color{
 		get{return m_color;}
@@ -63,10 +63,9 @@ public class SpriteSlice9 : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		#if UNITY_EDITOR
 		m_sp = sprite;
 		m_size = size;
-
-		#if UNITY_EDITOR
 		if(!Application.isPlaying){
 			Renderer r= GetComponent<Renderer>();
 			if(r is SpriteRenderer){
@@ -81,14 +80,31 @@ public class SpriteSlice9 : MonoBehaviour {
 		m_render = GetComponent<MeshRenderer>();
 		if(m_render==null) m_render = gameObject.AddComponent<MeshRenderer>();
 
+		if(m_render){
+			MaterialPropertyBlock block = new MaterialPropertyBlock();
+			m_render.GetPropertyBlock(block);
+			block.SetTexture("_MainTex",sprite.texture);
+			m_render.SetPropertyBlock(block);
+		}
+
 		UpdateMesh();
 	}
-
+	
 	#if UNITY_EDITOR
 	void LateUpdate () {
 		if(!Application.isPlaying){
 			if(sprite)
 			{
+				if(m_render){
+					MaterialPropertyBlock block = new MaterialPropertyBlock();
+					m_render.GetPropertyBlock(block);
+					block.SetTexture("_MainTex",sprite.texture);
+					m_render.SetPropertyBlock(block);
+				}
+
+				if( m_size.x < 0 )m_size.x=0;
+				if( m_size.y < 0 )m_size.y=0;
+
 				if(sprite!=m_sp || !Vector2.Equals(m_size,size)){
 					m_sp = sprite;
 					m_size = size;
@@ -122,12 +138,14 @@ public class SpriteSlice9 : MonoBehaviour {
 		}
 
 		if(sprite){
-			float w = (sprite.rect.width+size.x)*0.01f;
-			float h = (sprite.rect.height+size.y)*0.01f;
+			float w = (size.x)*0.01f;
+			float h = (size.y)*0.01f;
 			float bl = sprite.border.x*0.01f;
-			float br = (sprite.rect.width-sprite.border.z+size.x)*0.01f;
-			float bt = (sprite.rect.height-sprite.border.w+size.y)*0.01f;
+			float br = (-sprite.border.z+size.x)*0.01f;
+			if(br<bl) br = bl = (br+bl)*0.5f;
+			float bt = (-sprite.border.w+size.y)*0.01f;
 			float bb = sprite.border.y*0.01f;
+			if(bt<bb) bb = bt = (bt+bb)*0.5f;
 			//vertex & uv
 			m_vertex[0].x = 0; 	m_uvs[0].x = sprite.rect.x/sprite.texture.width;
 			m_vertex[0].y = 0; 	m_uvs[0].y = sprite.rect.y/sprite.texture.height;
