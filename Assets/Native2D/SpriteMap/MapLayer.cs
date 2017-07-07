@@ -63,7 +63,7 @@ public class MapLayer : MonoBehaviour {
 			}
 			if (this.centerY)
 			{
-				zero.y = (this.m_viewPort.viewPort.height - this.size.y) * 0.5f;
+				zero.y = this.size.y* 0.5f;
 				offsetY = this.centerOffsetY;
 			}
 			this.m_initPos = new Vector3(zero.x, zero.y, 0f);
