@@ -181,7 +181,7 @@ public class MapLayer : MonoBehaviour {
 
 	void OnTouchUp()
 	{
-		if (m_isDown)
+		if (m_isDown && !m_reset)
 		{
 			Vector3 vector2 = transform.parent.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)) - m_prevPos;
 			m_moveDamp = 0.1f;
